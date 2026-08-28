@@ -9,5 +9,5 @@ if [[ -n "$(git status --porcelain)" ]]; then
   exit 1
 fi
 
-git push "$@"
+PSTACK_LOCAL_PLUGIN_PUSH=1 git push "$@"
 codex plugin add pstack-for-codex@pstack-for-codex-local

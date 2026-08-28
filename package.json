@@ -10,6 +10,7 @@
     "test:bun": "bun test --cwd skills/poteto-mode/scripts orch watch-pr",
     "typecheck": "bun run --cwd skills/poteto-mode/scripts typecheck",
     "compatibility:check": "node scripts/generate-compatibility-report.mjs --check",
+    "hooks:install": "./scripts/install-git-hooks.sh",
     "push:local-plugin": "./scripts/push-and-reinstall-local-plugin.sh",
     "verify": "npm run verify:offline",
     "verify:offline": "npm run test:offline && npm run test:bun && npm run typecheck && npm run compatibility:check",

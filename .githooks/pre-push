@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+if [[ "${PSTACK_LOCAL_PLUGIN_PUSH:-}" != "1" ]]; then
+  echo "Direct git push is disabled for this repository." >&2
+  echo "Use ./scripts/push-and-reinstall-local-plugin.sh so the local Codex plugin is refreshed after a successful push." >&2
+  exit 1
+fi
+
+if [[ -n "$(git status --porcelain)" ]]; then
+  echo "Refusing to push with uncommitted changes." >&2
+  exit 1
+fi
+
+plugin_version="$(node -p "require('./.codex-plugin/plugin.json').version")"
+if [[ "$plugin_version" != *"+codex."* ]]; then
+  echo "The plugin version is missing its Codex cachebuster suffix." >&2
+  echo "Run the cachebuster command documented in AGENTS.md before the final commit." >&2
+  exit 1
+fi
+
+if git rev-parse --verify HEAD^ >/dev/null 2>&1 && git diff --quiet HEAD^ HEAD -- .codex-plugin/plugin.json; then
+  echo "The final commit does not include a .codex-plugin/plugin.json cachebuster change." >&2
+  echo "Run the cachebuster command documented in AGENTS.md, commit the result, and push again." >&2
+  exit 1
+fi
+
+npm run verify:offline
