@@ -26,7 +26,7 @@ $how explain how this repository validates plugin metadata.
 
 Codex resolves `$how` to the installed `pstack-for-codex` namespace. The response should cite code paths and separate observed behavior from inference.
 
-## Install optional agent profiles
+## Configure agent profiles and model roles
 
 The plugin works without custom profiles. To add them, run:
 
@@ -34,11 +34,11 @@ The plugin works without custom profiles. To add them, run:
 $setup-pstack install the pstack agents for this project.
 ```
 
-Choose `project` or `user` scope when asked. Project scope writes `.codex/agents/*.toml`. User scope writes `~/.codex/agents/*.toml`. Setup scans both locations for duplicate agent names and refuses to overwrite unowned files.
+Choose `project` or `user` scope when asked. Project scope writes `.codex/agents/*.toml` and `.codex/pstack-models.json`. User scope writes `~/.codex/agents/*.toml` and `~/.codex/pstack-models.json`. Setup scans both agent locations for duplicate names and refuses to overwrite unowned files.
 
-You can ask each profile to inherit the parent model. To request an explicit model, provide both the model and `reasoning_effort`. Setup writes that pair only when a supported live model list proves it. If the model list is unavailable, setup records `unverified-inheritance` and omits both fields.
+The Markdown skills keep PStack's original model defaults. Fresh registry entries refer back to those skill defaults. The registry can override every single role and panel lane. Use `skill-default` to restore an overridden lane, or ask a lane to inherit the parent. To request an explicit model, provide both the model and `reasoning_effort`. Setup writes that pair only when a supported live model list proves it. If the model list is unavailable, setup records `unverified-inheritance` and writes an inherited lane. At runtime, an unavailable skill default also falls back to parent inheritance and is reported. A partial update changes only the roles you name.
 
-The result includes the written paths, receipt path, hashes, and configuration status. New profiles apply to agents spawned after installation.
+The result includes the profile paths, registry path, receipt path, hashes, and configuration status. New choices apply to agents spawned after installation.
 
 ## Remove or upgrade owned profiles
 

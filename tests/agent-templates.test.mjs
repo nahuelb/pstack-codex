@@ -4,7 +4,7 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { installAgents, scanAgentNames } from "../skills/setup-pstack/scripts/manage-agents.mjs";
+import { MODEL_ROLE_SPECS, installAgents, scanAgentNames } from "../skills/setup-pstack/scripts/manage-agents.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -33,8 +33,8 @@ test("project-scoped templates render supported Codex agent TOML", async (t) => 
   const result = await installAgents({ pluginRoot: root, projectRoot, userHome, scope: "project" });
 
   assert.equal(result.status, "installed");
-  assert.equal(result.files.length, 2);
-  for (const file of result.files) {
+  assert.equal(result.files.length, 3);
+  for (const file of result.files.filter((record) => record.path.endsWith(".toml"))) {
     assert.match(file.path, /^\.codex\/agents\/pstack-/);
     const content = await fs.readFile(path.join(projectRoot, file.path), "utf8");
     assert.match(content, /^name = "pstack-/m);
@@ -48,6 +48,12 @@ test("project-scoped templates render supported Codex agent TOML", async (t) => 
   );
   assert.match(commentProfile, /^sandbox_mode = "read-only"$/m);
   assert.match(commentProfile, /Do not use connectors or external network tools/);
+  const registry = JSON.parse(await fs.readFile(path.join(projectRoot, result.registryPath), "utf8"));
+  assert.deepEqual(Object.keys(registry.roles), MODEL_ROLE_SPECS.map((spec) => spec.name));
+  for (const spec of MODEL_ROLE_SPECS) {
+    assert.equal(registry.roles[spec.name].length, spec.kind === "panel" ? 4 : 1);
+    assert.ok(registry.roles[spec.name].every((lane) => lane.use_skill_default === true));
+  }
 });
 
 test("duplicate TOML names are detected across project and user layers regardless of filename", async (t) => {
@@ -98,6 +104,7 @@ test("an existing unowned target path without a parseable name is never overwrit
     fs.stat(path.join(agents, "pstack-comment-sicko.toml")),
     { code: "ENOENT" },
   );
+  await assert.rejects(fs.stat(path.join(projectRoot, ".codex/pstack-models.json")), { code: "ENOENT" });
 });
 
 test("a model pair is rendered only after the observable list validates it", async (t) => {
@@ -120,4 +127,30 @@ test("a model pair is rendered only after the observable list validates it", asy
   const policy = result.files.find((file) => file.path.endsWith("pstack-poteto-agent.toml")).model_policy;
   assert.equal(policy.status, "verified-explicit");
   assert.deepEqual(policy.resolved, requested);
+});
+
+test("the full upstream role matrix renders validated single and panel lanes", async (t) => {
+  const { projectRoot, userHome } = await fixture(t);
+  const sol = { model: "gpt-5.6-sol", reasoning_effort: "high" };
+  const luna = { model: "gpt-5.6-luna", reasoning_effort: "max" };
+  const roles = Object.fromEntries(
+    MODEL_ROLE_SPECS.map((spec) => [spec.name, spec.kind === "panel" ? [sol, luna] : sol]),
+  );
+  const result = await installAgents({
+    pluginRoot: root,
+    projectRoot,
+    userHome,
+    scope: "project",
+    roleProfile: roles,
+    observableModels: [
+      { slug: "gpt-5.6-sol", reasoning_efforts: ["high"] },
+      { slug: "gpt-5.6-luna", reasoning_efforts: ["max"] },
+    ],
+  });
+
+  const registry = JSON.parse(await fs.readFile(path.join(projectRoot, result.registryPath), "utf8"));
+  for (const spec of MODEL_ROLE_SPECS) {
+    assert.equal(registry.roles[spec.name].length, spec.kind === "panel" ? 2 : 1);
+    assert.deepEqual(registry.roles[spec.name][0], sol);
+  }
 });

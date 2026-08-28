@@ -117,10 +117,10 @@ test("clean Codex profile installs, validates, and tears down the complete plugi
 
   const setup = await import(`${pathToFileURL(path.join(installedRoot, "skills/setup-pstack/scripts/manage-agents.mjs")).href}?smoke=${Date.now()}`);
   const projectInstall = await setup.installAgents({ pluginRoot: installedRoot, projectRoot, userHome, scope: "project" });
-  assert.equal(projectInstall.files.length, 2);
+  assert.equal(projectInstall.files.length, 3);
   assert.equal((await setup.uninstallAgents({ projectRoot, userHome, scope: "project" })).status, "uninstalled");
   const userInstall = await setup.installAgents({ pluginRoot: installedRoot, projectRoot, userHome, scope: "user" });
-  assert.equal(userInstall.files.length, 2);
+  assert.equal(userInstall.files.length, 3);
   assert.equal((await setup.uninstallAgents({ projectRoot, userHome, scope: "user" })).status, "uninstalled");
 
   const hook = await import(`${pathToFileURL(path.join(installedRoot, "hooks/scripts/poteto-mode-state.mjs")).href}?smoke=${Date.now()}`);

@@ -33,6 +33,30 @@ const ROLE_SPECS = [
   },
 ];
 
+export const MODEL_ROLE_SPECS = [
+  { name: "feature, refactoring", kind: "single" },
+  { name: "bug-fix", kind: "single" },
+  { name: "perf-issue", kind: "single" },
+  { name: "hillclimb", kind: "single" },
+  { name: "judgment and prose", kind: "single" },
+  { name: "hardest tasks", kind: "single" },
+  { name: "how explorer", kind: "single" },
+  { name: "how explainer", kind: "single" },
+  { name: "how critics", kind: "panel" },
+  { name: "why investigators", kind: "single" },
+  { name: "why synthesizer", kind: "single" },
+  { name: "reflect tooling", kind: "single" },
+  { name: "reflect judgment, divergent, synthesizer", kind: "single" },
+  { name: "arena runners", kind: "panel" },
+  { name: "arena cross-judge pool", kind: "panel" },
+  { name: "swarm workers", kind: "single" },
+  { name: "architect runners", kind: "panel" },
+  { name: "interrogate reviewers", kind: "panel" },
+];
+
+const RECEIPT_OWNER = "pstack-for-codex/setup-pstack";
+const REGISTRY_FILENAME = "pstack-models.json";
+
 function sha256(value) {
   return createHash("sha256").update(value).digest("hex");
 }
@@ -43,6 +67,7 @@ function layer(scope, projectRoot, userHome) {
       root: projectRoot,
       agentsDir: path.join(projectRoot, ".codex/agents"),
       receipt: path.join(projectRoot, ".codex/pstack-for-codex-agent-receipt.json"),
+      registry: path.join(projectRoot, `.codex/${REGISTRY_FILENAME}`),
       relative: (file) => path.relative(projectRoot, file),
     };
   }
@@ -52,6 +77,7 @@ function layer(scope, projectRoot, userHome) {
       root: codexRoot,
       agentsDir: path.join(codexRoot, "agents"),
       receipt: path.join(codexRoot, "pstack-for-codex-agent-receipt.json"),
+      registry: path.join(codexRoot, REGISTRY_FILENAME),
       relative: (file) => path.relative(codexRoot, file),
     };
   }
@@ -119,6 +145,136 @@ export function resolveModelPolicy({ requested = null, observableModels = null }
   };
 }
 
+function inheritedLane(lane) {
+  return (
+    lane === null ||
+    lane === undefined ||
+    lane === "inherit-parent" ||
+    lane === "auto" ||
+    (lane && typeof lane === "object" && lane.inherit_parent === true && Object.keys(lane).length === 1)
+  );
+}
+
+function skillDefaultLane(lane) {
+  return (
+    lane === "skill-default" ||
+    lane === "default" ||
+    (lane && typeof lane === "object" && lane.use_skill_default === true && Object.keys(lane).length === 1)
+  );
+}
+
+function requestedLanes(spec, roleProfile) {
+  const requested = roleProfile?.[spec.name];
+  if (requested === undefined || requested === null) return [null];
+  const lanes = Array.isArray(requested) ? requested : [requested];
+  if (!lanes.length) throw new Error(`model role "${spec.name}" must contain at least one lane`);
+  if (spec.kind === "single" && lanes.length !== 1) {
+    throw new Error(`model role "${spec.name}" accepts exactly one lane`);
+  }
+  return lanes;
+}
+
+export function resolveRoleRegistry({
+  roleProfile = {},
+  existingRoles = {},
+  existingPolicies = {},
+  observableModels = null,
+} = {}) {
+  const allowed = new Set(MODEL_ROLE_SPECS.map((spec) => spec.name));
+  for (const roleName of Object.keys(roleProfile ?? {})) {
+    if (!allowed.has(roleName)) throw new Error(`unknown pstack model role "${roleName}"`);
+  }
+
+  const roles = {};
+  const policies = {};
+  for (const spec of MODEL_ROLE_SPECS) {
+    if (!Object.hasOwn(roleProfile, spec.name) && Object.hasOwn(existingRoles, spec.name)) {
+      if (observableModels !== null) {
+        const preservedPolicies = existingRoles[spec.name].map((lane) => {
+          if (lane.use_skill_default === true) {
+            return { status: "skill-default", requested: null, resolved: null, toml: {} };
+          }
+          return resolveModelPolicy({ requested: lane.inherit_parent === true ? null : lane, observableModels });
+        });
+        roles[spec.name] = preservedPolicies.map((policy) =>
+          policy.status === "verified-explicit"
+            ? { model: policy.resolved.model, reasoning_effort: policy.resolved.reasoning_effort }
+            : policy.status === "skill-default"
+              ? { use_skill_default: true }
+              : { inherit_parent: true },
+        );
+        policies[spec.name] = preservedPolicies;
+        continue;
+      }
+      roles[spec.name] = structuredClone(existingRoles[spec.name]);
+      policies[spec.name] = structuredClone(existingPolicies[spec.name] ?? []);
+      continue;
+    }
+    if (!Object.hasOwn(roleProfile, spec.name)) {
+      const laneCount = spec.kind === "panel" ? 4 : 1;
+      roles[spec.name] = Array.from({ length: laneCount }, () => ({ use_skill_default: true }));
+      policies[spec.name] = Array.from({ length: laneCount }, () => ({
+        status: "skill-default",
+        requested: null,
+        resolved: null,
+        toml: {},
+      }));
+      continue;
+    }
+    const rolePolicies = requestedLanes(spec, roleProfile).map((lane) =>
+      skillDefaultLane(lane)
+        ? { status: "skill-default", requested: null, resolved: null, toml: {} }
+        : resolveModelPolicy({ requested: inheritedLane(lane) ? null : lane, observableModels }),
+    );
+    policies[spec.name] = rolePolicies;
+    roles[spec.name] = rolePolicies.map((policy) =>
+      policy.status === "verified-explicit"
+        ? { model: policy.resolved.model, reasoning_effort: policy.resolved.reasoning_effort }
+        : policy.status === "skill-default"
+          ? { use_skill_default: true }
+          : { inherit_parent: true },
+    );
+  }
+  return { roles, policies };
+}
+
+function validateRoleRegistry(registry) {
+  if (!registry || registry.schema_version !== 1 || registry.owner !== RECEIPT_OWNER) {
+    throw new Error("pstack model registry has an unknown owner or schema; review it before continuing");
+  }
+  if (!registry.roles || typeof registry.roles !== "object" || Array.isArray(registry.roles)) {
+    throw new Error("pstack model registry roles must be an object");
+  }
+  const expected = new Set(MODEL_ROLE_SPECS.map((spec) => spec.name));
+  const actual = new Set(Object.keys(registry.roles));
+  const missing = [...expected].filter((name) => !actual.has(name));
+  const extra = [...actual].filter((name) => !expected.has(name));
+  if (missing.length || extra.length) {
+    throw new Error(`pstack model registry role mismatch; missing: ${missing.join(", ") || "none"}; extra: ${extra.join(", ") || "none"}`);
+  }
+  for (const spec of MODEL_ROLE_SPECS) {
+    const lanes = registry.roles[spec.name];
+    if (!Array.isArray(lanes) || !lanes.length || (spec.kind === "single" && lanes.length !== 1)) {
+      throw new Error(`pstack model registry has invalid lane count for "${spec.name}"`);
+    }
+    for (const lane of lanes) {
+      const inherited = lane && lane.inherit_parent === true && Object.keys(lane).length === 1;
+      const skillDefault = lane && lane.use_skill_default === true && Object.keys(lane).length === 1;
+      const explicit =
+        lane &&
+        typeof lane.model === "string" &&
+        lane.model.length > 0 &&
+        typeof lane.reasoning_effort === "string" &&
+        lane.reasoning_effort.length > 0 &&
+        Object.keys(lane).every((key) => key === "model" || key === "reasoning_effort");
+      if (!inherited && !skillDefault && !explicit) {
+        throw new Error(`pstack model registry has an invalid lane for "${spec.name}"`);
+      }
+    }
+  }
+  return registry;
+}
+
 async function readReceipt(file) {
   try {
     return JSON.parse(await fs.readFile(file, "utf8"));
@@ -128,17 +284,19 @@ async function readReceipt(file) {
   }
 }
 
-function expectedRolePaths(target) {
-  return ROLE_SPECS.map((role) => target.relative(path.join(target.agentsDir, `${role.name}.toml`)));
+function expectedPaths(target, schemaVersion) {
+  const paths = ROLE_SPECS.map((role) => target.relative(path.join(target.agentsDir, `${role.name}.toml`)));
+  if (schemaVersion === 2) paths.push(target.relative(target.registry));
+  return paths;
 }
 
 function validateReceipt(receipt, scope, target) {
   if (!receipt) return;
-  if (receipt.schema_version !== 1 || receipt.owner !== "pstack-for-codex/setup-pstack" || receipt.scope !== scope) {
+  if (![1, 2].includes(receipt.schema_version) || receipt.owner !== RECEIPT_OWNER || receipt.scope !== scope) {
     throw new Error("setup receipt has an unknown owner, schema, or scope; review it before continuing");
   }
   if (!Array.isArray(receipt.files)) throw new Error("setup receipt files must be an array");
-  const expected = new Set(expectedRolePaths(target));
+  const expected = new Set(expectedPaths(target, receipt.schema_version));
   const seen = new Set();
   for (const record of receipt.files) {
     if (!record || typeof record !== "object" || typeof record.path !== "string" || !/^[a-f0-9]{64}$/.test(record.sha256 ?? "")) {
@@ -154,12 +312,10 @@ function validateReceipt(receipt, scope, target) {
 
 async function inspectOwnedFiles(receipt, target) {
   if (!receipt) return [];
-  const recordsByPath = new Map((receipt?.files ?? []).map((record) => [record.path, record]));
   const diagnostics = [];
-  for (const role of ROLE_SPECS) {
-    const absolute = path.join(target.agentsDir, `${role.name}.toml`);
-    const relativePath = target.relative(absolute);
-    const record = recordsByPath.get(relativePath);
+  for (const record of receipt.files) {
+    const absolute = path.resolve(target.root, record.path);
+    const relativePath = record.path;
     try {
       const content = await fs.readFile(absolute);
       const actual = sha256(content);
@@ -190,6 +346,7 @@ export async function installAgents({
   userHome = os.homedir(),
   scope = "project",
   profile = {},
+  roleProfile = null,
   observableModels = null,
 } = {}) {
   if (!pluginRoot) throw new Error("pluginRoot is required");
@@ -202,6 +359,11 @@ export async function installAgents({
     throw new Error(
       `review required for divergent pstack-owned files: ${summary}; run uninstall to preserve changed files and archive the receipt`,
     );
+  }
+
+  let currentRegistry = null;
+  if (currentReceipt?.schema_version === 2) {
+    currentRegistry = validateRoleRegistry(JSON.parse(await fs.readFile(target.registry, "utf8")));
   }
 
   const inventory = await scanAgentNames({ projectRoot, userHome });
@@ -217,9 +379,15 @@ export async function installAgents({
     if (collision) throw new Error(`custom-agent name "${role.name}" is already owned by ${collision.file}`);
   }
 
+  const currentPolicies = new Map(
+    (currentReceipt?.files ?? [])
+      .filter((record) => record.model_policy)
+      .map((record) => [path.basename(record.path, ".toml"), record.model_policy.requested]),
+  );
   const rendered = [];
   for (const role of ROLE_SPECS) {
-    const modelPolicy = resolveModelPolicy({ requested: profile[role.name] ?? null, observableModels });
+    const requested = Object.hasOwn(profile, role.name) ? profile[role.name] : currentPolicies.get(role.name) ?? null;
+    const modelPolicy = resolveModelPolicy({ requested, observableModels });
     const [template, prompt] = await Promise.all([
       fs.readFile(path.join(pluginRoot, role.template), "utf8"),
       fs.readFile(path.join(pluginRoot, role.prompt), "utf8"),
@@ -229,53 +397,87 @@ export async function installAgents({
     rendered.push({ role, modelPolicy, content, file, path: target.relative(file), sha256: sha256(content) });
   }
 
+
+  const registryResolution = resolveRoleRegistry({
+    roleProfile: roleProfile ?? {},
+    existingRoles: currentRegistry?.roles ?? {},
+    existingPolicies: currentReceipt?.role_policies ?? {},
+    observableModels,
+  });
+  const registry = {
+    schema_version: 1,
+    owner: RECEIPT_OWNER,
+    roles: registryResolution.roles,
+  };
+  validateRoleRegistry(registry);
+  const registryContent = `${JSON.stringify(registry, null, 2)}\n`;
+  rendered.push({
+    role: null,
+    modelPolicy: null,
+    content: registryContent,
+    file: target.registry,
+    path: target.relative(target.registry),
+    sha256: sha256(registryContent),
+  });
+
   await fs.mkdir(target.agentsDir, { recursive: true });
-  if (ownedPaths.size === 0) {
-    const reservations = [];
-    try {
-      for (const record of rendered) {
-        const handle = await fs.open(record.file, "wx", 0o600);
-        reservations.push({ record, handle, stat: await handle.stat() });
-      }
-      for (const { record, handle } of reservations) await handle.writeFile(record.content);
-      for (const { handle } of reservations) await handle.close();
-    } catch (error) {
-      for (const reservation of reservations) {
-        await reservation.handle.close().catch(() => undefined);
-        try {
-          const current = await fs.lstat(reservation.record.file);
-          if (current.dev === reservation.stat.dev && current.ino === reservation.stat.ino) {
-            await fs.unlink(reservation.record.file);
-          }
-        } catch (cleanupError) {
-          if (cleanupError.code !== "ENOENT") throw cleanupError;
-        }
-      }
-      if (error.code === "EEXIST") {
-        throw new Error(`custom-agent path already exists and is not owned by pstack`);
-      }
-      throw error;
+  const reservations = [];
+  try {
+    for (const record of rendered.filter((candidate) => !ownedPaths.has(path.resolve(candidate.file)))) {
+      const handle = await fs.open(record.file, "wx", 0o600);
+      reservations.push({ record, handle, stat: await handle.stat() });
     }
-  } else {
-    for (const record of rendered) await fs.writeFile(record.file, record.content, { mode: 0o600 });
+    for (const { record, handle } of reservations) await handle.writeFile(record.content);
+    for (const { handle } of reservations) await handle.close();
+    for (const record of rendered.filter((candidate) => ownedPaths.has(path.resolve(candidate.file)))) {
+      await fs.writeFile(record.file, record.content, { mode: 0o600 });
+    }
+  } catch (error) {
+    for (const reservation of reservations) {
+      await reservation.handle.close().catch(() => undefined);
+      try {
+        const current = await fs.lstat(reservation.record.file);
+        if (current.dev === reservation.stat.dev && current.ino === reservation.stat.ino) {
+          await fs.unlink(reservation.record.file);
+        }
+      } catch (cleanupError) {
+        if (cleanupError.code !== "ENOENT") throw cleanupError;
+      }
+    }
+    if (error.code === "EEXIST") {
+      throw new Error(`pstack setup path already exists and is not owned by pstack`);
+    }
+    throw error;
   }
   const receipt = {
-    schema_version: 1,
-    owner: "pstack-for-codex/setup-pstack",
+    schema_version: 2,
+    owner: RECEIPT_OWNER,
     scope,
     created_at: new Date().toISOString(),
-    files: rendered.map(({ role, modelPolicy, path: relativePath, sha256: hash }) => ({
-      path: relativePath,
-      sha256: hash,
-      template: role.template,
-      prompt: role.prompt,
-      capability: role.capability,
-      model_policy: modelPolicy,
-    })),
+    role_policies: registryResolution.policies,
+    files: rendered.map(({ role, modelPolicy, path: relativePath, sha256: hash }) =>
+      role
+        ? {
+            path: relativePath,
+            sha256: hash,
+            template: role.template,
+            prompt: role.prompt,
+            capability: role.capability,
+            model_policy: modelPolicy,
+          }
+        : { path: relativePath, sha256: hash, kind: "model-role-registry" },
+    ),
   };
   await fs.mkdir(path.dirname(target.receipt), { recursive: true });
   await fs.writeFile(target.receipt, `${JSON.stringify(receipt, null, 2)}\n`, { mode: 0o600 });
-  return { status: "installed", scope, receiptPath: target.relative(target.receipt), files: receipt.files };
+  return {
+    status: "installed",
+    scope,
+    receiptPath: target.relative(target.receipt),
+    registryPath: target.relative(target.registry),
+    roles: registry.roles,
+    files: receipt.files,
+  };
 }
 
 export async function uninstallAgents({ projectRoot = process.cwd(), userHome = os.homedir(), scope = "project" } = {}) {
@@ -285,9 +487,9 @@ export async function uninstallAgents({ projectRoot = process.cwd(), userHome = 
   validateReceipt(receipt, scope, target);
   const divergence = await inspectOwnedFiles(receipt, target);
   const divergentPaths = new Set(divergence.map((record) => record.path));
-  for (const role of ROLE_SPECS) {
-    const absolute = path.join(target.agentsDir, `${role.name}.toml`);
-    if (!divergentPaths.has(target.relative(absolute))) await fs.rm(absolute);
+  for (const record of receipt.files) {
+    const absolute = path.resolve(target.root, record.path);
+    if (!divergentPaths.has(record.path)) await fs.rm(absolute);
   }
   if (!divergence.length) {
     await fs.rm(target.receipt);
@@ -323,12 +525,13 @@ async function main(argv) {
     userHome: path.resolve(options["user-home"] ?? os.homedir()),
   };
   if (options.profile) common.profile = JSON.parse(await fs.readFile(options.profile, "utf8"));
+  if (options.roles) common.roleProfile = JSON.parse(await fs.readFile(options.roles, "utf8"));
   if (options.models) common.observableModels = JSON.parse(await fs.readFile(options.models, "utf8"));
   let result;
   if (action === "install") result = await installAgents(common);
   else if (action === "uninstall") result = await uninstallAgents(common);
   else if (action === "scan") result = await scanAgentNames(common);
-  else throw new Error("usage: manage-agents.mjs <install|uninstall|scan> [--scope project|user] [--profile file] [--models file]");
+  else throw new Error("usage: manage-agents.mjs <install|uninstall|scan> [--scope project|user] [--profile file] [--roles file] [--models file]");
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
 }
 

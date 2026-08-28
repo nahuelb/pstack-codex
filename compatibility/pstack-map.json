@@ -1620,10 +1620,11 @@
       "classification": "adapted",
       "derivedPath": "skills/setup-pstack/SKILL.md",
       "preservedInvariants": [
-        "the skill or supporting resource preserves its user-visible purpose"
+        "all upstream model roles, panel fanout, inline defaults, inheritance aliases, and per-role overrides remain configurable"
       ],
       "validations": [
-        "skill-behavior"
+        "skill-behavior",
+        "model-config"
       ]
     },
     {

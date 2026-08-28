@@ -34,16 +34,16 @@ Write one clear paragraph. Reviewers challenge whether the work achieves the int
 
 ## Step 3, Spawn Reviewers
 
-Launch all reviewers in a single message using the supported subagent tools. Use the `interrogate reviewers` list from the installed pstack model profiles when present, one reviewer per entry, extending or shrinking the Reviewer A/B/C/D labels below to the configured entry count; otherwise use the table defaults.
+Launch all reviewers in a single message using the supported subagent tools. Resolve `interrogate reviewers` through `../setup-pstack/references/model-profile.md`, one reviewer per lane, extending or shrinking the Reviewer A/B/C/D labels below to the configured count.
 
 | Subagent | Default model |
 |----------|---------------|
-| Reviewer A | the configured judgment profile |
-| Reviewer B | the configured instruction-following profile |
-| Reviewer C | the configured fast profile |
-| Reviewer D | an entitled alternate-family judgment profile |
+| Reviewer A | `anthropic/claude-fable-5`, `max` |
+| Reviewer B | `gpt-5.6-sol`, `max` |
+| Reviewer C | `xai/grok-4.6`, `xhigh` |
+| Reviewer D | `anthropic/claude-opus-5`, `xhigh` |
 
-Each reviewer uses a validated configured profile or a generic read-only agent with an inherited model pair. Keep `model` and `reasoning_effort` separate. When a requested pair is unavailable, follow that role's declared substitute, inherit, skip, or fail-closed policy. Report skipped lanes and unverified served identities. Do not open a configuration PR unless the active request authorizes repository writes.
+Each reviewer uses the explicit model and reasoning effort from its lane, or inherits both for an inherited lane. Keep the two values separate. Report skipped lanes and unverified served identities. Do not open a configuration PR unless the active request authorizes repository writes.
 
 Read `references/reviewer-prompt.md` and fill in the template with:
 1. The stated intent

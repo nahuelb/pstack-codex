@@ -29,14 +29,14 @@ $poteto-mode add a --json flag to this command. Keep text output byte-identical.
 
 Start a new task after installation so Codex reloads the plugin catalog. See [Set up pstack](./docs/guide/01-setup.md) for the complete walkthrough.
 
-## Optional agent profiles
+## Agent profiles and model roles
 
-The skills work without custom agent profiles. Use `$setup-pstack` only when you want to install the two optional profiles:
+The skills keep the original PStack model defaults in their Markdown instructions. Use `$setup-pstack` to override those defaults through a Codex-native role registry and install two optional persona profiles:
 
 - `pstack-poteto-agent` for implementation and orchestration.
 - `pstack-comment-sicko` for read-only comment review.
 
-Setup writes either project profiles under `.codex/agents/` or user profiles under `~/.codex/agents/`. It records file hashes in a receipt and refuses to overwrite files owned by someone else. An explicit `model` and `reasoning_effort` pair is accepted only when a supported Codex model-list surface proves the pair. Otherwise the profile inherits the parent model and the receipt records that the requested pair is unverified.
+Setup writes profiles under `.codex/agents/` or `~/.codex/agents/`. It writes the complete role mapping to `.codex/pstack-models.json` or `~/.codex/pstack-models.json`. Fresh mappings refer back to the defaults in the Markdown skills. Project configuration overrides user configuration. Partial updates preserve omitted roles. The receipt records every owned file and refuses to overwrite other files. Setup accepts an explicit `model` and `reasoning_effort` pair only when a supported Codex model-list surface proves the pair. Otherwise that lane inherits the parent and the receipt records the unverified request.
 
 Read [Agent setup and model evidence](./docs/codex-adaptation.md#agent-setup-and-model-evidence) before changing profiles.
 

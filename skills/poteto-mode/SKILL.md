@@ -93,7 +93,7 @@ Read the leaf skill in full for any principle you apply. Each entry names when i
 
 ## Subagents
 
-**Use the exact custom profile `pstack-poteto-agent` for playbook delegates when installed.** Otherwise use a generic delegate and include `references/poteto-agent-prompt.md` in its prompt. Routed workflow skills (`how`, `why`, `interrogate`, `reflect`, `swarm`) own their role choices. Model and effort remain separate, observable values. Inherit the parent when a configured pair cannot be validated.
+**Use the exact custom profile `pstack-poteto-agent` for the Poteto persona when installed.** Resolve each playbook delegate's model lane from `../setup-pstack/references/model-profile.md` and pass its explicit model and reasoning effort with the portable prompt. Feature and refactoring use `feature, refactoring`; bug fixes, performance work, and hillclimbs use their matching role. Use `judgment and prose` for judgment or prose work and `hardest tasks` for ambiguous cross-cutting design, subtle concurrency, or difficult algorithms. The defaults are `xai/grok-4.6` at `xhigh` for feature and refactoring, `gpt-5.6-sol` at `max` for bug fixes, performance work, and hillclimbs, and `anthropic/claude-fable-5` at `max` for judgment, prose, and the hardest tasks. Routed workflow skills (`how`, `why`, `arena`, `swarm`, `architect`, `interrogate`, `reflect`) own their named registry roles.
 
 Follow `references/codex-agent-runtime.md` before dispatch. Prove write isolation first. The parent reviews actual results and produces the final summary. Steering, cancellation, retries, partial results, nested work, and unavailable capabilities use the contract's declared paths.
 

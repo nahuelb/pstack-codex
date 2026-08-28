@@ -1,11 +1,11 @@
 ---
 name: setup-pstack
-description: "Install, update, remove, or inspect optional Codex agent profiles for pstack, including explicit model-role configuration. Use for setup-pstack or requests to configure pstack agents and models."
+description: "Install, update, remove, or inspect pstack's Codex agent profiles and per-role model registry. Use for setup-pstack or requests to configure pstack agents and models."
 ---
 
 # Setup pstack for Codex
 
-Install optional custom-agent profiles without making them part of the plugin manifest. Codex loads project profiles from `.codex/agents/*.toml` and user profiles from `~/.codex/agents/*.toml`. This skill's `agents/openai.yaml` is UI metadata only.
+Install two persona-specific custom agents and a complete per-role model registry without adding them to the plugin manifest. Codex loads project profiles from `.codex/agents/*.toml` and user profiles from `~/.codex/agents/*.toml`. This skill's `agents/openai.yaml` is UI metadata only.
 
 Read `references/model-profile.md` before changing configuration. The portable prompts in the owning skills remain authoritative and work without installed profiles.
 
@@ -20,7 +20,9 @@ Read `references/model-profile.md` before changing configuration. The portable p
 
 ## Model policy
 
-Ask whether each role should inherit the parent or request an explicit `model` plus `reasoning_effort` pair.
+Ask whether to keep the current mapping or change specific roles. Read the complete role list and runtime resolution rules in `references/model-profile.md`. A single role accepts one lane. A panel role accepts one or more lanes, and its list length controls fanout.
+
+Each lane is `skill-default`, `inherit-parent`, `auto`, or an explicit `model` plus `reasoning_effort` pair. `skill-default` returns to the original choice in the owning Markdown skill. The inheritance aliases omit explicit spawn overrides.
 
 If a supported Codex model-list surface is observable, convert it to JSON records shaped like:
 
@@ -30,12 +32,25 @@ If a supported Codex model-list surface is observable, convert it to JSON record
 
 Validate both values before writing them. If no supported model list is observable, do not guess or accept pasted entitlement claims as proof: omit both TOML fields, inherit the parent, and record `unverified-inheritance` with the requested pair in the receipt. A missing model or unsupported effort is a hard stop; let the user choose another pair or inheritance.
 
-Profiles are a JSON object keyed by namespaced agent name:
+Persona profiles are a JSON object keyed by namespaced agent name:
 
 ```json
 {
   "pstack-poteto-agent": {"model":"gpt-5.6-sol","reasoning_effort":"high"},
   "pstack-comment-sicko": {"model":"gpt-5.6-terra","reasoning_effort":"medium"}
+}
+```
+
+Role choices are a second JSON object keyed by the exact role labels from `references/model-profile.md`. It can contain only the roles being changed. Single roles accept one value. Panel roles accept an array:
+
+```json
+{
+  "feature, refactoring": {"model":"anthropic/claude-opus-5","reasoning_effort":"high"},
+  "how critics": [
+    {"model":"anthropic/claude-fable-5","reasoning_effort":"xhigh"},
+    {"model":"gpt-5.6-sol","reasoning_effort":"high"},
+    "inherit-parent"
+  ]
 }
 ```
 
@@ -50,8 +65,8 @@ node scripts/manage-agents.mjs install --scope user --project-root <repo> --user
 node scripts/manage-agents.mjs uninstall --scope project --project-root <repo> --user-home <home>
 ```
 
-Add `--profile <json-file>` for requested pairs and `--models <json-file>` only when the list came from an observable supported surface. Do not create temporary files containing secrets; these files contain model identifiers only.
+Add `--profile <json-file>` for persona pairs, `--roles <json-file>` for role changes, and `--models <json-file>` only when the list came from an observable supported surface. Omitted roles keep their current mapping. On a fresh setup, omitted roles use the defaults in their owning Markdown skills. Do not create temporary files containing secrets; these files contain model identifiers only.
 
-On success, report the scope, written paths, receipt path, and each role's configuration status. Say that new profiles apply to newly spawned agents. When a panel inherits or loses distinct profiles, report reduced model diversity instead of claiming which model served it.
+Setup writes `.codex/pstack-models.json` at project scope or `~/.codex/pstack-models.json` at user scope. The project registry overrides the user registry. On success, report the scope, profile paths, registry path, receipt path, and each role's setup status. Say that the new mapping applies to newly spawned agents. When a panel inherits or repeats one model, report reduced diversity instead of claiming which model served it.
 
 On `review-required` or any collision, stop. Show the exact paths and do not suggest force deletion.

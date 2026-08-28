@@ -158,7 +158,7 @@ No candidate upstream snapshot was supplied, or it matches the lock.
 | `skills/reflect/references/synthesizer.md` | adapted | `skills/reflect/references/synthesizer.md` | skill-behavior |
 | `skills/reflect/references/tooling-reviewer.md` | adapted | `skills/reflect/references/tooling-reviewer.md` | skill-behavior |
 | `skills/reflect/SKILL.md` | adapted | `skills/reflect/SKILL.md` | skill-behavior |
-| `skills/setup-pstack/SKILL.md` | adapted | `skills/setup-pstack/SKILL.md` | skill-behavior |
+| `skills/setup-pstack/SKILL.md` | adapted | `skills/setup-pstack/SKILL.md` | skill-behavior, model-config |
 | `skills/show-me-your-work/references/decision-log-template.tsv` | adapted | `skills/show-me-your-work/references/decision-log-template.tsv` | skill-behavior |
 | `skills/show-me-your-work/scripts/log.sh` | adapted | `skills/show-me-your-work/scripts/log.sh` | skill-behavior |
 | `skills/show-me-your-work/SKILL.md` | adapted | `skills/show-me-your-work/SKILL.md` | skill-behavior |

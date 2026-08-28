@@ -16,6 +16,8 @@ Two modes:
 
 ## Explain Mode
 
+Resolve `how explorer`, `how explainer`, and `how critics` through `../setup-pstack/references/model-profile.md`.
+
 ### Step 1. Understand the Question and Assess Complexity
 
 Parse what the user is asking about:
@@ -46,7 +48,7 @@ The right decomposition depends on the question. Use your judgment. Narrow quest
 
 Spawn all explorers in a single message:
 
-- Role: configured how-explorer profile or a generic agent with the explorer prompt.
+- Role: the configured `how explorer` lane, default `xai/grok-4.6` with `xhigh` reasoning, with the explorer prompt.
 - Access: read-only. If subagents are unavailable, explore sequentially in the parent.
 
 Each explorer gets the same base prompt from `references/explorer-prompt.md` plus a specific exploration angle naming its slice. Each explorer should:
@@ -64,7 +66,7 @@ Then proceed to Step 3.
 
 Spawn a single subagent that explores and explains in one pass:
 
-- Role: configured how-explainer profile or a generic agent with the explainer prompt.
+- Role: the configured `how explainer` lane, default `anthropic/claude-fable-5` with `max` reasoning, with the explainer prompt.
 - Access: read-only. If no agent is available, explain sequentially in the parent.
 
 The agent does its own exploration (Glob, Grep, Read) and writes the explanation directly. Read `references/explainer-prompt.md` for the communication style and output format. Same structure, just no explorer findings as input.
@@ -75,7 +77,7 @@ Proceed to Step 4.
 
 Once all explorers return, spawn a single subagent to synthesize their findings into one coherent explanation:
 
-- Role: configured how-explainer profile or a generic agent with the explainer prompt.
+- Role: the configured `how explainer` lane, default `anthropic/claude-fable-5` with `max` reasoning, with the explainer prompt.
 - Access: read-only. A missing synthesizer falls back to parent synthesis.
 
 The explainer gets all explorers' findings and writes the human-facing explanation (output format below). Read `references/explainer-prompt.md` for the full prompt template. The explainer reconciles overlapping findings, resolves contradictions, and weaves the slices into a unified picture.
@@ -108,10 +110,10 @@ Run the full explain flow above (Steps 1-4). You must understand the architectur
 
 ### Step 2. Spawn Critics
 
-After the explanation is complete, spawn one architectural critic per model in your configured how-critics list (defaults the configured judgment profile, the configured instruction-following profile, the configured fast profile, an entitled alternate-family judgment profile), all in a single message.
+After the explanation is complete, spawn one architectural critic per `how critics` lane, all in a single message. The default lanes are `anthropic/claude-fable-5` at `max`, `gpt-5.6-sol` at `max`, `xai/grok-4.6` at `xhigh`, and `anthropic/claude-opus-5` at `xhigh`.
 
 For each critic:
-- Role: one validated configured critic profile per lane, or generic inherited agents.
+- Role: one validated `how critics` lane per agent.
 - Access: read-only. Missing lanes are reported as partial coverage; they are never silently replaced with claimed model diversity.
 
 Read `references/critic-prompt.md` for the prompt template. Each critic gets:

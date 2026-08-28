@@ -22,9 +22,9 @@ test("an unchanged project-scoped install is reversible from its hash receipt", 
   const { projectRoot, userHome } = await fixture(t);
   const installed = await installAgents({ pluginRoot: root, projectRoot, userHome, scope: "project" });
   const receipt = JSON.parse(await fs.readFile(path.join(projectRoot, installed.receiptPath), "utf8"));
-  assert.equal(receipt.schema_version, 1);
+  assert.equal(receipt.schema_version, 2);
   assert.equal(receipt.scope, "project");
-  assert.equal(receipt.files.length, 2);
+  assert.equal(receipt.files.length, 3);
   assert.ok(receipt.files.every((file) => /^[a-f0-9]{64}$/.test(file.sha256)));
 
   const removed = await uninstallAgents({ projectRoot, userHome, scope: "project" });
@@ -116,7 +116,167 @@ test("duplicate and missing role paths invalidate a setup receipt", async (t) =>
 test("user-scoped installs write only beneath the supplied Codex home", async (t) => {
   const { projectRoot, userHome } = await fixture(t);
   const installed = await installAgents({ pluginRoot: root, projectRoot, userHome, scope: "user" });
-  assert.ok(installed.files.every((file) => file.path.startsWith("agents/")));
+  assert.deepEqual(
+    installed.files.map((file) => file.path),
+    ["agents/pstack-poteto-agent.toml", "agents/pstack-comment-sicko.toml", "pstack-models.json"],
+  );
   for (const file of installed.files) await fs.stat(path.join(userHome, ".codex", file.path));
   await assert.rejects(fs.stat(path.join(projectRoot, ".codex/agents")), { code: "ENOENT" });
+});
+
+test("an existing unowned model registry is never overwritten", async (t) => {
+  const { projectRoot, userHome } = await fixture(t);
+  const codexDirectory = path.join(projectRoot, ".codex");
+  const registry = path.join(codexDirectory, "pstack-models.json");
+  await fs.mkdir(codexDirectory, { recursive: true });
+  await fs.writeFile(registry, '{"belongs_to":"user"}\n');
+
+  await assert.rejects(
+    installAgents({ pluginRoot: root, projectRoot, userHome, scope: "project" }),
+    /already exists and is not owned by pstack/,
+  );
+  assert.equal(await fs.readFile(registry, "utf8"), '{"belongs_to":"user"}\n');
+  await assert.rejects(fs.stat(path.join(codexDirectory, "agents/pstack-poteto-agent.toml")), { code: "ENOENT" });
+  await assert.rejects(fs.stat(path.join(codexDirectory, "agents/pstack-comment-sicko.toml")), { code: "ENOENT" });
+});
+
+test("a schema-one receipt upgrades without losing validated persona choices", async (t) => {
+  const { projectRoot, userHome } = await fixture(t);
+  const requested = { model: "gpt-5.6-sol", reasoning_effort: "high" };
+  const installed = await installAgents({
+    pluginRoot: root,
+    projectRoot,
+    userHome,
+    scope: "project",
+    profile: { "pstack-poteto-agent": requested },
+    observableModels: [{ slug: "gpt-5.6-sol", reasoning_efforts: ["high"] }],
+  });
+  const receiptPath = path.join(projectRoot, installed.receiptPath);
+  const receipt = JSON.parse(await fs.readFile(receiptPath, "utf8"));
+  await fs.rm(path.join(projectRoot, installed.registryPath));
+  receipt.schema_version = 1;
+  receipt.files = receipt.files.filter((file) => file.path.endsWith(".toml"));
+  delete receipt.role_policies;
+  await fs.writeFile(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`);
+
+  const upgraded = await installAgents({
+    pluginRoot: root,
+    projectRoot,
+    userHome,
+    scope: "project",
+    observableModels: [{ slug: "gpt-5.6-sol", reasoning_efforts: ["high"] }],
+  });
+  const profile = await fs.readFile(path.join(projectRoot, ".codex/agents/pstack-poteto-agent.toml"), "utf8");
+  assert.match(profile, /^model = "gpt-5\.6-sol"$/m);
+  assert.equal(JSON.parse(await fs.readFile(path.join(projectRoot, upgraded.receiptPath), "utf8")).schema_version, 2);
+  await fs.stat(path.join(projectRoot, upgraded.registryPath));
+});
+
+test("a partial role update preserves every omitted lane", async (t) => {
+  const { projectRoot, userHome } = await fixture(t);
+  const sol = { model: "gpt-5.6-sol", reasoning_effort: "high" };
+  const luna = { model: "gpt-5.6-luna", reasoning_effort: "max" };
+  const observableModels = [
+    { slug: "gpt-5.6-sol", reasoning_efforts: ["high"] },
+    { slug: "gpt-5.6-luna", reasoning_efforts: ["max"] },
+  ];
+  const first = await installAgents({
+    pluginRoot: root,
+    projectRoot,
+    userHome,
+    scope: "project",
+    roleProfile: { "bug-fix": sol, "perf-issue": sol },
+    observableModels,
+  });
+  const updated = await installAgents({
+    pluginRoot: root,
+    projectRoot,
+    userHome,
+    scope: "project",
+    roleProfile: { "bug-fix": luna },
+    observableModels,
+  });
+
+  assert.deepEqual(first.roles["perf-issue"], [sol]);
+  assert.deepEqual(updated.roles["perf-issue"], [sol]);
+  assert.deepEqual(updated.roles["bug-fix"], [luna]);
+  assert.deepEqual(updated.roles["hillclimb"], [{ use_skill_default: true }]);
+  assert.equal(updated.roles["how critics"].length, 4);
+});
+
+test("an update without model discovery preserves validated explicit lanes", async (t) => {
+  const { projectRoot, userHome } = await fixture(t);
+  const requested = { model: "gpt-5.6-sol", reasoning_effort: "high" };
+  const first = await installAgents({
+    pluginRoot: root,
+    projectRoot,
+    userHome,
+    scope: "project",
+    roleProfile: { "bug-fix": requested },
+    observableModels: [{ slug: "gpt-5.6-sol", reasoning_efforts: ["high"] }],
+  });
+  const updated = await installAgents({ pluginRoot: root, projectRoot, userHome, scope: "project" });
+
+  assert.deepEqual(first.roles["bug-fix"], [requested]);
+  assert.deepEqual(updated.roles["bug-fix"], [requested]);
+  assert.deepEqual(updated.roles["perf-issue"], [{ use_skill_default: true }]);
+  const receipt = JSON.parse(await fs.readFile(path.join(projectRoot, updated.receiptPath), "utf8"));
+  assert.equal(receipt.role_policies["bug-fix"][0].status, "verified-explicit");
+});
+
+test("a partial update can restore an explicit role to its skill default", async (t) => {
+  const { projectRoot, userHome } = await fixture(t);
+  const requested = { model: "gpt-5.6-sol", reasoning_effort: "high" };
+  await installAgents({
+    pluginRoot: root,
+    projectRoot,
+    userHome,
+    scope: "project",
+    roleProfile: { "bug-fix": requested },
+    observableModels: [{ slug: "gpt-5.6-sol", reasoning_efforts: ["high"] }],
+  });
+  const updated = await installAgents({
+    pluginRoot: root,
+    projectRoot,
+    userHome,
+    scope: "project",
+    roleProfile: { "bug-fix": "skill-default" },
+  });
+
+  assert.deepEqual(updated.roles["bug-fix"], [{ use_skill_default: true }]);
+  assert.equal(updated.roles["how critics"].length, 4);
+});
+
+test("a partial update stops when a preserved model is no longer observable", async (t) => {
+  const { projectRoot, userHome } = await fixture(t);
+  const sol = { model: "gpt-5.6-sol", reasoning_effort: "high" };
+  const luna = { model: "gpt-5.6-luna", reasoning_effort: "max" };
+  const installed = await installAgents({
+    pluginRoot: root,
+    projectRoot,
+    userHome,
+    scope: "project",
+    roleProfile: { "bug-fix": sol },
+    observableModels: [{ slug: "gpt-5.6-sol", reasoning_efforts: ["high"] }],
+  });
+  const receiptPath = path.join(projectRoot, installed.receiptPath);
+  const registryPath = path.join(projectRoot, installed.registryPath);
+  const [receiptBefore, registryBefore] = await Promise.all([
+    fs.readFile(receiptPath, "utf8"),
+    fs.readFile(registryPath, "utf8"),
+  ]);
+
+  await assert.rejects(
+    installAgents({
+      pluginRoot: root,
+      projectRoot,
+      userHome,
+      scope: "project",
+      roleProfile: { "perf-issue": luna },
+      observableModels: [{ slug: "gpt-5.6-luna", reasoning_efforts: ["max"] }],
+    }),
+    /model "gpt-5.6-sol" is not in the observable model list/,
+  );
+  assert.equal(await fs.readFile(receiptPath, "utf8"), receiptBefore);
+  assert.equal(await fs.readFile(registryPath, "utf8"), registryBefore);
 });
