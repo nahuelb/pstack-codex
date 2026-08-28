@@ -6,14 +6,14 @@ Use `$poteto-mode` for a substantial engineering task. It selects a playbook, re
 
 ## Install
 
-This public repository is a Codex marketplace. Install it directly from GitHub:
+Install the plugin from a local checkout. Replace `/absolute/path/to/pstack-codex` with the checkout's absolute path:
 
 ```bash
-codex plugin marketplace add Aqua-123/pstack-for-codex
+codex plugin marketplace add /absolute/path/to/pstack-codex
 codex plugin add pstack-for-codex@pstack-for-codex-local
 ```
 
-For a local checkout, replace `Aqua-123/pstack-for-codex` with its absolute path. Confirm the installed plugin:
+Confirm the installed plugin:
 
 ```bash
 codex plugin list --json
