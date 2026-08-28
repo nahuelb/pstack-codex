@@ -10,7 +10,8 @@ export const DEFAULT_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 export const DISABLE_PHRASE = "disable $poteto-mode";
 export const CLEANUP_CONCURRENCY = 16;
 
-const ACTIVATION = /^\s*\$poteto-mode(?:\s|$)/u;
+const LITERAL_ACTIVATION = /^\s*\$poteto-mode(?=\s|$)/u;
+const CODEX_MENTION_ACTIVATION = /^\s*\[\$pstack-for-codex:poteto-mode\]\([^()\s]+\/skills\/poteto-mode\/SKILL\.md\)(?=\s|$)/u;
 const DISABLE = /^\s*disable \$poteto-mode[.!]?\s*$/iu;
 const MAX_SESSION_ID_LENGTH = 512;
 
@@ -35,7 +36,7 @@ export function projectFingerprint(cwd) {
 export function classifyPrompt(prompt) {
   if (typeof prompt !== "string") return "inactive";
   if (DISABLE.test(prompt)) return "disable";
-  if (ACTIVATION.test(prompt)) return "activate";
+  if (LITERAL_ACTIVATION.test(prompt) || CODEX_MENTION_ACTIVATION.test(prompt)) return "activate";
   return "inactive";
 }
 

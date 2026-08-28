@@ -40,15 +40,36 @@ test("hook manifest uses current Codex events and exact Poteto matcher", async (
 });
 
 test("only a leading explicit invocation activates and the disable phrase is exact", () => {
+  const codexMention = "[$pstack-for-codex:poteto-mode](/Users/nahue/.codex/plugins/cache/pstack-for-codex-local/pstack-for-codex/0.2.0+codex.test/skills/poteto-mode/SKILL.md)";
   assert.equal(classifyPrompt("$poteto-mode build it"), "activate");
   assert.equal(classifyPrompt("  $poteto-mode\ncontinue"), "activate");
+  assert.equal(classifyPrompt(`${codexMention} build it`), "activate");
+  assert.equal(classifyPrompt(`  ${codexMention}\ncontinue`), "activate");
   assert.equal(classifyPrompt("disable $poteto-mode"), "disable");
   assert.equal(classifyPrompt("Disable $poteto-mode."), "disable");
   assert.equal(classifyPrompt("disable $poteto-mode now"), "inactive");
   assert.equal(classifyPrompt("please disable $poteto-mode"), "inactive");
   assert.equal(classifyPrompt("I mentioned $poteto-mode casually"), "inactive");
   assert.equal(classifyPrompt("`$poteto-mode` is the invocation"), "inactive");
+  assert.equal(classifyPrompt(`before ${codexMention}`), "inactive");
+  assert.equal(classifyPrompt("[$pstack-for-codex:why](/skills/why/SKILL.md) explain it"), "inactive");
   assert.equal(classifyPrompt("poteto mode please"), "inactive");
+});
+
+test("Codex Poteto skill mentions persist session state and a receipt", async (t) => {
+  const { pluginData, load } = await fixture(t);
+  const activation = await load("activate.json");
+  activation.prompt = "[$pstack-for-codex:poteto-mode](/Users/nahue/.codex/plugins/cache/pstack-for-codex-local/pstack-for-codex/0.2.0+codex.test/skills/poteto-mode/SKILL.md) build it";
+
+  const receipt = await handleHook(activation, { pluginData, now: 1_000 });
+
+  assert.match(receipt.hookSpecificOutput.additionalContext, /sticky receipt/);
+  assert.equal((await readActiveState({
+    pluginData,
+    sessionId: activation.session_id,
+    cwd: activation.cwd,
+    now: 2_000,
+  })).active, true);
 });
 
 test("activation is session isolated and later turns survive resume and compaction", async (t) => {
