@@ -99,32 +99,25 @@ bun run typecheck
 
 The validator reports Bun as an optional capability. Skills that depend on the Bun scripts must stop or declare their fallback when Bun is unavailable.
 
-## Update or remove
+## Update the local plugin
 
-Enable the repository's tracked Git hooks once in each checkout:
+Run this once after cloning:
 
 ```bash
 ./scripts/install-git-hooks.sh
 ```
 
-Git has no native `post-push` hook. This repository therefore uses a pre-push guard plus a wrapper: direct `git push` commands are rejected, the hook validates the release, and the wrapper refreshes the installed plugin only after the remote push succeeds.
-
-Before the final commit of a local plugin change, update the Codex cachebuster:
-
-```bash
-python3 /Users/nahue/.codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py \
-  /Users/nahue/Projects/pstack-codex
-```
-
-Include the manifest change in the commit. After review, use the repository wrapper to push and reinstall the cached plugin:
+After that, use the wrapper instead of `git push`:
 
 ```bash
 ./scripts/push-and-reinstall-local-plugin.sh
 ```
 
-The wrapper stops on a dirty checkout. It authorizes the tracked pre-push hook, which checks the cachebuster and runs the offline verification suite. It runs the install only after `git push` succeeds. Start a new Codex task after installation.
+It validates the release, pushes it, and refreshes the installed Codex plugin. Start a new Codex task to load the update.
 
-Remove the plugin and its marketplace registration with:
+## Remove the plugin
+
+Remove the plugin and its local marketplace registration with:
 
 ```bash
 codex plugin remove pstack-for-codex@pstack-for-codex-local
