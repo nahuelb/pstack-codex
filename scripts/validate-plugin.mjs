@@ -108,7 +108,7 @@ export async function validateManifest(root, manifest) {
     if (!MANIFEST_FIELDS.has(field)) errors.push(`unsupported manifest field: ${field}`);
   }
   if (manifest.name !== "pstack-for-codex") errors.push("manifest name must be pstack-for-codex");
-  if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(manifest.version ?? "")) errors.push("manifest version must be semver");
+  if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/.test(manifest.version ?? "")) errors.push("manifest version must be semver");
   if (typeof manifest.description !== "string" || !manifest.description.trim()) errors.push("manifest description is required");
   if (manifest.skills !== "./skills/") errors.push("skills path must be ./skills/");
   if (manifest.skills === "./skills/") {

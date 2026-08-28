@@ -36,3 +36,14 @@ test("manifest validation rejects unsupported fields and unsafe paths", async (c
   assert.match(errors.join("\n"), /unsupported manifest field: agents/);
   assert.match(errors.join("\n"), /skills path must be \.\/skills\//);
 });
+
+test("manifest validation accepts the local cachebuster version", async (context) => {
+  const temporary = await fs.mkdtemp(path.join(os.tmpdir(), "pstack-cachebuster-test-"));
+  context.after(() => fs.rm(temporary, { recursive: true, force: true }));
+  await fs.mkdir(path.join(temporary, "skills"));
+
+  const manifest = JSON.parse(await fs.readFile(path.join(root, ".codex-plugin/plugin.json"), "utf8"));
+  manifest.version = "0.2.0+codex.20260828120000";
+  const errors = await validateManifest(temporary, manifest);
+  assert.deepEqual(errors, []);
+});

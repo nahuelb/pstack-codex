@@ -101,13 +101,20 @@ The validator reports Bun as an optional capability. Skills that depend on the B
 
 ## Update or remove
 
-Refresh the configured Git marketplace, then reinstall from the refreshed snapshot:
+Before the final commit of a local plugin change, update the Codex cachebuster:
 
 ```bash
-codex plugin marketplace upgrade pstack-for-codex-local
-codex plugin remove pstack-for-codex@pstack-for-codex-local
-codex plugin add pstack-for-codex@pstack-for-codex-local
+python3 /Users/nahue/.codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py \
+  /Users/nahue/Projects/pstack-codex
 ```
+
+Include the manifest change in the commit. After review, use the repository wrapper to push and reinstall the cached plugin:
+
+```bash
+./scripts/push-and-reinstall-local-plugin.sh
+```
+
+The wrapper stops on a dirty checkout. It runs the install only after `git push` succeeds. Start a new Codex task after installation.
 
 Remove the plugin and its marketplace registration with:
 
