@@ -1,0 +1,8 @@
+interface:
+  display_name: "Make Bot UI"
+  short_description: "Build a safe local UI for fixed Codex task actions."
+  default_prompt: "Use $make-bot-ui for this request."
+policy:
+  products:
+    - CODEX
+  allow_implicit_invocation: false

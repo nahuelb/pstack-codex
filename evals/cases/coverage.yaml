@@ -222,6 +222,28 @@
       }
     },
     {
+      "id": "skill:make-bot-ui",
+      "kind": "skill",
+      "source": "skills/make-bot-ui/SKILL.md",
+      "case": "skill-positive:make-bot-ui",
+      "positive_outcome": "Explicit $make-bot-ui invocation builds a local UI that starts only fixed, approved Codex task actions.",
+      "boundaries": [
+        "explicit-only",
+        "authority",
+        "capability",
+        "negative-trigger"
+      ],
+      "disposition": "explicit-only",
+      "verdict": "passed-offline-contract",
+      "grades": {
+        "workflow": "required",
+        "role": "required",
+        "authority": "required",
+        "evidence": "required",
+        "stop_condition": "required"
+      }
+    },
+    {
       "id": "skill:no-comments",
       "kind": "skill",
       "source": "skills/no-comments/SKILL.md",
@@ -1456,4 +1478,3 @@
     }
   ]
 }
-

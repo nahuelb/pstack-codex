@@ -3,20 +3,20 @@
   "source": {
     "repository": "https://github.com/cursor/plugins",
     "subdirectory": "pstack",
-    "commit": "bdf7aa355337897f167153e05069aca505dae17c",
-    "version": "0.14.3",
-    "retrievedAt": "2026-08-26",
+    "commit": "397c8660da6d3d873a91e18c2ca2f22cac1f0ac1",
+    "version": "0.14.5",
+    "retrievedAt": "2026-08-28",
     "license": "MIT",
     "licenseFile": "LICENSE"
   },
   "inventory": {
-    "fileCount": 156,
+    "fileCount": 157,
     "hashAlgorithm": "sha256"
   },
   "files": [
     {
       "path": ".cursor-plugin/plugin.json",
-      "sha256": "41b2c5bcb51057303de9373f931eda02e577e3b7a96520fd74c8784495b4e1bd",
+      "sha256": "ba4b0f227dfaca817512cac1d926eb5609b2a0886ac14bf0664997427a31588f",
       "bytes": 693
     },
     {
@@ -186,8 +186,8 @@
     },
     {
       "path": "README.md",
-      "sha256": "7b2994ff3caa430bbdd5734e24f7b2f18afeee2dd0893e5dbbce0fca2790ce8d",
-      "bytes": 21603
+      "sha256": "c4cc4610b9411958db27b16c455fcf175a48e7a2d464efd584de149d20a82e65",
+      "bytes": 21780
     },
     {
       "path": "skills/architect/references/design-red-flags.md",
@@ -308,6 +308,11 @@
       "path": "skills/maintain-verification-skill/SKILL.md",
       "sha256": "515c0eaa054b3f6be1b1fb06f2c2f173c80fddb58bbcac57576f89c479bc68e8",
       "bytes": 4922
+    },
+    {
+      "path": "skills/make-bot-ui/SKILL.md",
+      "sha256": "19570abe130a9659f5238a78cabd2768beba448cdfa49bfb14156e08f04813e3",
+      "bytes": 4618
     },
     {
       "path": "skills/no-comments/SKILL.md",

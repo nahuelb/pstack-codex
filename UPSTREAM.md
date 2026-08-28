@@ -1,13 +1,13 @@
 # Upstream maintenance
 
-This repository derives from `pstack` in `https://github.com/cursor/plugins`. The locked source is version `0.14.3` at commit `bdf7aa355337897f167153e05069aca505dae17c`.
+This repository derives from `pstack` in `https://github.com/cursor/plugins`. The locked source is version `0.14.5` at commit `397c8660da6d3d873a91e18c2ca2f22cac1f0ac1`.
 
 The delivered repository contains only the modified Codex version. Do not push a raw upstream branch or snapshot commit. Do not keep an upstream remote in the delivered checkout.
 
 ## Provenance files
 
 - [`NOTICE`](./NOTICE) records attribution and the source commit.
-- [`upstream.lock.json`](./upstream.lock.json) records the 156 source paths, sizes, and SHA-256 hashes.
+- [`upstream.lock.json`](./upstream.lock.json) records the 157 source paths, sizes, and SHA-256 hashes.
 - [`compatibility/pstack-map.json`](./compatibility/pstack-map.json) assigns each source path a Codex path, classification, invariant, and validation.
 - [`compatibility/report.md`](./compatibility/report.md) is the generated human-readable report.
 
@@ -19,12 +19,12 @@ Use a temporary local source checkout. The import helper removes its own tempora
 node scripts/import-upstream.mjs \
   --source https://github.com/cursor/plugins \
   --subdirectory pstack \
-  --commit bdf7aa355337897f167153e05069aca505dae17c \
+  --commit 397c8660da6d3d873a91e18c2ca2f22cac1f0ac1 \
   --verify-lock \
   --dry-run
 ```
 
-The command must report `Verified 156 files`.
+The command must report `Verified 157 files`.
 
 ## Review a newer source commit
 

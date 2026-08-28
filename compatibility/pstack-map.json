@@ -3,8 +3,8 @@
   "upstream": {
     "repository": "https://github.com/cursor/plugins",
     "subdirectory": "pstack",
-    "commit": "bdf7aa355337897f167153e05069aca505dae17c",
-    "version": "0.14.3"
+    "commit": "397c8660da6d3d873a91e18c2ca2f22cac1f0ac1",
+    "version": "0.14.5"
   },
   "classifications": [
     "preserved",
@@ -15,7 +15,7 @@
   "entries": [
     {
       "upstreamPath": ".cursor-plugin/plugin.json",
-      "upstreamSha256": "41b2c5bcb51057303de9373f931eda02e577e3b7a96520fd74c8784495b4e1bd",
+      "upstreamSha256": "ba4b0f227dfaca817512cac1d926eb5609b2a0886ac14bf0664997427a31588f",
       "classification": "replaced",
       "derivedPath": ".codex-plugin/plugin.json",
       "preservedInvariants": [
@@ -428,7 +428,7 @@
     },
     {
       "upstreamPath": "README.md",
-      "upstreamSha256": "7b2994ff3caa430bbdd5734e24f7b2f18afeee2dd0893e5dbbce0fca2790ce8d",
+      "upstreamSha256": "c4cc4610b9411958db27b16c455fcf175a48e7a2d464efd584de149d20a82e65",
       "classification": "adapted",
       "derivedPath": "README.md",
       "preservedInvariants": [
@@ -719,6 +719,18 @@
       "upstreamSha256": "515c0eaa054b3f6be1b1fb06f2c2f173c80fddb58bbcac57576f89c479bc68e8",
       "classification": "adapted",
       "derivedPath": "skills/maintain-verification-skill/SKILL.md",
+      "preservedInvariants": [
+        "the skill or supporting resource preserves its user-visible purpose"
+      ],
+      "validations": [
+        "skill-behavior"
+      ]
+    },
+    {
+      "upstreamPath": "skills/make-bot-ui/SKILL.md",
+      "upstreamSha256": "19570abe130a9659f5238a78cabd2768beba448cdfa49bfb14156e08f04813e3",
+      "classification": "adapted",
+      "derivedPath": "skills/make-bot-ui/SKILL.md",
       "preservedInvariants": [
         "the skill or supporting resource preserves its user-visible purpose"
       ],

@@ -10,16 +10,16 @@ import { inventoryDirectory, sha256 } from "../scripts/generate-compatibility-re
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-test("lock records the pinned source and exactly 156 unique SHA-256 entries", async () => {
+test("lock records the pinned source and exactly 157 unique SHA-256 entries", async () => {
   const lock = JSON.parse(await fs.readFile(path.join(root, "upstream.lock.json"), "utf8"));
   assert.equal(lock.source.repository, "https://github.com/cursor/plugins");
   assert.equal(lock.source.subdirectory, "pstack");
-  assert.equal(lock.source.commit, "bdf7aa355337897f167153e05069aca505dae17c");
-  assert.equal(lock.source.version, "0.14.3");
+  assert.equal(lock.source.commit, "397c8660da6d3d873a91e18c2ca2f22cac1f0ac1");
+  assert.equal(lock.source.version, "0.14.5");
   assert.equal(lock.source.license, "MIT");
-  assert.equal(lock.inventory.fileCount, 156);
-  assert.equal(lock.files.length, 156);
-  assert.equal(new Set(lock.files.map((file) => file.path)).size, 156);
+  assert.equal(lock.inventory.fileCount, 157);
+  assert.equal(lock.files.length, 157);
+  assert.equal(new Set(lock.files.map((file) => file.path)).size, 157);
   for (const file of lock.files) assert.match(file.sha256, /^[a-f0-9]{64}$/);
 });
 
