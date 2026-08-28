@@ -399,6 +399,24 @@ describe("Store", () => {
     expect(await readdir(directory)).not.toContain(".orch.lock.takeover");
   });
 
+  it("recovers an abandoned stale-lock takeover claim", async () => {
+    const { directory, store } = await initializedStore();
+    await store.close();
+    const exited = Bun.spawn(["true"]);
+    await exited.exited;
+    await writeFile(join(directory, ".orch.lock"), `${exited.pid}\n`);
+    await writeFile(
+      join(directory, ".orch.lock.takeover"),
+      `${exited.pid}:abandoned\n`
+    );
+
+    const recovered = useStore(directory);
+    expect(
+      await recovered.units.add({ id: "u1", track: "build" })
+    ).toMatchObject({ id: "u1" });
+    expect(await readdir(directory)).not.toContain(".orch.lock.takeover");
+  });
+
   it("recovers pointers from an interrupted inbox drain", async () => {
     const { directory, store } = await initializedStore();
     await store.inbox.push({ agent: "worker-1", unit: "u1", status: "done" });

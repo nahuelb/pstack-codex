@@ -32,7 +32,7 @@ Remaining triggers:
 - Nontrivial multi-step → write the throughput checkpoint (Feature step 3).
 - Any prose surface → the **unslop** skill. Your reply is a prose surface; write it per **Writing the reply**. Agent-facing prose also follows the **skill-creator** skill.
 - Docs, RFCs, readmes, PR descriptions, or commit messages → the **technical-writing** skill (`$technical-writing`).
-- Before commit → the **deslop** skill when installed. If absent, apply its documented cleanup checks directly and name that fallback.
+- Before commit → `$unslop`.
 - Before review → the **no-comments** skill (`$no-comments`).
 - Shipping UI / IDE / CLI → detect and use a matching installed live-control skill. For bug fixes, reproduce first on the same surface yourself. If live control is unavailable, fail closed on claims that require live proof and name the dependency.
 - Any PR-status request → the **Babysit** playbook (`playbooks/babysit.md`), and not any overlapping installed babysit skill, whose description matches the same words. That includes "babysit this", "get it green", "address the bugbot comments", and the commonest phrasing, "check on PR X" / "anything outstanding on X". Never triggered by merely opening a PR. Declare its mode before polling; the playbook's step 1 owns the request-to-mode mapping. Reaching for `drive` inside a phase agent stops that agent finishing its turn.

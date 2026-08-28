@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import type { Dirent } from "node:fs";
 import {
   access,
+  link,
   mkdir,
   open,
   readFile,
@@ -404,8 +405,9 @@ async function requireStoreMarker(store: string): Promise<void> {
 }
 
 function holderIsDead(holder: string): boolean {
-  const pid = Number.parseInt(holder, 10);
-  if (!Number.isSafeInteger(pid) || pid <= 0 || String(pid) !== holder) {
+  const rawPid = holder.split(":", 1)[0] ?? "";
+  const pid = Number.parseInt(rawPid, 10);
+  if (!Number.isSafeInteger(pid) || pid <= 0 || String(pid) !== rawPid) {
     return false;
   }
   try {
@@ -423,10 +425,64 @@ async function acquireLock(
   const path = join(store, LOCK_FILE);
   const takeoverPath = join(store, LOCK_TAKEOVER_FILE);
   const pid = String(process.pid);
-  const create = async (duringTakeover = false): Promise<void> => {
-    if (!duringTakeover && (await exists(takeoverPath))) {
-      throw new UserError("store lock takeover is in progress");
+  const restoreClaim = async (quarantine: string): Promise<void> => {
+    try {
+      await link(quarantine, takeoverPath);
+    } catch (error) {
+      if (errorCode(error) !== "EEXIST") throw error;
     }
+    await unlink(quarantine);
+  };
+  const removeStaleClaim = async (observed: string): Promise<boolean> => {
+    const quarantine = join(
+      store,
+      `${LOCK_TAKEOVER_FILE}.stale-${process.pid}-${randomUUID()}`
+    );
+    try {
+      await rename(takeoverPath, quarantine);
+    } catch (error) {
+      if (errorCode(error) === "ENOENT") return false;
+      throw error;
+    }
+    const moved = (await readFile(quarantine, "utf8")).trim();
+    if (moved !== observed) {
+      await restoreClaim(quarantine);
+      return false;
+    }
+    await unlink(quarantine);
+    return true;
+  };
+  const clearAbandonedClaim = async (): Promise<void> => {
+    while (true) {
+      let holder: string;
+      try {
+        holder = (await readFile(takeoverPath, "utf8")).trim() || "unknown";
+      } catch (error) {
+        if (errorCode(error) === "ENOENT") return;
+        throw error;
+      }
+      if (!holderIsDead(holder)) {
+        throw new UserError("store lock takeover is in progress");
+      }
+      if (await removeStaleClaim(holder)) continue;
+    }
+  };
+  const createClaim = async (): Promise<string> => {
+    const token = `${pid}:${randomUUID()}`;
+    while (true) {
+      await clearAbandonedClaim();
+      try {
+        const handle = await open(takeoverPath, "wx");
+        await handle.writeFile(`${token}\n`);
+        await handle.close();
+        return token;
+      } catch (error) {
+        if (errorCode(error) !== "EEXIST") throw error;
+      }
+    }
+  };
+  const create = async (duringTakeover = false): Promise<void> => {
+    if (!duringTakeover) await clearAbandonedClaim();
     const handle = await open(path, "wx");
     await handle.writeFile(`${pid}\n`);
     await handle.close();
@@ -444,18 +500,7 @@ async function acquireLock(
     expectedHolder: string,
     force: boolean
   ): Promise<void> => {
-    let claim: Awaited<ReturnType<typeof open>> | undefined;
-    try {
-      claim = await open(takeoverPath, "wx");
-      await claim.writeFile(`${pid}\n`);
-      await claim.close();
-    } catch (error) {
-      await claim?.close().catch(() => undefined);
-      if (errorCode(error) === "EEXIST") {
-        throw new UserError("store lock takeover is already in progress");
-      }
-      throw error;
-    }
+    const claimToken = await createClaim();
     try {
       const currentHolder =
         (await readFile(path, "utf8")).trim() || "unknown";
@@ -464,6 +509,9 @@ async function acquireLock(
       }
       if (!force && !holderIsDead(currentHolder)) {
         throw new UserError(`store lock held by pid ${currentHolder}`);
+      }
+      if ((await readFile(takeoverPath, "utf8")).trim() !== claimToken) {
+        throw new UserError("store lock takeover claim changed before acquisition");
       }
       if (force) options.onLockStolen?.(currentHolder);
       else options.onStaleLock?.(currentHolder);
@@ -480,7 +528,7 @@ async function acquireLock(
       }
     } finally {
       try {
-        if ((await readFile(takeoverPath, "utf8")).trim() === pid) {
+        if ((await readFile(takeoverPath, "utf8")).trim() === claimToken) {
           await unlink(takeoverPath);
         }
       } catch (error) {

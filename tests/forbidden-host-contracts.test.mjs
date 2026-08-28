@@ -13,6 +13,7 @@ const forbidden = [
   [/\bsubagent_type\b|\brun_in_background\b|\bAskQuestion\b/i, "legacy agent/tool schema"],
   [/(?:^|\s)\/(?:add-plugin|setup-pstack|poteto-mode|how|why|arena|swarm|interrogate|loop|automate)(?:\s|$)/im, "legacy slash command"],
   [/SendSlackMessage|cloud_base_branch|cloud-sleeper/i, "legacy external action contract"],
+  [/\$deslop\b/i, "nonexistent skill invocation"],
 ];
 
 async function filesBelow(relative) {

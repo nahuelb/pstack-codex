@@ -29,10 +29,14 @@ export class ChecksUnavailable extends WatcherQueryError {
 }
 const firstLine = (value: string): string =>
   value.trim().split(/\r?\n/, 1)[0]?.slice(0, 240) ?? "";
-function run(argv: readonly [string, ...string[]]): Promise<CommandResult> {
+function run(
+  argv: readonly [string, ...string[]],
+  signal?: AbortSignal
+): Promise<CommandResult> {
   return new Promise((resolve, reject) => {
     const child = spawn(argv[0], argv.slice(1), {
       stdio: ["ignore", "pipe", "pipe"],
+      signal,
     });
     let stdout = "";
     let stderr = "";
@@ -59,8 +63,11 @@ function parseJson(text: string, label: string): unknown {
     });
   }
 }
-async function runJson(argv: readonly [string, ...string[]]): Promise<unknown> {
-  const result = await run(argv);
+async function runJson(
+  argv: readonly [string, ...string[]],
+  signal?: AbortSignal
+): Promise<unknown> {
+  const result = await run(argv, signal);
   if (result.code !== 0)
     throw new WatcherQueryError({
       kind: "command-exit",
@@ -506,7 +513,10 @@ export class GhGitHubReader implements T.GitHubReader {
       number: pr ?? parsePrNumber(object.number, "current PR.number"),
     };
   }
-  async pullRequest(context: T.PrContext): Promise<T.PullRequestFacts> {
+  async pullRequest(
+    context: T.PrContext,
+    signal?: AbortSignal
+  ): Promise<T.PullRequestFacts> {
     return parsePullRequest(
       await runJson([
         "gh",
@@ -517,7 +527,7 @@ export class GhGitHubReader implements T.GitHubReader {
         `${context.owner}/${context.repo}`,
         "--json",
         "mergeable,mergeStateStatus,reviewDecision,headRefOid,headRefName,baseRefName,state,mergedAt,isDraft",
-      ]),
+      ], signal),
       context
     );
   }
@@ -552,7 +562,10 @@ export class GhGitHubReader implements T.GitHubReader {
       };
     });
   }
-  async checksFastPath(context: T.PrContext): Promise<T.ChecksFastPath> {
+  async checksFastPath(
+    context: T.PrContext,
+    signal?: AbortSignal
+  ): Promise<T.ChecksFastPath> {
     const result = await run([
       "gh",
       "pr",
@@ -562,7 +575,7 @@ export class GhGitHubReader implements T.GitHubReader {
       `${context.owner}/${context.repo}`,
       "--json",
       "name,state,description,link,workflow,bucket",
-    ]);
+    ], signal);
     if ([0, 1, 8].includes(result.code) && result.stdout.trim()) {
       try {
         const value = parseJson(result.stdout, "gh pr checks");
@@ -576,11 +589,12 @@ export class GhGitHubReader implements T.GitHubReader {
   }
   async checkRollupPage(
     context: T.PrContext,
-    after: string | null
+    after: string | null,
+    signal?: AbortSignal
   ): Promise<T.RollupPage> {
     const argv = graphqlArgs(PR_CHECK_ROLLUP_QUERY, context);
     if (after !== null) argv.push("-f", `after=${after}`);
-    const value = await runJson(argv);
+    const value = await runJson(argv, signal);
     const commits = list(
       at(value, ["data", "repository", "pullRequest", "commits", "nodes"]),
       "commits.nodes"
@@ -609,18 +623,23 @@ export class GhGitHubReader implements T.GitHubReader {
     return { checks, endCursor: page.hasNextPage && cursor ? cursor : null };
   }
   async reviewThreads(
-    context: T.PrContext
+    context: T.PrContext,
+    signal?: AbortSignal
   ): Promise<readonly T.ReviewThread[]> {
     return resolveReviewThreads(async (after) => {
       const argv = graphqlArgs(REVIEW_THREADS_QUERY, context);
       if (after !== null) argv.push("-f", `after=${after}`);
-      return runJson(argv);
+      return runJson(argv, signal);
     });
   }
   async commitRollups(
-    context: T.PrContext
+    context: T.PrContext,
+    signal?: AbortSignal
   ): Promise<readonly T.CommitRollup[]> {
-    const value = await runJson(graphqlArgs(PR_COMMIT_STATUS_QUERY, context));
+    const value = await runJson(
+      graphqlArgs(PR_COMMIT_STATUS_QUERY, context),
+      signal
+    );
     const commits = list(
       at(value, ["data", "repository", "pullRequest", "commits", "nodes"]),
       "commits.nodes"
@@ -645,15 +664,16 @@ export class GhGitHubReader implements T.GitHubReader {
 
 export async function resolveChecks(
   reader: T.GitHubReader,
-  context: T.PrContext
+  context: T.PrContext,
+  signal?: AbortSignal
 ): Promise<T.CheckRead> {
-  const fast = await reader.checksFastPath(context);
+  const fast = await reader.checksFastPath(context, signal);
   const direct = fast.kind === "checks" ? nonEmpty(fast.checks) : null;
   if (direct !== null) return { source: "gh-pr-checks", checks: direct };
   const checks: T.Check[] = [];
   let after: string | null = null;
   do {
-    const page = await reader.checkRollupPage(context, after);
+    const page = await reader.checkRollupPage(context, after, signal);
     checks.push(...page.checks);
     after = page.endCursor;
   } while (after !== null);

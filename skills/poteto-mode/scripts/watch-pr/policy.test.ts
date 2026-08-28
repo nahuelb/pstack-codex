@@ -488,3 +488,37 @@ it("clamps a query retry delay to the timeout deadline", async () => {
     reason: { kind: "status-unavailable" },
   });
 });
+
+it("aborts a GitHub query that reaches the timeout deadline", async () => {
+  const base = fakeReader();
+  const reader = {
+    ...base,
+    async pullRequest(_context: PrContext, signal?: AbortSignal) {
+      return new Promise<PullRequestFacts>((_resolve, reject) => {
+        signal?.addEventListener("abort", () => reject(new Error("aborted")), {
+          once: true,
+        });
+      });
+    },
+  } satisfies GitHubReader;
+  const verdict = await runSimple({
+    dependencies: {
+      reader,
+      clock: {
+        now: () => 0,
+        observedAt: () => "2026-07-26T00:00:00.000Z",
+        async sleep() {},
+      },
+      emit() {},
+    },
+    contexts: [context(72)],
+    mode: "single",
+    statusOnly: false,
+    options: { ...options, timeout: 0.01 },
+  });
+  expect(verdict).toMatchObject({
+    kind: "TIMEOUT",
+    exitCode: 5,
+    reason: { kind: "status-unavailable" },
+  });
+});

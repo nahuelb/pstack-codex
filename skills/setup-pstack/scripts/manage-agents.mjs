@@ -229,18 +229,36 @@ export async function installAgents({
     rendered.push({ role, modelPolicy, content, file, path: target.relative(file), sha256: sha256(content) });
   }
 
-  for (const record of rendered) {
-    if (ownedPaths.has(path.resolve(record.file))) continue;
-    try {
-      await fs.lstat(record.file);
-      throw new Error(`custom-agent path "${record.file}" already exists and is not owned by pstack`);
-    } catch (error) {
-      if (error.code !== "ENOENT") throw error;
-    }
-  }
-
   await fs.mkdir(target.agentsDir, { recursive: true });
-  for (const record of rendered) await fs.writeFile(record.file, record.content, { mode: 0o600 });
+  if (ownedPaths.size === 0) {
+    const reservations = [];
+    try {
+      for (const record of rendered) {
+        const handle = await fs.open(record.file, "wx", 0o600);
+        reservations.push({ record, handle, stat: await handle.stat() });
+      }
+      for (const { record, handle } of reservations) await handle.writeFile(record.content);
+      for (const { handle } of reservations) await handle.close();
+    } catch (error) {
+      for (const reservation of reservations) {
+        await reservation.handle.close().catch(() => undefined);
+        try {
+          const current = await fs.lstat(reservation.record.file);
+          if (current.dev === reservation.stat.dev && current.ino === reservation.stat.ino) {
+            await fs.unlink(reservation.record.file);
+          }
+        } catch (cleanupError) {
+          if (cleanupError.code !== "ENOENT") throw cleanupError;
+        }
+      }
+      if (error.code === "EEXIST") {
+        throw new Error(`custom-agent path already exists and is not owned by pstack`);
+      }
+      throw error;
+    }
+  } else {
+    for (const record of rendered) await fs.writeFile(record.file, record.content, { mode: 0o600 });
+  }
   const receipt = {
     schema_version: 1,
     owner: "pstack-for-codex/setup-pstack",

@@ -382,15 +382,16 @@ export interface RollupPage {
 export interface GitHubReader {
   originRepo(): Promise<Repository | null>;
   currentPr(pr: PrNumber | null): Promise<PrContext>;
-  pullRequest(context: PrContext): Promise<PullRequestFacts>;
+  pullRequest(context: PrContext, signal?: AbortSignal): Promise<PullRequestFacts>;
   openPullRequests(repository: Repository): Promise<readonly OpenPullRequest[]>;
-  checksFastPath(context: PrContext): Promise<ChecksFastPath>;
+  checksFastPath(context: PrContext, signal?: AbortSignal): Promise<ChecksFastPath>;
   checkRollupPage(
     context: PrContext,
-    after: string | null
+    after: string | null,
+    signal?: AbortSignal
   ): Promise<RollupPage>;
-  reviewThreads(context: PrContext): Promise<readonly ReviewThread[]>;
-  commitRollups(context: PrContext): Promise<readonly CommitRollup[]>;
+  reviewThreads(context: PrContext, signal?: AbortSignal): Promise<readonly ReviewThread[]>;
+  commitRollups(context: PrContext, signal?: AbortSignal): Promise<readonly CommitRollup[]>;
 }
 export interface PollingOptions {
   readonly interval: number;
