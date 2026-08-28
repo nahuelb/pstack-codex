@@ -5,6 +5,7 @@ import {
   mkdtemp,
   readFile,
   readdir,
+  rename,
   rm,
   writeFile,
 } from "node:fs/promises";
@@ -377,6 +378,41 @@ describe("Store", () => {
     expect(stale).toEqual([String(exited.pid)]);
     await recovered.close();
     expect(await readdir(directory)).not.toContain(".orch.lock");
+  });
+
+  it("allows only one concurrent stale-lock takeover", async () => {
+    const { directory, store } = await initializedStore();
+    await store.close();
+    const exited = Bun.spawn(["true"]);
+    await exited.exited;
+    await writeFile(join(directory, ".orch.lock"), `${exited.pid}\n`);
+
+    const contenders = Array.from({ length: 8 }, () => useStore(directory));
+    const results = await Promise.allSettled(
+      contenders.map((candidate, index) =>
+        candidate.units.add({ id: `u${index}`, track: "build" })
+      )
+    );
+    expect(
+      results.filter((result) => result.status === "fulfilled")
+    ).toHaveLength(1);
+    expect(await readdir(directory)).not.toContain(".orch.lock.takeover");
+  });
+
+  it("recovers pointers from an interrupted inbox drain", async () => {
+    const { directory, store } = await initializedStore();
+    await store.inbox.push({ agent: "worker-1", unit: "u1", status: "done" });
+    await store.inbox.push({ agent: "worker-2", unit: "u2", status: "failed" });
+    await store.close();
+
+    const drained = join(directory, ".inbox-drain-crashed");
+    await rename(join(directory, "inbox"), drained);
+    await mkdir(join(directory, "inbox"));
+
+    const recovered = useStore(directory);
+    expect(await recovered.inbox.peek()).toHaveLength(2);
+    expect(await readdir(directory)).not.toContain(".inbox-drain-crashed");
+    expect(await recovered.inbox.drain()).toHaveLength(2);
   });
 
   it("blocks a writer and steals the pid lock only with force", async () => {

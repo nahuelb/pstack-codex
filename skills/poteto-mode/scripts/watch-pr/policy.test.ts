@@ -10,6 +10,7 @@ import {
   queryBackoffSeconds,
   readSnapshot,
   runQueued,
+  runSimple,
   selectTierMajorStackDecision,
 } from "./policy.ts";
 import {
@@ -417,4 +418,73 @@ it("uses the specified retry floor and cap", () => {
   expect(queryBackoffSeconds(1, 1)).toBe(60);
   expect(queryBackoffSeconds(1, 2)).toBe(120);
   expect(queryBackoffSeconds(60, 4)).toBe(300);
+});
+
+it("clamps a normal polling sleep to the timeout deadline", async () => {
+  const reader = fakeReader({
+    fastPath: { kind: "checks", checks: [pendingCheck()] },
+  });
+  let now = 0;
+  const sleeps: number[] = [];
+  const verdict = await runSimple({
+    dependencies: {
+      reader,
+      clock: {
+        now: () => now,
+        observedAt: () => "2026-07-26T00:00:00.000Z",
+        async sleep(seconds) {
+          sleeps.push(seconds);
+          now += seconds;
+        },
+      },
+      emit() {},
+    },
+    contexts: [context(70)],
+    mode: "single",
+    statusOnly: false,
+    options: { ...options, interval: 10, timeout: 5 },
+  });
+  expect(sleeps).toEqual([5]);
+  expect(verdict).toMatchObject({ kind: "TIMEOUT", exitCode: 5 });
+});
+
+it("clamps a query retry delay to the timeout deadline", async () => {
+  const base = fakeReader();
+  const reader = {
+    ...base,
+    async pullRequest() {
+      throw new WatcherQueryError({
+        kind: "command-exit",
+        retryable: true,
+        detail: "rate limited",
+        code: 1,
+      });
+    },
+  } satisfies GitHubReader;
+  let now = 0;
+  const sleeps: number[] = [];
+  const verdict = await runSimple({
+    dependencies: {
+      reader,
+      clock: {
+        now: () => now,
+        observedAt: () => "2026-07-26T00:00:00.000Z",
+        async sleep(seconds) {
+          sleeps.push(seconds);
+          now += seconds;
+        },
+      },
+      emit() {},
+    },
+    contexts: [context(71)],
+    mode: "single",
+    statusOnly: false,
+    options: { ...options, interval: 1, timeout: 30 },
+  });
+  expect(sleeps).toEqual([30]);
+  expect(verdict).toMatchObject({
+    kind: "TIMEOUT",
+    exitCode: 5,
+    reason: { kind: "status-unavailable" },
+  });
 });

@@ -9,6 +9,7 @@ import {
   parseReviewThreads,
   resolveChecks,
   resolveContext,
+  resolveReviewThreads,
 } from "./github.ts";
 import {
   fakeReader,
@@ -259,6 +260,61 @@ it("annotates Bugbot threads with distinct review-pass counts", () => {
   expect(threads).toHaveLength(2);
   expect(threads.map((thread) => thread.isBugbot)).toEqual([true, true]);
   expect(threads.map((thread) => thread.bugbotReviewPasses)).toEqual([3, 3]);
+});
+
+it("paginates every review thread before classifying review passes", async () => {
+  const cursors: (string | null)[] = [];
+  const thread = (id: string, run: string) => ({
+    id,
+    isResolved: false,
+    comments: {
+      nodes: [
+        {
+          body: `RUN_ID: ${run}`,
+          createdAt: "now",
+          path: null,
+          line: null,
+          author: { login: "bugbot" },
+        },
+      ],
+    },
+  });
+  const pages = [
+    {
+      data: {
+        repository: {
+          pullRequest: {
+            reviewThreads: {
+              nodes: [thread("one", "run-1")],
+              pageInfo: { hasNextPage: true, endCursor: "next" },
+            },
+          },
+        },
+      },
+    },
+    {
+      data: {
+        repository: {
+          pullRequest: {
+            reviewThreads: {
+              nodes: [thread("two", "run-2")],
+              pageInfo: { hasNextPage: false, endCursor: null },
+            },
+          },
+        },
+      },
+    },
+  ];
+
+  const threads = await resolveReviewThreads(async (after) => {
+    cursors.push(after);
+    const page = pages.shift();
+    if (page === undefined) throw new Error("unexpected review-thread page");
+    return page;
+  });
+  expect(cursors).toEqual([null, "next"]);
+  expect(threads).toHaveLength(2);
+  expect(threads.every((item) => item.bugbotReviewPasses === 2)).toBe(true);
 });
 
 describe("context and stack discovery", () => {

@@ -79,6 +79,27 @@ test("an existing differently named file with a pstack agent name is never overw
   assert.match(await fs.readFile(unrelated, "utf8"), /mine/);
 });
 
+test("an existing unowned target path without a parseable name is never overwritten", async (t) => {
+  const { projectRoot, userHome } = await fixture(t);
+  const agents = path.join(projectRoot, ".codex/agents");
+  await fs.mkdir(agents, { recursive: true });
+  const target = path.join(agents, "pstack-poteto-agent.toml");
+  await fs.writeFile(target, "this file belongs to the user\n");
+
+  await assert.rejects(
+    installAgents({ pluginRoot: root, projectRoot, userHome, scope: "project" }),
+    /already exists and is not owned by pstack/,
+  );
+  assert.equal(
+    await fs.readFile(target, "utf8"),
+    "this file belongs to the user\n",
+  );
+  await assert.rejects(
+    fs.stat(path.join(agents, "pstack-comment-sicko.toml")),
+    { code: "ENOENT" },
+  );
+});
+
 test("a model pair is rendered only after the observable list validates it", async (t) => {
   const { projectRoot, userHome } = await fixture(t);
   const requested = { model: "gpt-5.6-sol", reasoning_effort: "high" };

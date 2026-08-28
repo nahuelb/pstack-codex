@@ -17,6 +17,8 @@ import { basename, dirname, isAbsolute, join, parse, resolve } from "node:path";
 const UNIT_HEADER = "id\ttrack\tstate\tbranch\tpr\tsha\tbrief";
 const LEDGER_HEADER = "pr\tsha\tverdict\tevidence\tverifier\tts";
 const LOCK_FILE = ".orch.lock";
+const LOCK_TAKEOVER_FILE = ".orch.lock.takeover";
+const INBOX_DRAIN_PREFIX = ".inbox-drain-";
 const STORE_MARKER = ".pstack-orch-store";
 const STORE_MARKER_CONTENT = "pstack-orch-store/v1\n";
 
@@ -419,24 +421,71 @@ async function acquireLock(
   options: OpenStoreOptions
 ): Promise<() => Promise<void>> {
   const path = join(store, LOCK_FILE);
+  const takeoverPath = join(store, LOCK_TAKEOVER_FILE);
   const pid = String(process.pid);
-  const create = async (): Promise<void> => {
+  const create = async (duringTakeover = false): Promise<void> => {
+    if (!duringTakeover && (await exists(takeoverPath))) {
+      throw new UserError("store lock takeover is in progress");
+    }
     const handle = await open(path, "wx");
     await handle.writeFile(`${pid}\n`);
     await handle.close();
+    if (!duringTakeover && (await exists(takeoverPath))) {
+      try {
+        if ((await readFile(path, "utf8")).trim() === pid) await unlink(path);
+      } catch (error) {
+        if (errorCode(error) !== "ENOENT") throw error;
+      }
+      throw new UserError("store lock takeover is in progress");
+    }
   };
 
-  const takeOver = async (): Promise<void> => {
-    await unlink(path);
+  const takeOver = async (
+    expectedHolder: string,
+    force: boolean
+  ): Promise<void> => {
+    let claim: Awaited<ReturnType<typeof open>> | undefined;
     try {
-      await create();
-    } catch (retryError) {
-      if (errorCode(retryError) === "EEXIST") {
-        const retryHolder =
-          (await readFile(path, "utf8")).trim() || "unknown";
-        throw new UserError(`store lock held by pid ${retryHolder}`);
+      claim = await open(takeoverPath, "wx");
+      await claim.writeFile(`${pid}\n`);
+      await claim.close();
+    } catch (error) {
+      await claim?.close().catch(() => undefined);
+      if (errorCode(error) === "EEXIST") {
+        throw new UserError("store lock takeover is already in progress");
       }
-      throw retryError;
+      throw error;
+    }
+    try {
+      const currentHolder =
+        (await readFile(path, "utf8")).trim() || "unknown";
+      if (currentHolder !== expectedHolder) {
+        throw new UserError(`store lock held by pid ${currentHolder}`);
+      }
+      if (!force && !holderIsDead(currentHolder)) {
+        throw new UserError(`store lock held by pid ${currentHolder}`);
+      }
+      if (force) options.onLockStolen?.(currentHolder);
+      else options.onStaleLock?.(currentHolder);
+      await unlink(path);
+      try {
+        await create(true);
+      } catch (retryError) {
+        if (errorCode(retryError) === "EEXIST") {
+          const retryHolder =
+            (await readFile(path, "utf8")).trim() || "unknown";
+          throw new UserError(`store lock held by pid ${retryHolder}`);
+        }
+        throw retryError;
+      }
+    } finally {
+      try {
+        if ((await readFile(takeoverPath, "utf8")).trim() === pid) {
+          await unlink(takeoverPath);
+        }
+      } catch (error) {
+        if (errorCode(error) !== "ENOENT") throw error;
+      }
     }
   };
 
@@ -453,11 +502,9 @@ async function acquireLock(
       holder = "unknown";
     }
     if (holderIsDead(holder)) {
-      options.onStaleLock?.(holder);
-      await takeOver();
+      await takeOver(holder, false);
     } else if (options.force) {
-      options.onLockStolen?.(holder);
-      await takeOver();
+      await takeOver(holder, true);
     } else {
       throw new UserError(`store lock held by pid ${holder}`);
     }
@@ -474,6 +521,28 @@ async function acquireLock(
       }
     }
   };
+}
+
+async function recoverInboxDrains(store: string): Promise<void> {
+  const drains = (await readdir(store))
+    .filter((name) => name.startsWith(INBOX_DRAIN_PREFIX))
+    .sort();
+  if (drains.length === 0) return;
+  const inbox = join(store, "inbox");
+  await mkdir(inbox, { recursive: true });
+  for (const name of drains) {
+    const drained = join(store, name);
+    for (const filename of (await readdir(drained)).sort()) {
+      const destination = join(inbox, filename);
+      if (await exists(destination)) {
+        throw new UserError(
+          `inbox recovery found duplicate pointer ${filename}`
+        );
+      }
+      await rename(join(drained, filename), destination);
+    }
+    await rm(drained, { recursive: true });
+  }
 }
 
 async function readTsv(
@@ -1275,6 +1344,7 @@ export function openStore(
     }
     await requireStoreMarker(store);
     await ensureLock();
+    await recoverInboxDrains(store);
   };
 
   return {
@@ -1458,11 +1528,11 @@ export function openStore(
         return rows;
       },
       peek: async () => {
-        ensureOpen();
+        await beginWrite();
         return readPointers(join(store, "inbox"));
       },
       count: async () => {
-        ensureOpen();
+        await beginWrite();
         return (await readPointers(join(store, "inbox"))).length;
       },
     },
@@ -1630,6 +1700,7 @@ export function openStore(
       await writeIfMissing(join(store, "units.tsv"), `${UNIT_HEADER}\n`);
       await writeIfMissing(join(store, "ledger.tsv"), `${LEDGER_HEADER}\n`);
       await mkdir(join(store, "inbox"), { recursive: true });
+      await recoverInboxDrains(store);
       await writeIfMissing(join(store, "gates.md"), "");
       await writeIfMissing(join(store, "preferences.md"), "");
       await writeIfMissing(join(store, "frontier.json"), "{}\n");

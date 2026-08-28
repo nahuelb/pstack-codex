@@ -229,6 +229,16 @@ export async function installAgents({
     rendered.push({ role, modelPolicy, content, file, path: target.relative(file), sha256: sha256(content) });
   }
 
+  for (const record of rendered) {
+    if (ownedPaths.has(path.resolve(record.file))) continue;
+    try {
+      await fs.lstat(record.file);
+      throw new Error(`custom-agent path "${record.file}" already exists and is not owned by pstack`);
+    } catch (error) {
+      if (error.code !== "ENOENT") throw error;
+    }
+  }
+
   await fs.mkdir(target.agentsDir, { recursive: true });
   for (const record of rendered) await fs.writeFile(record.file, record.content, { mode: 0o600 });
   const receipt = {

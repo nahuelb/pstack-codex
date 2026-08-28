@@ -15,17 +15,29 @@ if [[ -n "$(git status --porcelain)" ]]; then
   exit 1
 fi
 
-plugin_version="$(node -p "require('./.codex-plugin/plugin.json').version")"
-if [[ "$plugin_version" != *"+codex."* ]]; then
-  echo "The plugin version is missing its Codex cachebuster suffix." >&2
-  echo "Run the cachebuster command documented in AGENTS.md before the final commit." >&2
-  exit 1
-fi
-
-if git rev-parse --verify HEAD^ >/dev/null 2>&1 && git diff --quiet HEAD^ HEAD -- .codex-plugin/plugin.json; then
-  echo "The final commit does not include a .codex-plugin/plugin.json cachebuster change." >&2
-  echo "Run the cachebuster command documented in AGENTS.md, commit the result, and push again." >&2
-  exit 1
-fi
+zero_sha="0000000000000000000000000000000000000000"
+head_commit="$(git rev-parse HEAD)"
+while read -r local_ref local_sha remote_ref remote_sha; do
+  if [[ "$local_sha" == "$zero_sha" ]]; then
+    continue
+  fi
+  pushed_commit="$(git rev-parse "${local_sha}^{commit}")"
+  if [[ "$pushed_commit" != "$head_commit" ]]; then
+    echo "Refusing to push $local_ref because it does not point at the checked-out HEAD." >&2
+    echo "Check out the ref and use the wrapper again so verification covers the pushed content." >&2
+    exit 1
+  fi
+  plugin_version="$(git show "${pushed_commit}:.codex-plugin/plugin.json" | node -e 'let input=""; process.stdin.on("data", chunk => input += chunk); process.stdin.on("end", () => process.stdout.write(JSON.parse(input).version ?? ""));')"
+  if [[ "$plugin_version" != *"+codex."* ]]; then
+    echo "The pushed plugin version is missing its Codex cachebuster suffix." >&2
+    echo "Run the cachebuster command documented in AGENTS.md before the final commit." >&2
+    exit 1
+  fi
+  if git rev-parse --verify "${pushed_commit}^" >/dev/null 2>&1 && git diff --quiet "${pushed_commit}^" "$pushed_commit" -- .codex-plugin/plugin.json; then
+    echo "The pushed tip does not include a .codex-plugin/plugin.json cachebuster change." >&2
+    echo "Run the cachebuster command documented in AGENTS.md, commit the result, and push again." >&2
+    exit 1
+  fi
+done
 
 npm run verify:offline
