@@ -36,7 +36,7 @@ The skills keep the original PStack model defaults in their Markdown instruction
 - `pstack-poteto-agent` for implementation and orchestration.
 - `pstack-comment-sicko` for read-only comment review.
 
-Setup writes profiles under `.codex/agents/` or `~/.codex/agents/`. It writes the complete role mapping to `.codex/pstack-models.json` or `~/.codex/pstack-models.json`. Fresh mappings refer back to the defaults in the Markdown skills. Project configuration overrides user configuration. Partial updates preserve omitted roles. The receipt records every owned file and refuses to overwrite other files. Setup accepts an explicit `model` and `reasoning_effort` pair only when a supported Codex model-list surface proves the pair. Otherwise that lane inherits the parent and the receipt records the unverified request.
+Setup writes profiles under `.codex/agents/` or `~/.codex/agents/`. It writes the complete role mapping to `.codex/pstack-models.json` or `~/.codex/pstack-models.json`. Fresh mappings refer back to the defaults in the Markdown skills. Project configuration overrides user configuration. Partial updates preserve omitted roles. The receipt records every owned file and refuses to overwrite other files. Setup accepts an explicit `model` and `reasoning_effort` only when a supported Codex model-list surface proves them. A standard lane omits `service_tier`. A fast lane also requests `service_tier: "priority"`, which the model list must advertise. Without an observable model list, the lane inherits the parent and the receipt records the complete unverified request.
 
 Read [Agent setup and model evidence](./docs/codex-adaptation.md#agent-setup-and-model-evidence) before changing profiles.
 

@@ -124,15 +124,40 @@ test("a model pair is rendered only after the observable list validates it", asy
   );
   assert.match(content, /^model = "gpt-5\.6-sol"$/m);
   assert.match(content, /^model_reasoning_effort = "high"$/m);
+  assert.doesNotMatch(content, /^service_tier\s*=/m);
   const policy = result.files.find((file) => file.path.endsWith("pstack-poteto-agent.toml")).model_policy;
   assert.equal(policy.status, "verified-explicit");
+  assert.deepEqual(policy.resolved, requested);
+});
+
+test("a fast custom-agent profile renders the validated priority tier", async (t) => {
+  const { projectRoot, userHome } = await fixture(t);
+  const requested = { model: "gpt-5.6-luna", reasoning_effort: "max", service_tier: "priority" };
+  const result = await installAgents({
+    pluginRoot: root,
+    projectRoot,
+    userHome,
+    scope: "project",
+    profile: { "pstack-comment-sicko": requested },
+    observableModels: [
+      { slug: "gpt-5.6-luna", reasoning_efforts: ["max"], service_tiers: ["priority"] },
+    ],
+  });
+  const content = await fs.readFile(
+    path.join(projectRoot, ".codex/agents/pstack-comment-sicko.toml"),
+    "utf8",
+  );
+  assert.match(content, /^model = "gpt-5\.6-luna"$/m);
+  assert.match(content, /^model_reasoning_effort = "max"$/m);
+  assert.match(content, /^service_tier = "priority"$/m);
+  const policy = result.files.find((file) => file.path.endsWith("pstack-comment-sicko.toml")).model_policy;
   assert.deepEqual(policy.resolved, requested);
 });
 
 test("the full upstream role matrix renders validated single and panel lanes", async (t) => {
   const { projectRoot, userHome } = await fixture(t);
   const sol = { model: "gpt-5.6-sol", reasoning_effort: "high" };
-  const luna = { model: "gpt-5.6-luna", reasoning_effort: "max" };
+  const luna = { model: "gpt-5.6-luna", reasoning_effort: "max", service_tier: "priority" };
   const roles = Object.fromEntries(
     MODEL_ROLE_SPECS.map((spec) => [spec.name, spec.kind === "panel" ? [sol, luna] : sol]),
   );
@@ -144,7 +169,7 @@ test("the full upstream role matrix renders validated single and panel lanes", a
     roleProfile: roles,
     observableModels: [
       { slug: "gpt-5.6-sol", reasoning_efforts: ["high"] },
-      { slug: "gpt-5.6-luna", reasoning_efforts: ["max"] },
+      { slug: "gpt-5.6-luna", reasoning_efforts: ["max"], service_tiers: ["priority"] },
     ],
   });
 
@@ -152,5 +177,24 @@ test("the full upstream role matrix renders validated single and panel lanes", a
   for (const spec of MODEL_ROLE_SPECS) {
     assert.equal(registry.roles[spec.name].length, spec.kind === "panel" ? 2 : 1);
     assert.deepEqual(registry.roles[spec.name][0], sol);
+    if (spec.kind === "panel") assert.deepEqual(registry.roles[spec.name][1], luna);
   }
+});
+
+test("setup rejects a role service tier missing from the observable model record", async (t) => {
+  const { projectRoot, userHome } = await fixture(t);
+  await assert.rejects(
+    installAgents({
+      pluginRoot: root,
+      projectRoot,
+      userHome,
+      scope: "project",
+      roleProfile: {
+        "bug-fix": { model: "gpt-5.6-luna", reasoning_effort: "max", service_tier: "priority" },
+      },
+      observableModels: [{ slug: "gpt-5.6-luna", reasoning_efforts: ["max"], service_tiers: [] }],
+    }),
+    /does not support service tier "priority"/,
+  );
+  await assert.rejects(fs.stat(path.join(projectRoot, ".codex/pstack-models.json")), { code: "ENOENT" });
 });

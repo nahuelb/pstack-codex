@@ -135,6 +135,15 @@ export function resolveModelPolicy({ requested = null, observableModels = null }
   if (!requested.model || !requested.reasoning_effort) {
     throw new Error("a model request must include both model and reasoning_effort");
   }
+  if (!Object.keys(requested).every((key) => key === "model" || key === "reasoning_effort" || key === "service_tier")) {
+    throw new Error("a model request may contain only model, reasoning_effort, and service_tier");
+  }
+  if (
+    requested.service_tier !== undefined &&
+    (typeof requested.service_tier !== "string" || requested.service_tier.length === 0)
+  ) {
+    throw new Error("service_tier must be a non-empty string when requested");
+  }
   if (observableModels === null) {
     return { status: "unverified-inheritance", requested, resolved: null, toml: {} };
   }
@@ -144,11 +153,17 @@ export function resolveModelPolicy({ requested = null, observableModels = null }
   if (!efforts.includes(requested.reasoning_effort)) {
     throw new Error(`model "${requested.model}" does not support reasoning effort "${requested.reasoning_effort}"`);
   }
+  const serviceTiers = model.service_tiers ?? [];
+  if (requested.service_tier !== undefined && !serviceTiers.includes(requested.service_tier)) {
+    throw new Error(`model "${requested.model}" does not support service tier "${requested.service_tier}"`);
+  }
+  const toml = { model: requested.model, model_reasoning_effort: requested.reasoning_effort };
+  if (requested.service_tier !== undefined) toml.service_tier = requested.service_tier;
   return {
     status: "verified-explicit",
     requested,
     resolved: { ...requested },
-    toml: { model: requested.model, model_reasoning_effort: requested.reasoning_effort },
+    toml,
   };
 }
 
@@ -205,7 +220,7 @@ export function resolveRoleRegistry({
         });
         roles[spec.name] = preservedPolicies.map((policy) =>
           policy.status === "verified-explicit"
-            ? { model: policy.resolved.model, reasoning_effort: policy.resolved.reasoning_effort }
+            ? { ...policy.resolved }
             : policy.status === "skill-default"
               ? { use_skill_default: true }
               : { inherit_parent: true },
@@ -236,7 +251,7 @@ export function resolveRoleRegistry({
     policies[spec.name] = rolePolicies;
     roles[spec.name] = rolePolicies.map((policy) =>
       policy.status === "verified-explicit"
-        ? { model: policy.resolved.model, reasoning_effort: policy.resolved.reasoning_effort }
+        ? { ...policy.resolved }
         : policy.status === "skill-default"
           ? { use_skill_default: true }
           : { inherit_parent: true },
@@ -273,7 +288,9 @@ function validateRoleRegistry(registry) {
         lane.model.length > 0 &&
         typeof lane.reasoning_effort === "string" &&
         lane.reasoning_effort.length > 0 &&
-        Object.keys(lane).every((key) => key === "model" || key === "reasoning_effort");
+        (lane.service_tier === undefined ||
+          (typeof lane.service_tier === "string" && lane.service_tier.length > 0)) &&
+        Object.keys(lane).every((key) => key === "model" || key === "reasoning_effort" || key === "service_tier");
       if (!inherited && !skillDefault && !explicit) {
         throw new Error(`pstack model registry has an invalid lane for "${spec.name}"`);
       }

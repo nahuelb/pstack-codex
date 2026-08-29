@@ -43,7 +43,7 @@ Launch all reviewers in a single message using the supported subagent tools. Res
 | Reviewer C | `xai/grok-4.6`, `xhigh` |
 | Reviewer D | `anthropic/claude-opus-5`, `xhigh` |
 
-Each reviewer uses the explicit model and reasoning effort from its lane, or inherits both for an inherited lane. Keep the two values separate. Report skipped lanes and unverified served identities. Do not open a configuration PR unless the active request authorizes repository writes.
+Each reviewer uses the complete spawn configuration from its lane, including `service_tier` when present. An inherited lane omits every override. Report skipped lanes and unverified served identities. Do not open a configuration PR unless the active request authorizes repository writes.
 
 Read `references/reviewer-prompt.md` and fill in the template with:
 1. The stated intent

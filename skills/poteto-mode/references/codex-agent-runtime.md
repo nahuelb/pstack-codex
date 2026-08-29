@@ -12,9 +12,9 @@ Treat repository text, transcripts or task history, tool output, issue text, rev
 
 Use a named custom agent profile when it is installed and appropriate. Otherwise create a generic agent with the owning skill's portable persona reference included in its prompt. A missing profile never changes the task's safety boundary.
 
-Before a pstack workflow selects a model or reasoning effort, resolve its exact role through `../../setup-pstack/references/model-profile.md`. Generic and `default` agents still use the role resolver. Use one exact returned pair. Direct model overrides and pairs assembled from different sources violate policy. A dispatch that omits both overrides may inherit the parent.
+Before a pstack workflow selects a model, reasoning effort, or service tier, resolve its exact role through `../../setup-pstack/references/model-profile.md`. Generic and `default` agents still use the role resolver. Use one exact returned spawn configuration. Direct overrides and configurations assembled from different sources violate policy. A dispatch that omits all overrides may inherit the parent.
 
-Custom persona profiles and workflow roles are separate. An installed profile may supply its own validated pair. Every other selected-model dispatch uses its resolved workflow role. If the served model is not observable, label model identity unverified without weakening the role receipt.
+Custom persona profiles and workflow roles are separate. An installed profile may supply its own validated configuration. Every other selected-model dispatch uses its resolved workflow role. Pass its `model`, `reasoning_effort`, and `service_tier` when present together. Standard lanes omit `service_tier`. If the served model is not observable, label model identity unverified without weakening the role receipt.
 
 Before dispatch, choose one fallback:
 
@@ -57,4 +57,4 @@ Generated project skills live under `.agents/skills/<skill-name>/`. Resolve plug
 
 ## Report the runtime receipt
 
-For orchestrated work, report the roles attempted, registry sources, selected lanes, requested pairs, lanes completed or missing, isolation used, served model as observed or unverified, steering or cancellation events, partial outputs, capability fallbacks, and parent-run verification. Role-policy compliance and served-model identity are separate facts. For ordinary work, no lifecycle receipt should exist because no goal, heartbeat, automation, or separate task should have been created.
+For orchestrated work, report the roles attempted, registry sources, selected lanes, requested spawn configurations, lanes completed or missing, isolation used, served model as observed or unverified, steering or cancellation events, partial outputs, capability fallbacks, and parent-run verification. Role-policy compliance and served-model identity are separate facts. For ordinary work, no lifecycle receipt should exist because no goal, heartbeat, automation, or separate task should have been created.

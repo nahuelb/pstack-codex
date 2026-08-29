@@ -94,3 +94,16 @@ test("all playbooks and orchestrated skills cite the runtime contract", async ()
     assert.match(await fs.readFile(file, "utf8"), /codex-agent-runtime\.md/, name);
   }
 });
+
+test("model-role guidance passes the complete spawn configuration", async () => {
+  const files = [
+    "skills/setup-pstack/references/model-profile.md",
+    "skills/poteto-mode/SKILL.md",
+    "skills/poteto-mode/references/codex-agent-runtime.md",
+  ];
+  for (const relativePath of files) {
+    const content = await fs.readFile(path.join(root, relativePath), "utf8");
+    assert.match(content, /model.*reasoning_effort.*service_tier/is, relativePath);
+    assert.match(content, /standard (?:lane|lanes|mode).*omit(?:s)? `service_tier`/i, relativePath);
+  }
+});

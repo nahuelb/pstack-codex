@@ -175,17 +175,17 @@ test("a schema-one receipt upgrades without losing validated persona choices", a
 test("a partial role update preserves every omitted lane", async (t) => {
   const { projectRoot, userHome } = await fixture(t);
   const sol = { model: "gpt-5.6-sol", reasoning_effort: "high" };
-  const luna = { model: "gpt-5.6-luna", reasoning_effort: "max" };
+  const luna = { model: "gpt-5.6-luna", reasoning_effort: "max", service_tier: "priority" };
   const observableModels = [
     { slug: "gpt-5.6-sol", reasoning_efforts: ["high"] },
-    { slug: "gpt-5.6-luna", reasoning_efforts: ["max"] },
+    { slug: "gpt-5.6-luna", reasoning_efforts: ["max"], service_tiers: ["priority"] },
   ];
   const first = await installAgents({
     pluginRoot: root,
     projectRoot,
     userHome,
     scope: "project",
-    roleProfile: { "bug-fix": sol, "perf-issue": sol },
+    roleProfile: { "bug-fix": sol, "perf-issue": luna },
     observableModels,
   });
   const updated = await installAgents({
@@ -197,23 +197,27 @@ test("a partial role update preserves every omitted lane", async (t) => {
     observableModels,
   });
 
-  assert.deepEqual(first.roles["perf-issue"], [sol]);
-  assert.deepEqual(updated.roles["perf-issue"], [sol]);
+  assert.deepEqual(first.roles["perf-issue"], [luna]);
+  assert.deepEqual(updated.roles["perf-issue"], [luna]);
   assert.deepEqual(updated.roles["bug-fix"], [luna]);
   assert.deepEqual(updated.roles["hillclimb"], [{ use_skill_default: true }]);
   assert.equal(updated.roles["how critics"].length, 4);
+  const receipt = JSON.parse(await fs.readFile(path.join(projectRoot, updated.receiptPath), "utf8"));
+  assert.deepEqual(receipt.role_policies["perf-issue"][0].resolved, luna);
 });
 
 test("an update without model discovery preserves validated explicit lanes", async (t) => {
   const { projectRoot, userHome } = await fixture(t);
-  const requested = { model: "gpt-5.6-sol", reasoning_effort: "high" };
+  const requested = { model: "gpt-5.6-luna", reasoning_effort: "max", service_tier: "priority" };
   const first = await installAgents({
     pluginRoot: root,
     projectRoot,
     userHome,
     scope: "project",
     roleProfile: { "bug-fix": requested },
-    observableModels: [{ slug: "gpt-5.6-sol", reasoning_efforts: ["high"] }],
+    observableModels: [
+      { slug: "gpt-5.6-luna", reasoning_efforts: ["max"], service_tiers: ["priority"] },
+    ],
   });
   const updated = await installAgents({ pluginRoot: root, projectRoot, userHome, scope: "project" });
 
@@ -222,6 +226,23 @@ test("an update without model discovery preserves validated explicit lanes", asy
   assert.deepEqual(updated.roles["perf-issue"], [{ use_skill_default: true }]);
   const receipt = JSON.parse(await fs.readFile(path.join(projectRoot, updated.receiptPath), "utf8"));
   assert.equal(receipt.role_policies["bug-fix"][0].status, "verified-explicit");
+});
+
+test("an unobservable fast role records intent and writes an inherited lane", async (t) => {
+  const { projectRoot, userHome } = await fixture(t);
+  const requested = { model: "gpt-5.6-luna", reasoning_effort: "max", service_tier: "priority" };
+  const installed = await installAgents({
+    pluginRoot: root,
+    projectRoot,
+    userHome,
+    scope: "project",
+    roleProfile: { "bug-fix": requested },
+  });
+  const receipt = JSON.parse(await fs.readFile(path.join(projectRoot, installed.receiptPath), "utf8"));
+  const registry = JSON.parse(await fs.readFile(path.join(projectRoot, installed.registryPath), "utf8"));
+  assert.deepEqual(registry.roles["bug-fix"], [{ inherit_parent: true }]);
+  assert.equal(receipt.role_policies["bug-fix"][0].status, "unverified-inheritance");
+  assert.deepEqual(receipt.role_policies["bug-fix"][0].requested, requested);
 });
 
 test("a partial update can restore an explicit role to its skill default", async (t) => {

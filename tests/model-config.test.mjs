@@ -33,14 +33,15 @@ const expectedRoles = [
   "interrogate reviewers",
 ];
 
-test("unobservable model inventory inherits and labels the requested pair unverified", () => {
+test("unobservable model inventory preserves the requested spawn configuration and inherits", () => {
+  const requested = { model: "gpt-5.6-luna", reasoning_effort: "max", service_tier: "priority" };
   const result = resolveModelPolicy({
-    requested: { model: "gpt-future", reasoning_effort: "high" },
+    requested,
     observableModels: null,
   });
   assert.deepEqual(result, {
     status: "unverified-inheritance",
-    requested: { model: "gpt-future", reasoning_effort: "high" },
+    requested,
     resolved: null,
     toml: {},
   });
@@ -69,6 +70,23 @@ test("observable model inventory validates the exact model and reasoning pair", 
   );
 });
 
+test("observable model inventory validates and preserves a requested service tier", () => {
+  const requested = { model: "gpt-5.6-luna", reasoning_effort: "max", service_tier: "priority" };
+  const observableModels = [
+    { slug: "gpt-5.6-luna", reasoning_efforts: ["max"], service_tiers: ["priority"] },
+  ];
+  assert.deepEqual(resolveModelPolicy({ requested, observableModels }), {
+    status: "verified-explicit",
+    requested,
+    resolved: requested,
+    toml: { model: "gpt-5.6-luna", model_reasoning_effort: "max", service_tier: "priority" },
+  });
+  assert.throws(
+    () => resolveModelPolicy({ requested, observableModels: [{ ...observableModels[0], service_tiers: [] }] }),
+    /does not support service tier "priority"/,
+  );
+});
+
 test("no requested pair inherits without pretending runtime resolution is observable", () => {
   assert.deepEqual(resolveModelPolicy({ requested: null, observableModels: [] }), {
     status: "inherited",
@@ -80,20 +98,32 @@ test("no requested pair inherits without pretending runtime resolution is observ
 
 test("role configuration preserves every upstream role and panel cardinality", () => {
   assert.deepEqual(MODEL_ROLE_SPECS.map((spec) => spec.name), expectedRoles);
-  const pair = { model: "gpt-5.6-sol", reasoning_effort: "high" };
+  const standard = { model: "gpt-5.6-sol", reasoning_effort: "high" };
+  const fast = { model: "gpt-5.6-luna", reasoning_effort: "max", service_tier: "priority" };
   const roleProfile = Object.fromEntries(
-    MODEL_ROLE_SPECS.map((spec) => [spec.name, spec.kind === "panel" ? [pair, "inherit-parent"] : pair]),
+    MODEL_ROLE_SPECS.map((spec) => [spec.name, spec.kind === "panel" ? [standard, fast] : standard]),
   );
   const result = resolveRoleRegistry({
     roleProfile,
-    observableModels: [{ slug: "gpt-5.6-sol", reasoning_efforts: ["high"] }],
+    observableModels: [
+      { slug: "gpt-5.6-sol", reasoning_efforts: ["high"] },
+      { slug: "gpt-5.6-luna", reasoning_efforts: ["max"], service_tiers: ["priority"] },
+    ],
   });
 
   assert.deepEqual(Object.keys(result.roles), MODEL_ROLE_SPECS.map((spec) => spec.name));
   for (const spec of MODEL_ROLE_SPECS) {
     assert.equal(result.roles[spec.name].length, spec.kind === "panel" ? 2 : 1);
-    assert.deepEqual(result.roles[spec.name][0], pair);
+    assert.deepEqual(result.roles[spec.name][0], standard);
+    if (spec.kind === "panel") assert.deepEqual(result.roles[spec.name][1], fast);
   }
+});
+
+test("an unobservable fast role inherits while its policy retains the requested configuration", () => {
+  const requested = { model: "gpt-5.6-luna", reasoning_effort: "max", service_tier: "priority" };
+  const result = resolveRoleRegistry({ roleProfile: { "bug-fix": requested } });
+  assert.deepEqual(result.roles["bug-fix"], [{ inherit_parent: true }]);
+  assert.deepEqual(result.policies["bug-fix"][0].requested, requested);
 });
 
 test("role configuration rejects unknown roles and invalid single-role fanout", () => {
@@ -105,6 +135,13 @@ test("role configuration rejects unknown roles and invalid single-role fanout", 
   assert.throws(
     () => resolveRoleRegistry({ roleProfile: { "bug-fix": { inherit_parent: true, model: "unexpected" } } }),
     /must include both model and reasoning_effort/,
+  );
+  assert.throws(
+    () => resolveRoleRegistry({
+      roleProfile: { "bug-fix": { model: "gpt-5.6-luna", reasoning_effort: "max", fast: true } },
+      observableModels: [{ slug: "gpt-5.6-luna", reasoning_efforts: ["max"] }],
+    }),
+    /may contain only model, reasoning_effort, and service_tier/,
   );
 });
 
@@ -140,7 +177,7 @@ async function writeRegistry(rootDirectory, roles) {
   );
 }
 
-test("runtime role resolution uses the nearest project registry and exact configured pair", async (t) => {
+test("runtime role resolution preserves the nearest configured spawn configuration", async (t) => {
   const temporary = await fs.mkdtemp(path.join(process.env.TMPDIR ?? "/tmp", "pstack-runtime-role-"));
   t.after(() => fs.rm(temporary, { recursive: true, force: true }));
   const projectRoot = path.join(temporary, "project");
@@ -150,12 +187,13 @@ test("runtime role resolution uses the nearest project registry and exact config
   await fs.mkdir(path.join(projectRoot, ".git"), { recursive: true });
   await fs.mkdir(nested, { recursive: true });
   await writeRegistry(userHome, { ...defaults, "arena cross-judge pool": [{ model: "anthropic/claude-opus-5", reasoning_effort: "xhigh" }] });
-  await writeRegistry(projectRoot, { ...defaults, "arena cross-judge pool": [{ model: "anthropic/claude-opus-5", reasoning_effort: "high" }] });
+  const fast = { model: "gpt-5.6-luna", reasoning_effort: "max", service_tier: "priority" };
+  await writeRegistry(projectRoot, { ...defaults, "arena cross-judge pool": [fast] });
 
   const result = await resolveRuntimeRole({ roleName: "arena cross-judge pool", projectRoot: nested, userHome });
 
   assert.equal(result.registryPath, path.join(projectRoot, ".codex/pstack-models.json"));
-  assert.deepEqual(result.resolvedLanes, [{ model: "anthropic/claude-opus-5", reasoning_effort: "high" }]);
+  assert.deepEqual(result.resolvedLanes, [fast]);
 });
 
 test("runtime role resolution finds ancestor registries without Git and falls back to user scope", async (t) => {
@@ -200,6 +238,7 @@ test("runtime contracts require role resolution and state its enforcement limit"
   assert.match(profile, /Select only from `resolvedLanes`/);
   assert.match(profile, /cannot make violations impossible/);
   assert.match(runtime, /Generic and `default` agents still use the role resolver/);
+  assert.match(runtime, /`service_tier` when present together/);
   assert.match(arena, /Choose one exact resolved lane/);
   assert.match(trail, /resolve `arena cross-judge pool`/);
 });

@@ -29,9 +29,9 @@ The upstream personas became portable prompts plus optional Codex TOML profiles:
 
 `$setup-pstack` installs profiles at project or user scope. Its receipt records hashes and ownership. Upgrade and uninstall refuse a hash mismatch or duplicate agent name.
 
-The upstream `pstack-models.mdc` becomes `.codex/pstack-models.json` at project scope or `~/.codex/pstack-models.json` at user scope. It preserves all eighteen upstream role labels, panel fanout, parent inheritance, and separate model and reasoning values. Project configuration overrides user configuration. Each owning skill retains the original PStack defaults in Codex model syntax.
+The upstream `pstack-models.mdc` becomes `.codex/pstack-models.json` at project scope or `~/.codex/pstack-models.json` at user scope. It preserves all eighteen upstream role labels, panel fanout, and parent inheritance. Each explicit lane keeps its model, reasoning effort, and optional service tier in one record. Project configuration overrides user configuration. Each owning skill retains the original PStack defaults in Codex model syntax.
 
-A configured model is a request, not runtime evidence. Setup validates a `model` and `reasoning_effort` pair only against a supported live model list. When that list is unavailable, the lane inherits the parent and the receipt records `unverified-inheritance`. Runtime reports identify the served model only when a supported surface exposes it.
+A configured model is a request, not runtime evidence. Setup validates `model` and `reasoning_effort` against a supported live model list. Standard mode omits `service_tier`. Fast mode requests `"priority"`, which the observable model must support. When the model list is unavailable, the lane inherits the parent and the receipt records `unverified-inheritance` with the complete request. Runtime reports identify the served model only when a supported surface exposes it.
 
 ## Delegation and shared filesystems
 

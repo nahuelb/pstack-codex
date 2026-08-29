@@ -22,15 +22,15 @@ Read `references/model-profile.md` before changing configuration. The portable p
 
 Ask whether to keep the current mapping or change specific roles. Read the complete role list and runtime resolution rules in `references/model-profile.md`. A single role accepts one lane. A panel role accepts one or more lanes, and its list length controls fanout.
 
-Each lane is `skill-default`, `inherit-parent`, `auto`, or an explicit `model` plus `reasoning_effort` pair. `skill-default` returns to the original choice in the owning Markdown skill. The inheritance aliases omit explicit spawn overrides.
+Each lane is `skill-default`, `inherit-parent`, `auto`, or an explicit spawn configuration. An explicit lane contains `model` and `reasoning_effort`. It may contain `service_tier`. Standard mode omits `service_tier`. Fast mode uses `"priority"`. Treat these values as one configuration. `skill-default` returns to the original choice in the owning Markdown skill. The inheritance aliases omit explicit spawn overrides.
 
 If a supported Codex model-list surface is observable, convert it to JSON records shaped like:
 
 ```json
-[{"slug":"gpt-5.6-sol","reasoning_efforts":["low","medium","high","xhigh","max","ultra"]}]
+[{"slug":"gpt-5.6-luna","reasoning_efforts":["low","medium","high","xhigh","max"],"service_tiers":["priority"]}]
 ```
 
-Validate both values before writing them. If no supported model list is observable, do not guess or accept pasted entitlement claims as proof: omit both TOML fields, inherit the parent, and record `unverified-inheritance` with the requested pair in the receipt. A missing model or unsupported effort is a hard stop; let the user choose another pair or inheritance.
+Validate the model and effort before writing them. Validate `service_tier` when the lane requests it. If no supported model list is observable, do not guess or accept pasted entitlement claims as proof. Omit the TOML fields, write an inherited role lane, and record `unverified-inheritance` with the complete request. A missing model or unsupported value is a hard stop. Let the user choose another configuration or inheritance.
 
 Persona profiles are a JSON object keyed by namespaced agent name:
 
@@ -48,7 +48,7 @@ Role choices are a second JSON object keyed by the exact role labels from `refer
   "feature, refactoring": {"model":"anthropic/claude-opus-5","reasoning_effort":"high"},
   "how critics": [
     {"model":"anthropic/claude-fable-5","reasoning_effort":"xhigh"},
-    {"model":"gpt-5.6-sol","reasoning_effort":"high"},
+    {"model":"gpt-5.6-luna","reasoning_effort":"max","service_tier":"priority"},
     "inherit-parent"
   ]
 }

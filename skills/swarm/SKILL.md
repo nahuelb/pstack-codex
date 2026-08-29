@@ -28,7 +28,7 @@ Open a todolist with one entry per phase before launching anything.
 
 ## Phase B: Fan out
 
-After proving independent reads or isolated writes, dispatch all ready workers together through supported subagent tools. Use an installed role profile when validated; otherwise use generic agents with inherited model pairs. A worker that needs local devices or live-control capabilities stays on the surface that provides them. For a non-default base, create or select the exact worktree or branch before dispatch and name it in the brief.
+After proving independent reads or isolated writes, dispatch all ready workers together through supported subagent tools. Use an installed role profile when validated. Otherwise use generic agents with inherited spawn configurations. A worker that needs local devices or live-control capabilities stays on the surface that provides them. For a non-default base, create or select the exact worktree or branch before dispatch and name it in the brief.
 
 Every brief stands alone. Include the goal, scope, exact slice or race arm, how to verify, and what to report. Reports use `PASS`, `ISSUES`, or `BLOCKED` with evidence.
 
