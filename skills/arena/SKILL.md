@@ -35,11 +35,11 @@ Spawn all N subagents in one message with concurrent dispatch after isolation, e
 
 The rationale is mandatory. Without it, the parent cannot tell whether a candidate's structure is principled or accidental, which makes Phase E grafting unreliable. Each rationale names the alternatives the candidate considered and what it rejected.
 
-If a candidate fails to produce output, proceed with N-1 and note the dropout in the synthesis record.
+A dropout is a candidate whose turn ended without output; an active candidate is never a dropout. Proceed with N-1 and note the dropout in the synthesis record.
 
 ## Phase C: Cross-judge
 
-After all Phase B candidates complete, resolve `arena cross-judge pool` through `../setup-pstack/references/model-profile.md`. Choose one exact resolved lane whose model family differs from the parent's when possible. Its defaults match `arena runners`. Put the role, registry source, and selected lane in the judge brief and runtime receipt. Spawn one independent read-only judge through that lane. It sees the rubric and the candidates by path label, scores each criterion, and recommends a base with rationale. It runs in parallel with the parent's reading in Phase D, not with the candidates themselves. Spawning while candidates are still writing means the judge sees partial or empty outputs and reports them as dropouts.
+After all Phase B candidates complete, resolve `arena cross-judge pool` through `../setup-pstack/references/model-profile.md`. Choose one exact resolved lane whose model family differs from the parent's when possible. Its defaults match `arena runners`. Put the role, registry source, and selected lane in the judge brief and runtime receipt. Spawn one independent read-only judge through that lane. It sees the rubric and the candidates by path label, scores each criterion, and recommends a base with rationale. It runs in parallel with the parent's reading in Phase D, not with the candidates themselves. Spawning while candidates are still writing means the judge sees partial or empty outputs and falsely reports active candidates as dropouts.
 
 ## Phase D: Pick a base
 
