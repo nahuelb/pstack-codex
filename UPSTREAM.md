@@ -4,6 +4,21 @@ This repository derives from `pstack` in `https://github.com/cursor/plugins`. Th
 
 The delivered repository contains only the modified Codex version. Do not push a raw upstream branch or snapshot commit. Do not keep an upstream remote in the delivered checkout.
 
+## Local upstream copy
+
+This checkout keeps a full upstream clone at `.upstream/plugins`. Its local branch `locked-0.14.5` points at the locked commit `397c8660da6d3d873a91e18c2ca2f22cac1f0ac1`.
+
+The checkout-local `.git/info/exclude` ignores `.upstream/`. Do not add this entry to the tracked `.gitignore`. That file is hash-locked as preserved in `compatibility/pstack-map.json`, so editing it makes `compatibility:check` fail.
+
+Recreate the local copy after a fresh checkout of this repository:
+
+```bash
+printf '%s\n' '.upstream/' >> .git/info/exclude
+git clone https://github.com/cursor/plugins .upstream/plugins
+git -C .upstream/plugins switch --create locked-0.14.5 \
+  397c8660da6d3d873a91e18c2ca2f22cac1f0ac1
+```
+
 ## Provenance files
 
 - [`NOTICE`](./NOTICE) records attribution and the source commit.
@@ -13,7 +28,22 @@ The delivered repository contains only the modified Codex version. Do not push a
 
 ## Check the locked source
 
-Use a temporary local source checkout. The import helper removes its own temporary clone when you pass a repository URL, and it never writes into the derived tree.
+Prefer the persistent local copy when `.upstream/plugins` exists:
+
+```bash
+node scripts/import-upstream.mjs \
+  --source .upstream/plugins/pstack \
+  --verify-lock \
+  --dry-run
+
+node scripts/generate-compatibility-report.mjs \
+  --check \
+  --upstream-dir .upstream/plugins/pstack
+```
+
+The import command must report `Verified 157 files`.
+
+When `.upstream/plugins` is absent, use the repository URL as a fallback. The import helper removes its temporary clone, and it never writes into the derived tree.
 
 ```bash
 node scripts/import-upstream.mjs \
@@ -24,17 +54,27 @@ node scripts/import-upstream.mjs \
   --dry-run
 ```
 
-The command must report `Verified 157 files`.
+This import command must also report `Verified 157 files`.
 
 ## Review a newer source commit
 
-1. Clone the source repository into a temporary directory and check out the exact candidate commit.
+Fetch the persistent local clone and list newer commits that changed `pstack`:
+
+```bash
+git -C .upstream/plugins fetch origin
+git -C .upstream/plugins log --oneline \
+  locked-0.14.5..origin/main -- pstack
+```
+
+Then review a candidate:
+
+1. Check out the exact candidate commit in a separate local worktree or temporary clone.
 2. Point `scripts/generate-compatibility-report.mjs --upstream-dir` at the candidate `pstack` directory.
 3. Review every added, changed, deleted, or renamed path. Record a `refreshDisposition` in `compatibility/pstack-map.json` before adapting code.
 4. Port behavior into the Codex tree. Do not copy host-specific installation or runtime claims.
 5. Update the source metadata and hashes in `upstream.lock.json` only after review.
 6. Regenerate `compatibility/report.md` and run the full release checks.
-7. Delete the temporary source checkout. Confirm that the delivered repository has no upstream remote or raw source branch.
+7. Delete the candidate worktree or temporary clone. Confirm that the delivered repository has no upstream remote or raw source branch.
 
 To inspect a candidate without changing the committed report, run:
 
