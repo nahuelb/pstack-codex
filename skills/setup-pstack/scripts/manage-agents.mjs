@@ -33,25 +33,32 @@ const ROLE_SPECS = [
   },
 ];
 
+const MULTI_MODEL_DEFAULTS = [
+  { model: "anthropic/claude-fable-5", reasoning_effort: "max" },
+  { model: "gpt-5.6-sol", reasoning_effort: "max" },
+  { model: "xai/grok-4.6", reasoning_effort: "xhigh" },
+  { model: "anthropic/claude-opus-5", reasoning_effort: "xhigh" },
+];
+
 export const MODEL_ROLE_SPECS = [
-  { name: "feature, refactoring", kind: "single" },
-  { name: "bug-fix", kind: "single" },
-  { name: "perf-issue", kind: "single" },
-  { name: "hillclimb", kind: "single" },
-  { name: "judgment and prose", kind: "single" },
-  { name: "hardest tasks", kind: "single" },
-  { name: "how explorer", kind: "single" },
-  { name: "how explainer", kind: "single" },
-  { name: "how critics", kind: "panel" },
-  { name: "why investigators", kind: "single" },
-  { name: "why synthesizer", kind: "single" },
-  { name: "reflect tooling", kind: "single" },
-  { name: "reflect judgment, divergent, synthesizer", kind: "single" },
-  { name: "arena runners", kind: "panel" },
-  { name: "arena cross-judge pool", kind: "panel" },
-  { name: "swarm workers", kind: "single" },
-  { name: "architect runners", kind: "panel" },
-  { name: "interrogate reviewers", kind: "panel" },
+  { name: "feature, refactoring", kind: "single", defaults: [{ model: "xai/grok-4.6", reasoning_effort: "xhigh" }] },
+  { name: "bug-fix", kind: "single", defaults: [{ model: "gpt-5.6-sol", reasoning_effort: "max" }] },
+  { name: "perf-issue", kind: "single", defaults: [{ model: "gpt-5.6-sol", reasoning_effort: "max" }] },
+  { name: "hillclimb", kind: "single", defaults: [{ model: "gpt-5.6-sol", reasoning_effort: "max" }] },
+  { name: "judgment and prose", kind: "single", defaults: [{ model: "anthropic/claude-fable-5", reasoning_effort: "max" }] },
+  { name: "hardest tasks", kind: "single", defaults: [{ model: "anthropic/claude-fable-5", reasoning_effort: "max" }] },
+  { name: "how explorer", kind: "single", defaults: [{ model: "xai/grok-4.6", reasoning_effort: "xhigh" }] },
+  { name: "how explainer", kind: "single", defaults: [{ model: "anthropic/claude-fable-5", reasoning_effort: "max" }] },
+  { name: "how critics", kind: "panel", defaults: MULTI_MODEL_DEFAULTS },
+  { name: "why investigators", kind: "single", defaults: [{ model: "xai/grok-4.6", reasoning_effort: "xhigh" }] },
+  { name: "why synthesizer", kind: "single", defaults: [{ model: "anthropic/claude-fable-5", reasoning_effort: "max" }] },
+  { name: "reflect tooling", kind: "single", defaults: [{ model: "gpt-5.6-sol", reasoning_effort: "max" }] },
+  { name: "reflect judgment, divergent, synthesizer", kind: "single", defaults: [{ model: "anthropic/claude-fable-5", reasoning_effort: "max" }] },
+  { name: "arena runners", kind: "panel", defaults: MULTI_MODEL_DEFAULTS },
+  { name: "arena cross-judge pool", kind: "panel", defaults: MULTI_MODEL_DEFAULTS },
+  { name: "swarm workers", kind: "single", defaults: [{ model: "xai/grok-4.6", reasoning_effort: "xhigh" }] },
+  { name: "architect runners", kind: "panel", defaults: MULTI_MODEL_DEFAULTS },
+  { name: "interrogate reviewers", kind: "panel", defaults: MULTI_MODEL_DEFAULTS },
 ];
 
 const RECEIPT_OWNER = "pstack-for-codex/setup-pstack";
@@ -221,11 +228,11 @@ export function resolveRoleRegistry({
       }));
       continue;
     }
-    const rolePolicies = requestedLanes(spec, roleProfile).map((lane) =>
-      skillDefaultLane(lane)
-        ? { status: "skill-default", requested: null, resolved: null, toml: {} }
-        : resolveModelPolicy({ requested: inheritedLane(lane) ? null : lane, observableModels }),
-    );
+    const rolePolicies = requestedLanes(spec, roleProfile).map((lane, index) => {
+      if (!skillDefaultLane(lane)) return resolveModelPolicy({ requested: inheritedLane(lane) ? null : lane, observableModels });
+      if (!spec.defaults[index]) throw new Error(`pstack model role "${spec.name}" has no bundled default for lane ${index + 1}`);
+      return { status: "skill-default", requested: null, resolved: null, toml: {} };
+    });
     policies[spec.name] = rolePolicies;
     roles[spec.name] = rolePolicies.map((policy) =>
       policy.status === "verified-explicit"
@@ -257,7 +264,7 @@ function validateRoleRegistry(registry) {
     if (!Array.isArray(lanes) || !lanes.length || (spec.kind === "single" && lanes.length !== 1)) {
       throw new Error(`pstack model registry has invalid lane count for "${spec.name}"`);
     }
-    for (const lane of lanes) {
+    for (const [index, lane] of lanes.entries()) {
       const inherited = lane && lane.inherit_parent === true && Object.keys(lane).length === 1;
       const skillDefault = lane && lane.use_skill_default === true && Object.keys(lane).length === 1;
       const explicit =
@@ -270,9 +277,73 @@ function validateRoleRegistry(registry) {
       if (!inherited && !skillDefault && !explicit) {
         throw new Error(`pstack model registry has an invalid lane for "${spec.name}"`);
       }
+      if (skillDefault && !spec.defaults[index]) {
+        throw new Error(`pstack model role "${spec.name}" has no bundled default for lane ${index + 1}`);
+      }
     }
   }
   return registry;
+}
+
+async function findProjectRoot(start) {
+  const original = path.resolve(start);
+  let current = original;
+  while (true) {
+    try {
+      await fs.lstat(path.join(current, `.codex/${REGISTRY_FILENAME}`));
+      return current;
+    } catch (error) {
+      if (error.code !== "ENOENT") throw error;
+    }
+    try {
+      await fs.lstat(path.join(current, ".git"));
+      return current;
+    } catch (error) {
+      if (error.code !== "ENOENT") throw error;
+    }
+    const parent = path.dirname(current);
+    if (parent === current) return original;
+    current = parent;
+  }
+}
+
+export async function resolveRuntimeRole({ roleName, projectRoot = process.cwd(), userHome = os.homedir() } = {}) {
+  const spec = MODEL_ROLE_SPECS.find((candidate) => candidate.name === roleName);
+  if (!spec) throw new Error(`unknown pstack model role "${roleName ?? ""}"`);
+  const root = await findProjectRoot(projectRoot);
+  const candidates = [path.join(root, `.codex/${REGISTRY_FILENAME}`), path.join(userHome, `.codex/${REGISTRY_FILENAME}`)];
+  for (const registryPath of candidates) {
+    let content;
+    try {
+      content = await fs.readFile(registryPath, "utf8");
+    } catch (error) {
+      if (error.code === "ENOENT") continue;
+      throw error;
+    }
+    let registry;
+    try {
+      registry = validateRoleRegistry(JSON.parse(content));
+    } catch (error) {
+      throw new Error(`invalid pstack model registry at "${registryPath}": ${error.message}`);
+    }
+    const lanes = structuredClone(registry.roles[roleName]);
+    return {
+      status: "configured",
+      role: roleName,
+      kind: spec.kind,
+      registryPath,
+      lanes,
+      resolvedLanes: lanes.map((lane, index) => lane.use_skill_default ? structuredClone(spec.defaults[index]) : lane),
+    };
+  }
+  return {
+    status: "registry-unavailable",
+    role: roleName,
+    kind: spec.kind,
+    registryPath: null,
+    lanes: null,
+    resolvedLanes: structuredClone(spec.defaults),
+  };
 }
 
 async function readReceipt(file) {
@@ -531,7 +602,10 @@ async function main(argv) {
   if (action === "install") result = await installAgents(common);
   else if (action === "uninstall") result = await uninstallAgents(common);
   else if (action === "scan") result = await scanAgentNames(common);
-  else throw new Error("usage: manage-agents.mjs <install|uninstall|scan> [--scope project|user] [--profile file] [--roles file] [--models file]");
+  else if (action === "resolve-role") {
+    result = await resolveRuntimeRole({ roleName: options.role, projectRoot: common.projectRoot, userHome: common.userHome });
+  }
+  else throw new Error("usage: manage-agents.mjs <install|uninstall|scan|resolve-role> [--scope project|user] [--project-root path] [--user-home path] [--role name] [--profile file] [--roles file] [--models file]");
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
 }
 

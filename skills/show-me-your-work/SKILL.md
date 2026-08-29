@@ -65,7 +65,7 @@ Fix the log, not the story. If the work diverged from what a row claims, the row
 
 ## Cross-model review of the trail
 
-Before handing back, request an independent review through an installed profile with a different observable model family when available. Otherwise use a generic independent agent and label the model pair inherited or unverified. If independent agents are unavailable, fail closed on claiming cross-model review and report that limitation. The reviewer reads the audit trail and supported task history or digest, then flags what the user should inspect.
+Before handing back, resolve `arena cross-judge pool` through `../setup-pstack/references/model-profile.md`. Select one exact resolved lane from a different observable model family when available. Use a generic independent agent with that role and lane. If independent agents are unavailable, fail closed on claiming cross-model review and report that limitation. The reviewer reads the audit trail and supported task history or digest, then flags what the user should inspect.
 
 - Decisions logged with weak or absent evidence.
 - Verification steps skipped or claimed without proof in task history, receipts, or live state.

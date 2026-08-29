@@ -38,17 +38,23 @@ Custom-agent defaults never prove the served model, effort, effective sandbox, c
 
 The fast Grok role uses the available Codex model `xai/grok-4.6` with separate `xhigh` reasoning. The other defaults preserve the original model family and effort directly.
 
-Every registry value is an array. A single role has exactly one lane. A panel has one or more lanes, and its array length sets fanout. A lane is `{"model":"...","reasoning_effort":"..."}`, `{"inherit_parent":true}`, or `{"use_skill_default":true}`. Fresh setup uses the skill-default marker, so the model choice remains defined only in the owning Markdown skill.
+Every registry value is an array. A single role has exactly one lane. A panel has one or more lanes, and its array length sets fanout. A lane is `{"model":"...","reasoning_effort":"..."}`, `{"inherit_parent":true}`, or `{"use_skill_default":true}`. The executable role registry owns fallback pairs. Owning Markdown skills mirror them for workflow readers.
 
 ## Runtime resolution
 
-1. Read project `.codex/pstack-models.json` when it exists. Otherwise read user `~/.codex/pstack-models.json`.
-2. Require `schema_version: 1`, owner `pstack-for-codex/setup-pstack`, and the exact role key needed by the workflow.
-3. For an explicit lane, pass both `model` and `reasoning_effort` to the supported subagent spawn tool.
-4. For an inherited lane, omit both overrides.
-5. For a skill-default lane, use the original default stated in the owning Markdown skill only when the current spawn surface advertises that exact model and effort. Otherwise omit both overrides, inherit the parent, and report the unavailable default.
-6. Spawn one agent per panel lane. Preserve duplicate, inherited, and skill-default lanes because each entry counts toward fanout.
-7. If the registry or role is absent or invalid, use the workflow's documented fallback and report the missing configuration.
+Before a pstack dispatch selects a model or reasoning effort, choose its exact registry role. Generic and `default` agent types do not bypass this rule. A dispatch that omits both overrides may inherit the parent without a role.
+
+Run `scripts/manage-agents.mjs resolve-role --role <exact-role> --project-root <task-cwd> --user-home <home>`, relative to this skill. The helper finds the nearest project registry without crossing a Git boundary. It reads that registry before the user registry and returns raw and resolved lanes.
+
+1. Select only from `resolvedLanes`. A model and reasoning effort are one indivisible pair.
+2. For an explicit or resolved skill-default lane, pass both values only when the spawn surface advertises the exact pair. Otherwise inherit both and report the unavailable pair.
+3. For an inherited lane, omit both overrides.
+4. Spawn one agent per panel lane unless the owning workflow selects one lane from a pool.
+5. Preserve duplicate lanes because each entry counts toward fanout.
+6. A present but invalid higher-precedence registry stops the affected dispatch. Do not fall through to another registry or bundled defaults.
+7. Record the exact role, registry source or unavailable status, selected lane, and requested pair in the runtime receipt.
+
+The resolver and receipt make policy cheap to follow and easy to audit. They cannot make violations impossible because the spawn tool has no structured pstack role field.
 
 The registry proves only that setup validated the requested pair against the model list visible at that time. It does not prove which model served a later agent.
 

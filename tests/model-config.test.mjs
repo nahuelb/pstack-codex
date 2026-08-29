@@ -4,7 +4,12 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { MODEL_ROLE_SPECS, resolveModelPolicy, resolveRoleRegistry } from "../skills/setup-pstack/scripts/manage-agents.mjs";
+import {
+  MODEL_ROLE_SPECS,
+  resolveModelPolicy,
+  resolveRoleRegistry,
+  resolveRuntimeRole,
+} from "../skills/setup-pstack/scripts/manage-agents.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const expectedRoles = [
@@ -124,6 +129,79 @@ test("omitted roles use their owning Markdown skill defaults", () => {
     assert.ok(result.roles[spec.name].every((lane) => lane.use_skill_default === true));
     assert.ok(result.policies[spec.name].every((policy) => policy.status === "skill-default"));
   }
+});
+
+async function writeRegistry(rootDirectory, roles) {
+  const directory = path.join(rootDirectory, ".codex");
+  await fs.mkdir(directory, { recursive: true });
+  await fs.writeFile(
+    path.join(directory, "pstack-models.json"),
+    `${JSON.stringify({ schema_version: 1, owner: "pstack-for-codex/setup-pstack", roles }, null, 2)}\n`,
+  );
+}
+
+test("runtime role resolution uses the nearest project registry and exact configured pair", async (t) => {
+  const temporary = await fs.mkdtemp(path.join(process.env.TMPDIR ?? "/tmp", "pstack-runtime-role-"));
+  t.after(() => fs.rm(temporary, { recursive: true, force: true }));
+  const projectRoot = path.join(temporary, "project");
+  const nested = path.join(projectRoot, "packages/app/src");
+  const userHome = path.join(temporary, "user");
+  const defaults = resolveRoleRegistry().roles;
+  await fs.mkdir(path.join(projectRoot, ".git"), { recursive: true });
+  await fs.mkdir(nested, { recursive: true });
+  await writeRegistry(userHome, { ...defaults, "arena cross-judge pool": [{ model: "anthropic/claude-opus-5", reasoning_effort: "xhigh" }] });
+  await writeRegistry(projectRoot, { ...defaults, "arena cross-judge pool": [{ model: "anthropic/claude-opus-5", reasoning_effort: "high" }] });
+
+  const result = await resolveRuntimeRole({ roleName: "arena cross-judge pool", projectRoot: nested, userHome });
+
+  assert.equal(result.registryPath, path.join(projectRoot, ".codex/pstack-models.json"));
+  assert.deepEqual(result.resolvedLanes, [{ model: "anthropic/claude-opus-5", reasoning_effort: "high" }]);
+});
+
+test("runtime role resolution finds ancestor registries without Git and falls back to user scope", async (t) => {
+  const temporary = await fs.mkdtemp(path.join(process.env.TMPDIR ?? "/tmp", "pstack-runtime-role-"));
+  t.after(() => fs.rm(temporary, { recursive: true, force: true }));
+  const projectRoot = path.join(temporary, "project");
+  const nested = path.join(projectRoot, "packages/app/src");
+  const userHome = path.join(temporary, "user");
+  const roles = resolveRoleRegistry().roles;
+  roles["arena cross-judge pool"] = [{ model: "anthropic/claude-opus-5", reasoning_effort: "high" }];
+  await fs.mkdir(nested, { recursive: true });
+  await writeRegistry(projectRoot, roles);
+  assert.equal((await resolveRuntimeRole({ roleName: "arena cross-judge pool", projectRoot: nested, userHome })).registryPath, path.join(projectRoot, ".codex/pstack-models.json"));
+
+  await fs.rm(path.join(projectRoot, ".codex/pstack-models.json"));
+  await writeRegistry(userHome, roles);
+  assert.equal((await resolveRuntimeRole({ roleName: "arena cross-judge pool", projectRoot: nested, userHome })).registryPath, path.join(userHome, ".codex/pstack-models.json"));
+});
+
+test("runtime role resolution expands defaults and fails closed on invalid project configuration", async (t) => {
+  const temporary = await fs.mkdtemp(path.join(process.env.TMPDIR ?? "/tmp", "pstack-runtime-role-"));
+  t.after(() => fs.rm(temporary, { recursive: true, force: true }));
+  const projectRoot = path.join(temporary, "project");
+  const userHome = path.join(temporary, "user");
+  const unavailable = await resolveRuntimeRole({ roleName: "arena cross-judge pool", projectRoot, userHome });
+  assert.equal(unavailable.status, "registry-unavailable");
+  assert.deepEqual(unavailable.resolvedLanes, MODEL_ROLE_SPECS.find((spec) => spec.name === "arena cross-judge pool").defaults);
+
+  await writeRegistry(userHome, resolveRoleRegistry().roles);
+  await fs.mkdir(path.join(projectRoot, ".codex"), { recursive: true });
+  await fs.writeFile(path.join(projectRoot, ".codex/pstack-models.json"), "{}\n");
+  await assert.rejects(resolveRuntimeRole({ roleName: "arena cross-judge pool", projectRoot, userHome }), /invalid pstack model registry/);
+});
+
+test("runtime contracts require role resolution and state its enforcement limit", async () => {
+  const [profile, runtime, arena, trail] = await Promise.all([
+    fs.readFile(path.join(root, "skills/setup-pstack/references/model-profile.md"), "utf8"),
+    fs.readFile(path.join(root, "skills/poteto-mode/references/codex-agent-runtime.md"), "utf8"),
+    fs.readFile(path.join(root, "skills/arena/SKILL.md"), "utf8"),
+    fs.readFile(path.join(root, "skills/show-me-your-work/SKILL.md"), "utf8"),
+  ]);
+  assert.match(profile, /Select only from `resolvedLanes`/);
+  assert.match(profile, /cannot make violations impossible/);
+  assert.match(runtime, /Generic and `default` agents still use the role resolver/);
+  assert.match(arena, /Choose one exact resolved lane/);
+  assert.match(trail, /resolve `arena cross-judge pool`/);
 });
 
 test("owning Markdown skills retain the original PStack default model choices", async () => {
