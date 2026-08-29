@@ -71,7 +71,7 @@ A dependency is a context relay, not just ordering: undeclared upstream context 
 
 #### Queue and drain
 
-- On a completion notification, run `orch inbox push <agent> <unit> <status> [--report PATH]` and return to what you were doing. Never deep-review inline; a completion that needs review becomes a verifier unit. Never review a diff inside a drain.
+- Worker briefs end with the completion callback from the runtime contract. On a callback or completion notification, run `orch inbox push <agent> <unit> <status> [--report PATH]` and return to what you were doing. On large waves, have every worker push its own pointer with `orch inbox push`, and only a worker that sees the wave's full pointer count after pushing sends the callback, so completions do not consume a parent turn each and the wave cannot finish silently. The heartbeat fallback covers a wave whose last worker dies before calling back. Never deep-review inline; a completion that needs review becomes a verifier unit. Never review a diff inside a drain.
 - Drain in batches at four points: the end of a critical section, a track rollup, an authorized thread heartbeat observing the frontier watcher, and before a human report. Begin each batch with `orch inbox drain`. Arrivals during a drain wait for the next one.
 - Critical sections you finish first: authoring a brief, a stack operation, a conflict decision, writing a gate, updating ledger or frontier.
 - Each drain classifies every pointer (landed, needs-verify, failed, zombie, noise), writes the resulting rows through `orch unit add`, `orch unit set`, and `orch ledger record`, runs `orch status`, then spawns the next wave in one message.
