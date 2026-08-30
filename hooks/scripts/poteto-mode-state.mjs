@@ -13,6 +13,8 @@ export const CLEANUP_CONCURRENCY = 16;
 const LITERAL_ACTIVATION = /^\s*\$poteto-mode(?=\s|$)/u;
 const CODEX_MENTION_ACTIVATION = /^\s*\[\$pstack-for-codex:poteto-mode\]\([^()\s]+\/skills\/poteto-mode\/SKILL\.md\)(?=\s|$)/u;
 const DISABLE = /^\s*disable \$poteto-mode[.!]?\s*$/iu;
+const REFERENCED_CHATS_PREAMBLE = /^\s*## Referenced chats with Codex:\r?\n[\s\S]*?\r?\n## My request:[ \t]*\r?\n/u;
+const LEADING_SLASH_COMMAND = /^\s*\/[a-z][\w-]*\s+/iu;
 const MAX_SESSION_ID_LENGTH = 512;
 
 export function hashValue(value) {
@@ -33,10 +35,21 @@ export function projectFingerprint(cwd) {
   return hashValue(path.resolve(cwd));
 }
 
+export function extractUserRequest(prompt) {
+  if (typeof prompt !== "string") return "";
+  let request = prompt;
+  const preamble = request.match(REFERENCED_CHATS_PREAMBLE);
+  if (preamble) request = request.slice(preamble[0].length);
+  const slashCommand = request.match(LEADING_SLASH_COMMAND);
+  if (slashCommand) request = request.slice(slashCommand[0].length);
+  return request;
+}
+
 export function classifyPrompt(prompt) {
   if (typeof prompt !== "string") return "inactive";
-  if (DISABLE.test(prompt)) return "disable";
-  if (LITERAL_ACTIVATION.test(prompt) || CODEX_MENTION_ACTIVATION.test(prompt)) return "activate";
+  const request = extractUserRequest(prompt);
+  if (DISABLE.test(request)) return "disable";
+  if (LITERAL_ACTIVATION.test(request) || CODEX_MENTION_ACTIVATION.test(request)) return "activate";
   return "inactive";
 }
 
