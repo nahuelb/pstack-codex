@@ -115,11 +115,28 @@ test("internal review delegation cannot create a separate task", async () => {
   );
   const noComments = await fs.readFile(path.join(skillsRoot, "no-comments", "SKILL.md"), "utf8");
 
-  assert.match(runtime, /Call `spawn_agent` for both custom profiles and generic agents/);
-  assert.match(runtime, /Never use `create_thread` or another separate-task API for an internal worker/);
-  assert.match(runtime, /Profile names are never workflow role inputs/);
+  assert.match(runtime, /Call `spawn_agent` for both custom agents and built-in agents/);
+  assert.match(runtime, /Never use `create_thread` or another separate-task API for a subagent/);
+  assert.match(runtime, /Custom agent names are never workflow role inputs/);
   assert.match(noComments, /`agent_type: "pstack-comment-sicko"`/);
   assert.match(noComments, /`agent_type: "default"`/);
   assert.match(noComments, /Call `wait_agent` because step 2 requires the report/);
   assert.match(noComments, /If `spawn_agent` is unavailable, report the review capability as blocked/);
+});
+
+test("subagent results use fifteen-minute waits and monitored completion callbacks", async () => {
+  const runtime = await fs.readFile(
+    path.join(skillsRoot, "poteto-mode", "references", "codex-agent-runtime.md"),
+    "utf8",
+  );
+
+  assert.match(runtime, /call `wait_agent` once on all active subagents with a 15-minute timeout/);
+  assert.match(runtime, /never a subagent deadline/);
+  assert.match(runtime, /Continue until all requested results are available, then consolidate them in the main thread/);
+  assert.match(runtime, /Never stop an active subagent, close its agent thread, or replace it because one or more waits timed out/);
+  assert.match(runtime, /one-line pstack completion callback to the main thread/);
+  assert.match(runtime, /schedule one follow-up turn in the main thread for 15 minutes after spawning the subagent/);
+  assert.match(runtime, /callbacks have not arrived/);
+  assert.match(runtime, /call `wait_agent` on the active subagents for 15 minutes at the next drain point instead/);
+  assert.match(runtime, /After verifying a final result, close the completed agent thread/);
 });
