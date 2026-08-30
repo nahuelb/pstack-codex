@@ -142,6 +142,7 @@ test("a fast custom-agent profile renders the validated priority tier", async (t
     observableModels: [
       { slug: "gpt-5.6-luna", reasoning_efforts: ["max"], service_tiers: ["priority"] },
     ],
+    runtimeCapabilities: { profile_service_tier_override: true },
   });
   const content = await fs.readFile(
     path.join(projectRoot, ".codex/agents/pstack-comment-sicko.toml"),
@@ -152,6 +153,30 @@ test("a fast custom-agent profile renders the validated priority tier", async (t
   assert.match(content, /^service_tier = "priority"$/m);
   const policy = result.files.find((file) => file.path.endsWith("pstack-comment-sicko.toml")).model_policy;
   assert.deepEqual(policy.resolved, requested);
+});
+
+test("a fast custom-agent profile inherits when role-level tier support is unverified", async (t) => {
+  const { projectRoot, userHome } = await fixture(t);
+  const requested = { model: "gpt-5.6-luna", reasoning_effort: "max", service_tier: "priority" };
+  const result = await installAgents({
+    pluginRoot: root,
+    projectRoot,
+    userHome,
+    scope: "project",
+    profile: { "pstack-comment-sicko": requested },
+    observableModels: [
+      { slug: "gpt-5.6-luna", reasoning_efforts: ["max"], service_tiers: ["priority"] },
+    ],
+  });
+  const content = await fs.readFile(
+    path.join(projectRoot, ".codex/agents/pstack-comment-sicko.toml"),
+    "utf8",
+  );
+  assert.doesNotMatch(content, /^model\s*=/m);
+  assert.doesNotMatch(content, /^service_tier\s*=/m);
+  const policy = result.files.find((file) => file.path.endsWith("pstack-comment-sicko.toml")).model_policy;
+  assert.equal(policy.status, "unverified-inheritance");
+  assert.equal(policy.unverified_reason, "service-tier-override-unverified");
 });
 
 test("the full upstream role matrix renders validated single and panel lanes", async (t) => {
@@ -171,6 +196,7 @@ test("the full upstream role matrix renders validated single and panel lanes", a
       { slug: "gpt-5.6-sol", reasoning_efforts: ["high"] },
       { slug: "gpt-5.6-luna", reasoning_efforts: ["max"], service_tiers: ["priority"] },
     ],
+    runtimeCapabilities: { spawn_service_tier_override: true },
   });
 
   const registry = JSON.parse(await fs.readFile(path.join(projectRoot, result.registryPath), "utf8"));

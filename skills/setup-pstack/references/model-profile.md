@@ -65,12 +65,12 @@ Run `scripts/manage-agents.mjs resolve-role --role <exact-role> --project-root <
 
 The resolver and receipt make policy cheap to follow and easy to audit. They cannot make violations impossible because the spawn tool has no structured pstack role field.
 
-The registry proves only that setup validated the requested spawn configuration against the model list visible at that time. It does not prove which model served a later agent.
+The registry proves only that setup validated the requested spawn configuration against the model list and override surface visible at that time. It does not prove which model or tier served a later agent.
 
 ## Model resolution
 
 - No requested configuration: omit `model`, `model_reasoning_effort`, and `service_tier`.
-- Requested configuration plus an observable model list: require an exact model and effort match. If `service_tier` is present, require it in the model's advertised `service_tiers` set.
+- Requested configuration plus an observable model list: require an exact model and effort match. If `service_tier` is present, require it in the model's advertised `service_tiers` set and require the matching live spawn override capability.
 - Requested configuration without an observable model list: record `unverified-inheritance`, omit the TOML fields, and show the complete request only as unverified intent.
 - Missing entitlement or an unsupported value: stop without changing profiles. Do not silently select a substitute.
 

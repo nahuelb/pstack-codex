@@ -16,7 +16,7 @@ Use a named custom agent profile as the `spawn_agent` `agent_type` when it is in
 
 Before a pstack workflow selects a model, reasoning effort, or service tier, resolve its exact role through `../../setup-pstack/references/model-profile.md`. Generic and `default` agents still use the role resolver. Use one exact returned spawn configuration. Direct overrides and configurations assembled from different sources violate policy. A dispatch that omits all overrides may inherit the parent.
 
-An installed profile may supply its own validated configuration. Every other selected-model dispatch uses its resolved workflow role. Pass its `model`, `reasoning_effort`, and `service_tier` when present together. Standard lanes omit `service_tier`. If the served model is not observable, label model identity unverified without weakening the role receipt.
+An installed profile may supply its own validated configuration. Every other selected-model dispatch uses its resolved workflow role. Pass its `model`, `reasoning_effort`, and `service_tier` when present together. Standard lanes omit `service_tier`. If the served model or tier is not observable, label it unverified without weakening the role receipt.
 
 Before dispatch, choose one fallback:
 

@@ -180,6 +180,7 @@ test("a partial role update preserves every omitted lane", async (t) => {
     { slug: "gpt-5.6-sol", reasoning_efforts: ["high"] },
     { slug: "gpt-5.6-luna", reasoning_efforts: ["max"], service_tiers: ["priority"] },
   ];
+  const runtimeCapabilities = { spawn_service_tier_override: true };
   const first = await installAgents({
     pluginRoot: root,
     projectRoot,
@@ -187,6 +188,7 @@ test("a partial role update preserves every omitted lane", async (t) => {
     scope: "project",
     roleProfile: { "bug-fix": sol, "perf-issue": luna },
     observableModels,
+    runtimeCapabilities,
   });
   const updated = await installAgents({
     pluginRoot: root,
@@ -195,6 +197,7 @@ test("a partial role update preserves every omitted lane", async (t) => {
     scope: "project",
     roleProfile: { "bug-fix": luna },
     observableModels,
+    runtimeCapabilities,
   });
 
   assert.deepEqual(first.roles["perf-issue"], [luna]);
@@ -218,6 +221,7 @@ test("an update without model discovery preserves validated explicit lanes", asy
     observableModels: [
       { slug: "gpt-5.6-luna", reasoning_efforts: ["max"], service_tiers: ["priority"] },
     ],
+    runtimeCapabilities: { spawn_service_tier_override: true },
   });
   const updated = await installAgents({ pluginRoot: root, projectRoot, userHome, scope: "project" });
 
@@ -226,6 +230,33 @@ test("an update without model discovery preserves validated explicit lanes", asy
   assert.deepEqual(updated.roles["perf-issue"], [{ use_skill_default: true }]);
   const receipt = JSON.parse(await fs.readFile(path.join(projectRoot, updated.receiptPath), "utf8"));
   assert.equal(receipt.role_policies["bug-fix"][0].status, "verified-explicit");
+});
+
+test("a known unavailable spawn override downgrades an existing fast lane", async (t) => {
+  const { projectRoot, userHome } = await fixture(t);
+  const requested = { model: "gpt-5.6-luna", reasoning_effort: "max", service_tier: "priority" };
+  await installAgents({
+    pluginRoot: root,
+    projectRoot,
+    userHome,
+    scope: "project",
+    roleProfile: { "bug-fix": requested },
+    observableModels: [
+      { slug: "gpt-5.6-luna", reasoning_efforts: ["max"], service_tiers: ["priority"] },
+    ],
+    runtimeCapabilities: { spawn_service_tier_override: true },
+  });
+
+  const updated = await installAgents({
+    pluginRoot: root,
+    projectRoot,
+    userHome,
+    scope: "project",
+    runtimeCapabilities: { spawn_service_tier_override: false },
+  });
+  assert.deepEqual(updated.roles["bug-fix"], [{ inherit_parent: true }]);
+  const receipt = JSON.parse(await fs.readFile(path.join(projectRoot, updated.receiptPath), "utf8"));
+  assert.equal(receipt.role_policies["bug-fix"][0].unverified_reason, "service-tier-override-unavailable");
 });
 
 test("an unobservable fast role records intent and writes an inherited lane", async (t) => {

@@ -130,7 +130,11 @@ export async function scanAgentNames({ projectRoot = process.cwd(), userHome = o
   };
 }
 
-export function resolveModelPolicy({ requested = null, observableModels = null } = {}) {
+export function resolveModelPolicy({
+  requested = null,
+  observableModels = null,
+  serviceTierOverrideSupported = null,
+} = {}) {
   if (!requested) return { status: "inherited", requested: null, resolved: null, toml: {} };
   if (!requested.model || !requested.reasoning_effort) {
     throw new Error("a model request must include both model and reasoning_effort");
@@ -156,6 +160,18 @@ export function resolveModelPolicy({ requested = null, observableModels = null }
   const serviceTiers = model.service_tiers ?? [];
   if (requested.service_tier !== undefined && !serviceTiers.includes(requested.service_tier)) {
     throw new Error(`model "${requested.model}" does not support service tier "${requested.service_tier}"`);
+  }
+  if (requested.service_tier !== undefined && serviceTierOverrideSupported !== true) {
+    return {
+      status: "unverified-inheritance",
+      requested,
+      resolved: null,
+      toml: {},
+      unverified_reason:
+        serviceTierOverrideSupported === false
+          ? "service-tier-override-unavailable"
+          : "service-tier-override-unverified",
+    };
   }
   const toml = { model: requested.model, model_reasoning_effort: requested.reasoning_effort };
   if (requested.service_tier !== undefined) toml.service_tier = requested.service_tier;
@@ -201,6 +217,7 @@ export function resolveRoleRegistry({
   existingRoles = {},
   existingPolicies = {},
   observableModels = null,
+  serviceTierOverrideSupported = null,
 } = {}) {
   const allowed = new Set(MODEL_ROLE_SPECS.map((spec) => spec.name));
   for (const roleName of Object.keys(roleProfile ?? {})) {
@@ -216,7 +233,11 @@ export function resolveRoleRegistry({
           if (lane.use_skill_default === true) {
             return { status: "skill-default", requested: null, resolved: null, toml: {} };
           }
-          return resolveModelPolicy({ requested: lane.inherit_parent === true ? null : lane, observableModels });
+          return resolveModelPolicy({
+            requested: lane.inherit_parent === true ? null : lane,
+            observableModels,
+            serviceTierOverrideSupported,
+          });
         });
         roles[spec.name] = preservedPolicies.map((policy) =>
           policy.status === "verified-explicit"
@@ -228,8 +249,24 @@ export function resolveRoleRegistry({
         policies[spec.name] = preservedPolicies;
         continue;
       }
-      roles[spec.name] = structuredClone(existingRoles[spec.name]);
-      policies[spec.name] = structuredClone(existingPolicies[spec.name] ?? []);
+      const existingLanes = structuredClone(existingRoles[spec.name]);
+      const existingRolePolicies = structuredClone(existingPolicies[spec.name] ?? []);
+      roles[spec.name] = existingLanes.map((lane) =>
+        serviceTierOverrideSupported === false && lane.service_tier !== undefined
+          ? { inherit_parent: true }
+          : lane,
+      );
+      policies[spec.name] = existingLanes.map((lane, index) =>
+        serviceTierOverrideSupported === false && lane.service_tier !== undefined
+          ? {
+              status: "unverified-inheritance",
+              requested: lane,
+              resolved: null,
+              toml: {},
+              unverified_reason: "service-tier-override-unavailable",
+            }
+          : existingRolePolicies[index],
+      );
       continue;
     }
     if (!Object.hasOwn(roleProfile, spec.name)) {
@@ -244,7 +281,13 @@ export function resolveRoleRegistry({
       continue;
     }
     const rolePolicies = requestedLanes(spec, roleProfile).map((lane, index) => {
-      if (!skillDefaultLane(lane)) return resolveModelPolicy({ requested: inheritedLane(lane) ? null : lane, observableModels });
+      if (!skillDefaultLane(lane)) {
+        return resolveModelPolicy({
+          requested: inheritedLane(lane) ? null : lane,
+          observableModels,
+          serviceTierOverrideSupported,
+        });
+      }
       if (!spec.defaults[index]) throw new Error(`pstack model role "${spec.name}" has no bundled default for lane ${index + 1}`);
       return { status: "skill-default", requested: null, resolved: null, toml: {} };
     });
@@ -363,6 +406,18 @@ export async function resolveRuntimeRole({ roleName, projectRoot = process.cwd()
   };
 }
 
+function validateRuntimeCapabilities(runtimeCapabilities) {
+  if (!runtimeCapabilities || typeof runtimeCapabilities !== "object" || Array.isArray(runtimeCapabilities)) {
+    throw new Error("runtime capabilities must be an object");
+  }
+  const allowed = new Set(["spawn_service_tier_override", "profile_service_tier_override"]);
+  for (const [name, value] of Object.entries(runtimeCapabilities)) {
+    if (!allowed.has(name)) throw new Error(`unknown runtime capability "${name}"`);
+    if (typeof value !== "boolean") throw new Error(`runtime capability "${name}" must be boolean`);
+  }
+  return structuredClone(runtimeCapabilities);
+}
+
 async function readReceipt(file) {
   try {
     return JSON.parse(await fs.readFile(file, "utf8"));
@@ -436,8 +491,10 @@ export async function installAgents({
   profile = {},
   roleProfile = null,
   observableModels = null,
+  runtimeCapabilities = {},
 } = {}) {
   if (!pluginRoot) throw new Error("pluginRoot is required");
+  runtimeCapabilities = validateRuntimeCapabilities(runtimeCapabilities);
   const target = layer(scope, projectRoot, userHome);
   const currentReceipt = await readReceipt(target.receipt);
   validateReceipt(currentReceipt, scope, target);
@@ -475,7 +532,11 @@ export async function installAgents({
   const rendered = [];
   for (const role of ROLE_SPECS) {
     const requested = Object.hasOwn(profile, role.name) ? profile[role.name] : currentPolicies.get(role.name) ?? null;
-    const modelPolicy = resolveModelPolicy({ requested, observableModels });
+    const modelPolicy = resolveModelPolicy({
+      requested,
+      observableModels,
+      serviceTierOverrideSupported: runtimeCapabilities.profile_service_tier_override ?? null,
+    });
     const [template, prompt] = await Promise.all([
       fs.readFile(path.join(pluginRoot, role.template), "utf8"),
       fs.readFile(path.join(pluginRoot, role.prompt), "utf8"),
@@ -491,6 +552,7 @@ export async function installAgents({
     existingRoles: currentRegistry?.roles ?? {},
     existingPolicies: currentReceipt?.role_policies ?? {},
     observableModels,
+    serviceTierOverrideSupported: runtimeCapabilities.spawn_service_tier_override ?? null,
   });
   const registry = {
     schema_version: 1,
@@ -542,6 +604,7 @@ export async function installAgents({
     owner: RECEIPT_OWNER,
     scope,
     created_at: new Date().toISOString(),
+    runtime_capabilities: structuredClone(runtimeCapabilities),
     role_policies: registryResolution.policies,
     files: rendered.map(({ role, modelPolicy, path: relativePath, sha256: hash }) =>
       role
@@ -564,6 +627,7 @@ export async function installAgents({
     receiptPath: target.relative(target.receipt),
     registryPath: target.relative(target.registry),
     roles: registry.roles,
+    runtimeCapabilities: structuredClone(runtimeCapabilities),
     files: receipt.files,
   };
 }
@@ -615,6 +679,7 @@ async function main(argv) {
   if (options.profile) common.profile = JSON.parse(await fs.readFile(options.profile, "utf8"));
   if (options.roles) common.roleProfile = JSON.parse(await fs.readFile(options.roles, "utf8"));
   if (options.models) common.observableModels = JSON.parse(await fs.readFile(options.models, "utf8"));
+  if (options.capabilities) common.runtimeCapabilities = JSON.parse(await fs.readFile(options.capabilities, "utf8"));
   let result;
   if (action === "install") result = await installAgents(common);
   else if (action === "uninstall") result = await uninstallAgents(common);
@@ -622,7 +687,7 @@ async function main(argv) {
   else if (action === "resolve-role") {
     result = await resolveRuntimeRole({ roleName: options.role, projectRoot: common.projectRoot, userHome: common.userHome });
   }
-  else throw new Error("usage: manage-agents.mjs <install|uninstall|scan|resolve-role> [--scope project|user] [--project-root path] [--user-home path] [--role name] [--profile file] [--roles file] [--models file]");
+  else throw new Error("usage: manage-agents.mjs <install|uninstall|scan|resolve-role> [--scope project|user] [--project-root path] [--user-home path] [--role name] [--profile file] [--roles file] [--models file] [--capabilities file]");
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
 }
 

@@ -75,15 +75,34 @@ test("observable model inventory validates and preserves a requested service tie
   const observableModels = [
     { slug: "gpt-5.6-luna", reasoning_efforts: ["max"], service_tiers: ["priority"] },
   ];
-  assert.deepEqual(resolveModelPolicy({ requested, observableModels }), {
+  assert.deepEqual(resolveModelPolicy({ requested, observableModels, serviceTierOverrideSupported: true }), {
     status: "verified-explicit",
     requested,
     resolved: requested,
     toml: { model: "gpt-5.6-luna", model_reasoning_effort: "max", service_tier: "priority" },
   });
   assert.throws(
-    () => resolveModelPolicy({ requested, observableModels: [{ ...observableModels[0], service_tiers: [] }] }),
+    () => resolveModelPolicy({
+      requested,
+      observableModels: [{ ...observableModels[0], service_tiers: [] }],
+      serviceTierOverrideSupported: true,
+    }),
     /does not support service tier "priority"/,
+  );
+});
+
+test("a fast request inherits when the per-agent tier override is absent or unverified", () => {
+  const requested = { model: "gpt-5.6-luna", reasoning_effort: "max", service_tier: "priority" };
+  const observableModels = [
+    { slug: "gpt-5.6-luna", reasoning_efforts: ["max"], service_tiers: ["priority"] },
+  ];
+  assert.equal(
+    resolveModelPolicy({ requested, observableModels }).unverified_reason,
+    "service-tier-override-unverified",
+  );
+  assert.equal(
+    resolveModelPolicy({ requested, observableModels, serviceTierOverrideSupported: false }).unverified_reason,
+    "service-tier-override-unavailable",
   );
 });
 
@@ -105,6 +124,7 @@ test("role configuration preserves every upstream role and panel cardinality", (
   );
   const result = resolveRoleRegistry({
     roleProfile,
+    serviceTierOverrideSupported: true,
     observableModels: [
       { slug: "gpt-5.6-sol", reasoning_efforts: ["high"] },
       { slug: "gpt-5.6-luna", reasoning_efforts: ["max"], service_tiers: ["priority"] },

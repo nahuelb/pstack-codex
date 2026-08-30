@@ -30,7 +30,7 @@ If a supported Codex model-list surface is observable, convert it to JSON record
 [{"slug":"gpt-5.6-luna","reasoning_efforts":["low","medium","high","xhigh","max"],"service_tiers":["priority"]}]
 ```
 
-Validate the model and effort before writing them. Validate `service_tier` when the lane requests it. If no supported model list is observable, do not guess or accept pasted entitlement claims as proof. Omit the TOML fields, write an inherited role lane, and record `unverified-inheritance` with the complete request. A missing model or unsupported value is a hard stop. Let the user choose another configuration or inheritance.
+Validate the model and effort before writing them. Validate `service_tier` when the lane requests it. A fast workflow lane also requires a live `spawn_agent` schema with a `service_tier` override. A fast custom profile requires the named role description to report its locked service tier. Record these checks in a capabilities JSON file with `spawn_service_tier_override` and `profile_service_tier_override` booleans. If the model list or required override surface is unavailable, omit the TOML fields, write an inherited role lane, and record `unverified-inheritance` with the complete request. Do not accept pasted entitlement claims as proof. A missing model or unsupported value is a hard stop. Let the user choose another configuration or inheritance.
 
 Persona profiles are a JSON object keyed by namespaced agent name:
 
@@ -65,7 +65,7 @@ node scripts/manage-agents.mjs install --scope user --project-root <repo> --user
 node scripts/manage-agents.mjs uninstall --scope project --project-root <repo> --user-home <home>
 ```
 
-Add `--profile <json-file>` for persona pairs, `--roles <json-file>` for role changes, and `--models <json-file>` only when the list came from an observable supported surface. Omitted roles keep their current mapping. On a fresh setup, omitted roles use the defaults in their owning Markdown skills. Do not create temporary files containing secrets; these files contain model identifiers only.
+Add `--profile <json-file>` for persona pairs, `--roles <json-file>` for role changes, and `--models <json-file>` only when the list came from an observable supported surface. Add `--capabilities <json-file>` when a fast request is present. Omitted roles keep their current mapping. On a fresh setup, omitted roles use the defaults in their owning Markdown skills. Do not create temporary files containing secrets; these files contain model identifiers only.
 
 Setup writes `.codex/pstack-models.json` at project scope or `~/.codex/pstack-models.json` at user scope. The project registry overrides the user registry. On success, report the scope, profile paths, registry path, receipt path, and each role's setup status. Say that the new mapping applies to newly spawned agents. When a panel inherits or repeats one model, report reduced diversity instead of claiming which model served it.
 

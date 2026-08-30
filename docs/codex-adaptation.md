@@ -31,7 +31,9 @@ The upstream personas became portable prompts plus optional Codex TOML profiles:
 
 The upstream `pstack-models.mdc` becomes `.codex/pstack-models.json` at project scope or `~/.codex/pstack-models.json` at user scope. It preserves all eighteen upstream role labels, panel fanout, and parent inheritance. Each explicit lane keeps its model, reasoning effort, and optional service tier in one record. Project configuration overrides user configuration. Each owning skill retains the original PStack defaults in Codex model syntax.
 
-A configured model is a request, not runtime evidence. Setup validates `model` and `reasoning_effort` against a supported live model list. Standard mode omits `service_tier`. Fast mode requests `"priority"`, which the observable model must support. When the model list is unavailable, the lane inherits the parent and the receipt records `unverified-inheritance` with the complete request. Runtime reports identify the served model only when a supported surface exposes it.
+A configured model is a request, not runtime evidence. Setup validates `model` and `reasoning_effort` against a supported live model list. Standard mode omits `service_tier`. Fast mode requests `"priority"`, which the model and live spawn surface must support. When either capability is unavailable, the lane inherits the parent and the receipt records `unverified-inheritance` with the complete request.
+
+Codex service-tier support varies by runtime. Codex `0.151.0-alpha.7.1` accepts per-spawn and custom-role tier overrides and forwards the selected tier into request construction. Its persisted subagent history omits that tier. Its response parser also omits the served `service_tier`. The desktop usage panel gets `Fast` or `Standard` from a separate server usage record. Later Codex source removed per-spawn and role-level tier overrides so every subagent follows the root task tier. Pstack therefore checks the live override surface and never treats a configured or requested tier as served proof. A `Standard` usage record after a `priority` request is a mismatch.
 
 ## Delegation and shared filesystems
 
@@ -75,6 +77,7 @@ Setup can reconcile `pstack-benny-triage` and `pstack-benny-reproduce` only afte
 |---|---|---|
 | Hook trust | The user or trusted runtime must approve the plugin hook source. | Poteto Mode remains current-turn-only without proof. |
 | Model identity | A requested profile may not expose the served model. | Reports label the model pair unverified. |
+| Service tier | Spawn support varies, and task history omits served tier. | Fast lanes require live override support. Reports separate configured, requested, and served tiers. |
 | Agent capacity | Parallel or nested agents may be unavailable. | The workflow uses its declared fallback and names missing lanes. |
 | Shared checkout | Parallel writers can collide. | Work is isolated or serialized. |
 | Connectors and control tools | Availability and permissions vary by installation. | Optional lanes degrade. Correctness-critical lanes stop. |
