@@ -257,7 +257,7 @@ test("runtime contracts require role resolution and state its enforcement limit"
   ]);
   assert.match(profile, /Select only from `resolvedLanes`/);
   assert.match(profile, /cannot make violations impossible/);
-  assert.match(runtime, /Generic and `default` agents still use the role resolver/);
+  assert.match(runtime, /Built-in and `default` agents still use the role resolver/);
   assert.match(runtime, /`service_tier` when present together/);
   assert.match(arena, /Choose one exact resolved lane/);
   assert.match(trail, /resolve `arena cross-judge pool`/);
