@@ -107,3 +107,19 @@ test("model-role guidance passes the complete spawn configuration", async () => 
     assert.match(content, /standard (?:lane|lanes|mode).*omit(?:s)? `service_tier`/i, relativePath);
   }
 });
+
+test("internal review delegation cannot create a separate task", async () => {
+  const runtime = await fs.readFile(
+    path.join(skillsRoot, "poteto-mode", "references", "codex-agent-runtime.md"),
+    "utf8",
+  );
+  const noComments = await fs.readFile(path.join(skillsRoot, "no-comments", "SKILL.md"), "utf8");
+
+  assert.match(runtime, /Call `spawn_agent` for both custom profiles and generic agents/);
+  assert.match(runtime, /Never use `create_thread` or another separate-task API for an internal worker/);
+  assert.match(runtime, /Profile names are never workflow role inputs/);
+  assert.match(noComments, /`agent_type: "pstack-comment-sicko"`/);
+  assert.match(noComments, /`agent_type: "default"`/);
+  assert.match(noComments, /Call `wait_agent` because step 2 requires the report/);
+  assert.match(noComments, /If `spawn_agent` is unavailable, report the review capability as blocked/);
+});

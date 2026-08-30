@@ -11,8 +11,11 @@ cases:
     expected: run sequentially in the parent when independence is not required
     proof: no promised parallelism appears in the result
   - id: no-custom-profile
-    expected: use a generic agent with the portable persona prompt
-    proof: model identity is inherited or labeled unverified
+    expected: call spawn_agent with agent_type default and the portable persona prompt
+    proof: model identity is inherited or labeled unverified; no separate user-owned task is created
+  - id: internal-review-delegation
+    expected: call spawn_agent and wait_agent for required independent review
+    proof: create_thread and other separate-task APIs are never used as delegation fallbacks
   - id: no-capacity
     expected: queue bounded work or continue sequentially
     proof: no work item is silently dropped
