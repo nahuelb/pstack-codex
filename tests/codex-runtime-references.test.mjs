@@ -124,19 +124,14 @@ test("internal review delegation cannot create a separate task", async () => {
   assert.match(noComments, /If `spawn_agent` is unavailable, report the review capability as blocked/);
 });
 
-test("subagent results use fifteen-minute waits and monitored completion callbacks", async () => {
+test("Poteto composes the shared subagent lifecycle skill", async () => {
   const runtime = await fs.readFile(
     path.join(skillsRoot, "poteto-mode", "references", "codex-agent-runtime.md"),
     "utf8",
   );
 
-  assert.match(runtime, /call `wait_agent` once on all active subagents with a 15-minute timeout/);
-  assert.match(runtime, /never a subagent deadline/);
-  assert.match(runtime, /Continue until all requested results are available, then consolidate them in the main thread/);
-  assert.match(runtime, /Never stop an active subagent, close its agent thread, or replace it because one or more waits timed out/);
-  assert.match(runtime, /one-line pstack completion callback to the main thread/);
-  assert.match(runtime, /schedule one follow-up turn in the main thread for 15 minutes after spawning the subagent/);
-  assert.match(runtime, /callbacks have not arrived/);
-  assert.match(runtime, /call `wait_agent` on the active subagents for 15 minutes at the next drain point instead/);
-  assert.match(runtime, /After verifying a final result, close the completed agent thread/);
+  assert.match(runtime, /follow the installed `subagent-lifecycle` skill/);
+  assert.match(runtime, /It owns result delivery, waiting, stop and interruption-recovery rules/);
+  assert.doesNotMatch(runtime, /pstack completion callback/);
+  assert.doesNotMatch(runtime, /15-minute timeout/);
 });
