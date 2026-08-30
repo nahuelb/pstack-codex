@@ -11,6 +11,7 @@ import {
   STATE_SCHEMA,
   classifyPrompt,
   collectExpired,
+  extractUserRequest,
   handleHook,
   projectFingerprint,
   readActiveState,
@@ -41,19 +42,35 @@ test("hook manifest uses current Codex events and exact Poteto matcher", async (
 
 test("only a leading explicit invocation activates and the disable phrase is exact", () => {
   const codexMention = "[$pstack-for-codex:poteto-mode](/Users/nahue/.codex/plugins/cache/pstack-for-codex-local/pstack-for-codex/0.2.0+codex.test/skills/poteto-mode/SKILL.md)";
+  const referencedChats = '\n## Referenced chats with Codex:\nThese are live references to Codex tasks, not task contents.\n[{"hostId":"local","threadId":"thr_x"}]\n## My request:\n';
   assert.equal(classifyPrompt("$poteto-mode build it"), "activate");
   assert.equal(classifyPrompt("  $poteto-mode\ncontinue"), "activate");
   assert.equal(classifyPrompt(`${codexMention} build it`), "activate");
   assert.equal(classifyPrompt(`  ${codexMention}\ncontinue`), "activate");
+  assert.equal(classifyPrompt(`/goal ${codexMention} continue`), "activate");
+  assert.equal(classifyPrompt("/goal $poteto-mode continue"), "activate");
+  assert.equal(classifyPrompt(`${referencedChats}${codexMention} continue`), "activate");
+  assert.equal(classifyPrompt(`${referencedChats}/goal ${codexMention} continue`), "activate");
   assert.equal(classifyPrompt("disable $poteto-mode"), "disable");
   assert.equal(classifyPrompt("Disable $poteto-mode."), "disable");
+  assert.equal(classifyPrompt("/goal disable $poteto-mode"), "disable");
   assert.equal(classifyPrompt("disable $poteto-mode now"), "inactive");
   assert.equal(classifyPrompt("please disable $poteto-mode"), "inactive");
   assert.equal(classifyPrompt("I mentioned $poteto-mode casually"), "inactive");
   assert.equal(classifyPrompt("`$poteto-mode` is the invocation"), "inactive");
   assert.equal(classifyPrompt(`before ${codexMention}`), "inactive");
+  assert.equal(classifyPrompt("/Users/nahue/tool $poteto-mode"), "inactive");
+  assert.equal(classifyPrompt("intro\n## My request:\n$poteto-mode evil"), "inactive");
   assert.equal(classifyPrompt("[$pstack-for-codex:why](/skills/why/SKILL.md) explain it"), "inactive");
   assert.equal(classifyPrompt("poteto mode please"), "inactive");
+});
+
+test("extractUserRequest strips only the app preamble and one slash command", () => {
+  const referencedChats = '\n## Referenced chats with Codex:\nlive references\n[{}]\n## My request:\n';
+  assert.equal(extractUserRequest(`${referencedChats}/goal $poteto-mode go`), "$poteto-mode go");
+  assert.equal(extractUserRequest("/goal /plan $poteto-mode go"), "/plan $poteto-mode go");
+  assert.equal(extractUserRequest("plain request"), "plain request");
+  assert.equal(extractUserRequest(undefined), "");
 });
 
 test("Codex Poteto skill mentions persist session state and a receipt", async (t) => {
