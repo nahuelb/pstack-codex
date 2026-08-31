@@ -19,7 +19,7 @@ test("fork and upstream identities remain separate", async () => {
   assert.match(manifest.version, /^0\.2\.0(?:\+codex\.[0-9A-Za-z.-]+)?$/);
   assert.equal(packageJson.version, "0.2.0");
   assert.equal(lock.source.version, "0.14.5");
-  assert.equal(lock.source.commit, "397c8660da6d3d873a91e18c2ca2f22cac1f0ac1");
+  assert.equal(lock.source.commit, "fd878692de15a3069c21c8f429eb0b9f2fe178fa");
   assert.equal(lock.inventory.fileCount, 157);
 });
 
