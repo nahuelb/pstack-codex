@@ -14,7 +14,7 @@ test("lock records the pinned source and exactly 157 unique SHA-256 entries", as
   const lock = JSON.parse(await fs.readFile(path.join(root, "upstream.lock.json"), "utf8"));
   assert.equal(lock.source.repository, "https://github.com/cursor/plugins");
   assert.equal(lock.source.subdirectory, "pstack");
-  assert.equal(lock.source.commit, "397c8660da6d3d873a91e18c2ca2f22cac1f0ac1");
+  assert.equal(lock.source.commit, "fd878692de15a3069c21c8f429eb0b9f2fe178fa");
   assert.equal(lock.source.version, "0.14.5");
   assert.equal(lock.source.license, "MIT");
   assert.equal(lock.inventory.fileCount, 157);

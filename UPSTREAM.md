@@ -1,12 +1,12 @@
 # Upstream maintenance
 
-This repository derives from `pstack` in `https://github.com/cursor/plugins`. The locked source is version `0.14.5` at commit `397c8660da6d3d873a91e18c2ca2f22cac1f0ac1`.
+This repository derives from `pstack` in `https://github.com/cursor/plugins`. The locked source is version `0.14.5` at commit `fd878692de15a3069c21c8f429eb0b9f2fe178fa`.
 
 The delivered repository contains only the modified Codex version. Do not push a raw upstream branch or snapshot commit. Do not keep an upstream remote in the delivered checkout.
 
 ## Local upstream copy
 
-This checkout keeps a full upstream clone at `.upstream/plugins`. Its local branch `locked-0.14.5` points at the locked commit `397c8660da6d3d873a91e18c2ca2f22cac1f0ac1`.
+This checkout keeps a full upstream clone at `.upstream/plugins`. Its local branch `locked-0.14.5` points at the locked commit `fd878692de15a3069c21c8f429eb0b9f2fe178fa`.
 
 The checkout-local `.git/info/exclude` ignores `.upstream/`. Do not add this entry to the tracked `.gitignore`. That file is hash-locked as preserved in `compatibility/pstack-map.json`, so editing it makes `compatibility:check` fail.
 
@@ -16,7 +16,7 @@ Recreate the local copy after a fresh checkout of this repository:
 printf '%s\n' '.upstream/' >> .git/info/exclude
 git clone https://github.com/cursor/plugins .upstream/plugins
 git -C .upstream/plugins switch --create locked-0.14.5 \
-  397c8660da6d3d873a91e18c2ca2f22cac1f0ac1
+  fd878692de15a3069c21c8f429eb0b9f2fe178fa
 ```
 
 ## Provenance files
@@ -49,7 +49,7 @@ When `.upstream/plugins` is absent, use the repository URL as a fallback. The im
 node scripts/import-upstream.mjs \
   --source https://github.com/cursor/plugins \
   --subdirectory pstack \
-  --commit 397c8660da6d3d873a91e18c2ca2f22cac1f0ac1 \
+  --commit fd878692de15a3069c21c8f429eb0b9f2fe178fa \
   --verify-lock \
   --dry-run
 ```
