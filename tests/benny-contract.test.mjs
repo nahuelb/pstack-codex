@@ -25,11 +25,12 @@ function qualifiedConfig() {
   return { stateRoot: "/Users/operator/.codex/benny/state/repo", approvedConfigHash: "a".repeat(64), trustedTriageIdentity: "U1", adapters, capabilities, canaries };
 }
 
-test("only setup-benny is registered and the inventory includes it", async () => {
+test("Codex-only support skills are registered and the Benny pack stays dormant", async () => {
   const records = await listSkillRecords(root);
-  assert.equal(EXPECTED_SKILL_COUNT, 46);
-  assert.equal(records.length, 46);
+  assert.equal(EXPECTED_SKILL_COUNT, 47);
+  assert.equal(records.length, 47);
   assert.equal(records.filter((record) => record.name === "setup-benny").length, 1);
+  assert.equal(records.filter((record) => record.name === "subagent-lifecycle").length, 1);
   assert.equal(records.some((record) => record.name === "benny-triage-poll"), false);
   assert.equal(records.some((record) => record.name === "benny-reproduce-poll"), false);
 });

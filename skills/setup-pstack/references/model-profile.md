@@ -1,15 +1,15 @@
-# Codex agent profiles and model registry
+# Codex custom agents and model registry
 
 Codex custom agents are standalone TOML files in project `.codex/agents/` or user `~/.codex/agents/`. The TOML `name` field, not the filename, owns identity. Skill `agents/openai.yaml` files provide UI and invocation metadata only.
 
 Pstack stores workflow model routing in project `.codex/pstack-models.json` or user `~/.codex/pstack-models.json`. The project file wins when both exist. This registry is the Codex equivalent of the upstream generated model rule.
 
-## Persona profiles
+## Persona custom agents
 
 | Role | Writable scope | Sandbox policy | Connector posture | Skill posture | Model policy | Fallback |
 | --- | --- | --- | --- | --- | --- | --- |
-| `pstack-poteto-agent` | Inherits the live parent request; setup does not grant writes | Inherits the live runtime so setup cannot broaden authority | Inherits, but use remains limited to the parent request | Must read `poteto-mode`; portable prompt is authoritative | Inherit by default; install an explicit configuration only after an observable model list validates every value | Include `poteto-agent-prompt.md` in a generic-agent task; use the parent sequentially when agents are unavailable |
-| `pstack-comment-sicko` | None | Explicit `read-only` default; live parent restrictions may narrow it further | Prohibited by prompt; setup does not claim it can prove connector isolation | May use `how` and `why` for read-only investigation | Inherit by default; install an explicit configuration only after validation | Use the portable prompt in a deliberately constrained generic agent; otherwise skip and report the missing isolation |
+| `pstack-poteto-agent` | Inherits the active user request; setup does not grant writes | Inherits the live runtime so setup cannot broaden authority | Inherits, but use remains limited to the active user request | Performs the portable prompt directly; may use relevant leaf principles | Inherit by default; install an explicit configuration only after an observable model list validates every value | Follow `subagent-lifecycle`; use the main agent sequentially when subagents are unavailable |
+| `pstack-comment-sicko` | None | Explicit `read-only` default; live restrictions may narrow it further | Prohibited by prompt; setup does not claim it can prove connector isolation | May use `how` and `why` for read-only investigation | Inherit by default; install an explicit configuration only after validation | Follow `subagent-lifecycle`; otherwise skip and report the missing isolation |
 
 Custom-agent defaults never prove the served model, effort, effective sandbox, connector set, or skill availability. A setup receipt describes written configuration only. Runtime receipts must come from an observable Codex surface.
 
@@ -51,7 +51,7 @@ A standard lane omits `service_tier`. A fast lane requests the `priority` servic
 
 ## Runtime resolution
 
-Before a pstack dispatch selects a model, reasoning effort, or service tier, choose its exact registry role. Generic and `default` agent types do not bypass this rule. A dispatch that omits all overrides may inherit the parent without a role.
+Before a pstack dispatch selects a model, reasoning effort, or service tier, choose its exact registry role. Generic and `default` agent types do not bypass this rule. A dispatch that omits all overrides may inherit the main agent without a role.
 
 Run `scripts/manage-agents.mjs resolve-role --role <exact-role> --project-root <task-cwd> --user-home <home>`, relative to this skill. The helper finds the nearest project registry without crossing a Git boundary. It reads that registry before the user registry and returns raw and resolved lanes.
 
@@ -72,7 +72,7 @@ The registry proves only that setup validated the requested spawn configuration 
 - No requested configuration: omit `model`, `model_reasoning_effort`, and `service_tier`.
 - Requested configuration plus an observable model list: require an exact model and effort match. If `service_tier` is present, require it in the model's advertised `service_tiers` set and require the matching live spawn override capability.
 - Requested configuration without an observable model list: record `unverified-inheritance`, omit the TOML fields, and show the complete request only as unverified intent.
-- Missing entitlement or an unsupported value: stop without changing profiles. Do not silently select a substitute.
+- Missing entitlement or an unsupported value: stop without changing custom agents. Do not silently select a substitute.
 
 Panel workflows must report reduced diversity when inheritance or repeated configurations collapse distinct lanes onto the same observable model. They must not invent a served-model receipt.
 

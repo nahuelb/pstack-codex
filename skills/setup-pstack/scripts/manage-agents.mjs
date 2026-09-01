@@ -13,10 +13,10 @@ const ROLE_SPECS = [
     prompt: "skills/poteto-mode/references/poteto-agent-prompt.md",
     capability: {
       sandbox: "inherited-unverified-at-setup",
-      writable_scope: "parent-request-only",
-      connectors: "inherited-parent-authority",
-      skills: ["poteto-mode"],
-      fallback: "generic-agent-with-portable-prompt-or-sequential-parent",
+      writable_scope: "active-request-only",
+      connectors: "inherited-main-agent-authority",
+      skills: ["principle-*"],
+      fallback: "generic-agent-with-portable-prompt-or-sequential-main-agent",
     },
   },
   {

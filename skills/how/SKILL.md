@@ -49,10 +49,10 @@ The right decomposition depends on the question. Use your judgment. Narrow quest
 Spawn all explorers in a single message:
 
 - Role: the configured `how explorer` lane, default `xai/grok-4.6` with `xhigh` reasoning, with the explorer prompt.
-- Access: read-only. If subagents are unavailable, explore sequentially in the parent.
+- Access: read-only. If subagents are unavailable, the main agent explores sequentially.
 
 Each explorer gets the same base prompt from `references/explorer-prompt.md` plus a specific exploration angle naming its slice. Each explorer should:
-- Start broad: Glob for relevant directories, Grep for key types/interfaces/class names
+- Start broad: locate relevant directories, files, types, interfaces, and class names
 - Follow the thread: from an entry point, trace the call chain (callers, callees, data flow, type definitions)
 - Read the actual code, don't guess from file names
 - Stop when it can describe the full path from input to output (or trigger to effect) without hand-waving any step
@@ -67,9 +67,9 @@ Then proceed to Step 3.
 Spawn a single subagent that explores and explains in one pass:
 
 - Role: the configured `how explainer` lane, default `anthropic/claude-fable-5` with `max` reasoning, with the explainer prompt.
-- Access: read-only. If no agent is available, explain sequentially in the parent.
+- Access: read-only. If no subagent is available, the main agent explains sequentially.
 
-The agent does its own exploration (Glob, Grep, Read) and writes the explanation directly. Read `references/explainer-prompt.md` for the communication style and output format. Same structure, just no explorer findings as input.
+The agent explores the codebase and writes the explanation directly. Read `references/explainer-prompt.md` for the communication style and output format. Same structure, just no explorer findings as input.
 
 Proceed to Step 4.
 
@@ -78,7 +78,7 @@ Proceed to Step 4.
 Once all explorers return, spawn a single subagent to synthesize their findings into one coherent explanation:
 
 - Role: the configured `how explainer` lane, default `anthropic/claude-fable-5` with `max` reasoning, with the explainer prompt.
-- Access: read-only. A missing synthesizer falls back to parent synthesis.
+- Access: read-only. A missing synthesizer falls back to main-agent synthesis.
 
 The explainer gets all explorers' findings and writes the human-facing explanation (output format below). Read `references/explainer-prompt.md` for the full prompt template. The explainer reconciles overlapping findings, resolves contradictions, and weaves the slices into a unified picture.
 
