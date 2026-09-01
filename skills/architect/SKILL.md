@@ -31,7 +31,7 @@ Skip Phase A only when the work is genuinely greenfield with no surrounding syst
 
 Run the **arena** skill with the design-sketch task and the Phase A grounding artifacts. Pass `references/runner-prompt.md` as each runner's prompt. Each candidate produces a design package shaped per `references/rationale-template.md`: the caller's usage written first, then the type sketch, function signatures, module map, and prose rationale derived from it.
 
-Resolve `architect runners` through `../setup-pstack/references/model-profile.md`. The default lanes are `anthropic/claude-fable-5` at `max`, `gpt-5.6-sol` at `max`, `xai/grok-4.6` at `xhigh`, and `anthropic/claude-opus-5` at `xhigh`.
+Resolve `architect runners` through `../setup-pstack/references/model-profile.md`. The default lanes use `xhigh` reasoning with `anthropic/claude-fable-5-1`, `gpt-5.6-sol`, `xai/grok-4.6`, and `anthropic/claude-opus-5`.
 
 Design it twice. Require at least two structurally distinct candidates before synthesis, even when the first looks sufficient. This is the **exhaust-the-design-space** principle skill made concrete. Whole-shape alternatives, not point fixes inside one shape.
 

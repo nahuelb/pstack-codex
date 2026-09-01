@@ -26,7 +26,7 @@ The N candidates will receive the same prompt, so the prompt is the contract. Ge
 
 1. State the artifact each candidate is producing.
 2. Derive the rubric. State what success looks like for *this* task, then turn it into 3-6 concrete gradeable criteria. Concrete: `Adds a --dry-run flag that skips writes`. Vague: `code is correct`. The rubric is the picker's tool in Phase D; candidates only see the task.
-3. Pick the runners. Resolve `arena runners` through `../setup-pstack/references/model-profile.md` and use its exact resolved lanes. Configured skill-default markers and unavailable registries resolve to these defaults: `anthropic/claude-fable-5` at `max`, `gpt-5.6-sol` at `max`, `xai/grok-4.6` at `xhigh`, and `anthropic/claude-opus-5` at `xhigh`. Spawn more when the arena covers multiple design directions. Same model N times when the work is generation-bound rather than judgment-sensitive.
+3. Pick the runners. Resolve `arena runners` through `../setup-pstack/references/model-profile.md` and use its exact resolved lanes. Configured skill-default markers and unavailable registries resolve to `xhigh` lanes for `anthropic/claude-fable-5-1`, `gpt-5.6-sol`, `xai/grok-4.6`, and `anthropic/claude-opus-5`. Spawn more when the arena covers multiple design directions. Same model N times when the work is generation-bound rather than judgment-sensitive.
 4. Assign output paths. Each candidate writes to its own location (a git worktree where possible, otherwise `/tmp1-<slug>/candidate-<n>/`). N candidates writing to the same path is shared mutable state and fails the **separate-before-serializing-shared-state** principle skill test.
 
 ## Phase B: Fan out

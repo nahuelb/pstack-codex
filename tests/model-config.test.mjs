@@ -188,6 +188,12 @@ test("omitted roles use their owning Markdown skill defaults", () => {
   }
 });
 
+test("bundled role fallback defaults cap reasoning at xhigh", () => {
+  for (const spec of MODEL_ROLE_SPECS) {
+    assert.ok(spec.defaults.every((lane) => lane.reasoning_effort === "xhigh"), spec.name);
+  }
+});
+
 async function writeRegistry(rootDirectory, roles) {
   const directory = path.join(rootDirectory, ".codex");
   await fs.mkdir(directory, { recursive: true });
@@ -263,16 +269,19 @@ test("runtime contracts require role resolution and state its enforcement limit"
   assert.match(trail, /resolve `arena cross-judge pool`/);
 });
 
-test("owning Markdown skills retain the original PStack default model choices", async () => {
+test("owning Markdown skills and playbooks retain the current PStack default model choices", async () => {
   const expectations = [
-    ["skills/poteto-mode/SKILL.md", /xai\/grok-4\.6` at `xhigh`.*gpt-5\.6-sol` at `max`.*anthropic\/claude-fable-5` at `max`/s],
-    ["skills/how/SKILL.md", /how explorer.*xai\/grok-4\.6.*xhigh.*how explainer.*anthropic\/claude-fable-5.*max.*how critics.*anthropic\/claude-opus-5.*xhigh/s],
-    ["skills/why/SKILL.md", /why investigators.*xai\/grok-4\.6.*xhigh.*why synthesizer.*anthropic\/claude-fable-5.*max/s],
-    ["skills/reflect/SKILL.md", /reflect tooling.*gpt-5\.6-sol.*max.*reflect judgment, divergent, synthesizer.*anthropic\/claude-fable-5.*max/s],
-    ["skills/arena/SKILL.md", /arena runners.*anthropic\/claude-fable-5.*gpt-5\.6-sol.*xai\/grok-4\.6.*anthropic\/claude-opus-5/s],
+    ["skills/poteto-mode/SKILL.md", /defaults use `xhigh`.*xai\/grok-4\.6.*gpt-5\.6-sol.*anthropic\/claude-fable-5-1/s],
+    ["skills/how/SKILL.md", /how explorer.*xai\/grok-4\.6.*xhigh.*how explainer.*anthropic\/claude-fable-5-1.*xhigh.*how critics.*anthropic\/claude-opus-5/s],
+    ["skills/why/SKILL.md", /why investigators.*xai\/grok-4\.6.*xhigh.*why synthesizer.*anthropic\/claude-fable-5-1.*xhigh/s],
+    ["skills/reflect/SKILL.md", /reflect tooling.*gpt-5\.6-sol.*xhigh.*reflect judgment, divergent, synthesizer.*anthropic\/claude-fable-5-1.*xhigh/s],
+    ["skills/arena/SKILL.md", /arena runners.*anthropic\/claude-fable-5-1.*gpt-5\.6-sol.*xai\/grok-4\.6.*anthropic\/claude-opus-5/s],
     ["skills/swarm/SKILL.md", /swarm workers.*xai\/grok-4\.6.*xhigh/s],
-    ["skills/architect/SKILL.md", /architect runners.*anthropic\/claude-fable-5.*gpt-5\.6-sol.*xai\/grok-4\.6.*anthropic\/claude-opus-5/s],
-    ["skills/interrogate/SKILL.md", /interrogate reviewers.*anthropic\/claude-fable-5.*gpt-5\.6-sol.*xai\/grok-4\.6.*anthropic\/claude-opus-5/s],
+    ["skills/architect/SKILL.md", /architect runners.*anthropic\/claude-fable-5-1.*gpt-5\.6-sol.*xai\/grok-4\.6.*anthropic\/claude-opus-5/s],
+    ["skills/interrogate/SKILL.md", /interrogate reviewers.*anthropic\/claude-fable-5-1.*gpt-5\.6-sol.*xai\/grok-4\.6.*anthropic\/claude-opus-5/s],
+    ["skills/poteto-mode/playbooks/bug-fix.md", /bug-fix.*gpt-5\.6-sol.*xhigh/s],
+    ["skills/poteto-mode/playbooks/perf-issue.md", /perf-issue.*gpt-5\.6-sol.*xhigh/s],
+    ["skills/poteto-mode/playbooks/hillclimb.md", /hillclimb.*gpt-5\.6-sol.*xhigh/s],
   ];
   for (const [relativePath, pattern] of expectations) {
     assert.match(await fs.readFile(path.join(root, relativePath), "utf8"), pattern, relativePath);
