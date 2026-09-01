@@ -30,7 +30,7 @@ In the morning, inspect:
 
 1. the finish-condition evidence.
 2. the integrated diff and current branch.
-3. `decisions.tsv` if the run created one.
+3. the private audit run's canonical `decisions.tsv` and linked `events.tsv`.
 4. the agent receipt, including missing lanes, fallbacks, and observed or unverified model pairs.
 5. remaining processes, worktrees, and scratch outputs.
 

@@ -65,6 +65,7 @@ test("representative behavior fixtures declare authority, fallback, and proof", 
   const fixtureRoot = path.join(root, "tests", "skill-behavior");
   const fixtures = (await fs.readdir(fixtureRoot)).filter((name) => name.endsWith(".yaml"));
   assert.deepEqual(fixtures.sort(), [
+    "auditability.yaml",
     "capability-fallbacks.yaml",
     "lifecycle-authority.yaml",
     "orchestration.yaml",

@@ -47,7 +47,7 @@ Apply the **sequence-verifiable-units** principle skill, verifying each unit bef
 
 ## Phase D: Keep the audit trail
 
-Log the run via the **show-me-your-work** skill, one canonical TSV with a row per decision and per unit, evidence as links. figure-it-out's work is usually ambitious enough to commit the trail so the reviewer can read it in the PR; commit it when confidence has to be shown. Prefer evidence produced by committed scripts so a reviewer can re-run it. The trail plus the diff is what lets the human come back and trust the work.
+Log the run via the **show-me-your-work** skill, one private canonical ledger with a row per decision and per unit. Never commit or publish the trail. Prefer evidence produced by committed scripts so a reviewer can re-run those checks. The private trail plus the diff is what lets the human come back and trust the work.
 
 ## Phase E: Verify and hand back
 

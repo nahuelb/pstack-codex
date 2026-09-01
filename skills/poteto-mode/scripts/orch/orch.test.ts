@@ -218,6 +218,7 @@ describe("Store", () => {
     expect((await readdir(directory)).sort()).toEqual([
       ".orch.lock",
       ".pstack-orch-store",
+      "audit.md",
       "frontier.json",
       "gates.md",
       "inbox",
@@ -470,12 +471,16 @@ describe("Store", () => {
     expect(
       await store.standing.add({ line: "Never force push." })
     ).toEqual({ number: 1, line: "Never force push." });
+    await rm(join(directory, "audit.md"));
 
     const first = await store.status.render();
     expect(first.changed).toBe("first render");
     expect(first.summary.openGateIds).toEqual(["release"]);
     expect(await readFile(join(directory, "status.md"), "utf8")).toContain(
       "| release | open | Ship now? |"
+    );
+    expect(await readFile(join(directory, "status.md"), "utf8")).toContain(
+      "## Private audit\n\nPrivate audit run: unlinked"
     );
     expect((await store.status.render()).changed).toBe("no derived changes");
 

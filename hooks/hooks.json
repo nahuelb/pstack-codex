@@ -39,13 +39,23 @@
     ],
     "SubagentStart": [
       {
-        "matcher": "^pstack-poteto-agent$",
         "hooks": [
           {
             "type": "command",
             "command": "node \"$PLUGIN_ROOT/hooks/scripts/poteto-subagent-context.mjs\"",
             "timeout": 2,
-            "additionalContextLimit": 1200
+            "additionalContextLimit": 2400
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$PLUGIN_ROOT/hooks/scripts/poteto-subagent-context.mjs\"",
+            "timeout": 2
           }
         ]
       }

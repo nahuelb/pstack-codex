@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
+import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import {
   CLEANUP_CONCURRENCY,
@@ -20,9 +21,41 @@ import {
 } from "../hooks/scripts/poteto-mode-state.mjs";
 import { handleSubagentHook } from "../hooks/scripts/poteto-subagent-context.mjs";
 import { hookStatus } from "../scripts/poteto-hook-status.mjs";
+import { auditStatus } from "../skills/show-me-your-work/scripts/audit.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const fixtureRoot = path.join(root, "tests/fixtures/hooks");
+const stateModuleUrl = pathToFileURL(path.join(root, "hooks/scripts/poteto-mode-state.mjs")).href;
+
+function runActivationProcess(input, pluginData, now) {
+  const source = `
+    import { handleHook } from ${JSON.stringify(stateModuleUrl)};
+    await handleHook(${JSON.stringify(input)}, { pluginData: ${JSON.stringify(pluginData)}, now: ${now} });
+  `;
+  return new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, ["--input-type=module", "--eval", source], { stdio: ["ignore", "pipe", "pipe"] });
+    let stderr = "";
+    child.stderr.setEncoding("utf8");
+    child.stderr.on("data", (chunk) => { stderr += chunk; });
+    child.on("error", reject);
+    child.on("close", (code) => code === 0 ? resolve() : reject(new Error(`activation exited ${code}: ${stderr}`)));
+  });
+}
+
+function runCollectorProcess(pluginData, now, ttlMs) {
+  const source = `
+    import { collectExpired } from ${JSON.stringify(stateModuleUrl)};
+    await collectExpired(${JSON.stringify(pluginData)}, ${now}, ${ttlMs});
+  `;
+  return new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, ["--input-type=module", "--eval", source], { stdio: ["ignore", "pipe", "pipe"] });
+    let stderr = "";
+    child.stderr.setEncoding("utf8");
+    child.stderr.on("data", (chunk) => { stderr += chunk; });
+    child.on("error", reject);
+    child.on("close", (code) => code === 0 ? resolve() : reject(new Error(`collector exited ${code}: ${stderr}`)));
+  });
+}
 
 async function fixture(t) {
   const pluginData = await fs.mkdtemp(path.join(os.tmpdir(), "pstack-poteto-hooks-"));
@@ -31,11 +64,12 @@ async function fixture(t) {
   return { pluginData, load };
 }
 
-test("hook manifest uses current Codex events and exact Poteto matcher", async () => {
+test("hook manifest uses current Codex events and audits every subagent", async () => {
   const manifest = JSON.parse(await fs.readFile(path.join(root, "hooks/hooks.json"), "utf8"));
-  assert.deepEqual(Object.keys(manifest.hooks).sort(), ["SessionEnd", "SessionStart", "SubagentStart", "UserPromptSubmit"]);
+  assert.deepEqual(Object.keys(manifest.hooks).sort(), ["SessionEnd", "SessionStart", "SubagentStart", "SubagentStop", "UserPromptSubmit"]);
   assert.equal(manifest.hooks.SessionStart[0].matcher, "resume|compact");
-  assert.equal(manifest.hooks.SubagentStart[0].matcher, "^pstack-poteto-agent$");
+  assert.equal("matcher" in manifest.hooks.SubagentStart[0], false);
+  assert.equal("matcher" in manifest.hooks.SubagentStop[0], false);
   assert.match(manifest.hooks.UserPromptSubmit[0].hooks[0].command, /\$PLUGIN_ROOT/);
   assert.equal("matcher" in manifest.hooks.UserPromptSubmit[0], false);
 });
@@ -81,12 +115,23 @@ test("Codex Poteto skill mentions persist session state and a receipt", async (t
   const receipt = await handleHook(activation, { pluginData, now: 1_000 });
 
   assert.match(receipt.hookSpecificOutput.additionalContext, /sticky receipt/);
-  assert.equal((await readActiveState({
+  const state = await readActiveState({
     pluginData,
     sessionId: activation.session_id,
     cwd: activation.cwd,
     now: 2_000,
-  })).active, true);
+  });
+  assert.equal(state.active, true);
+  assert.match(receipt.hookSpecificOutput.additionalContext, new RegExp(state.audit.runId));
+  assert.deepEqual(await auditStatus(state.audit.runDirectory), {
+    run_id: state.audit.runId,
+    parent_task_id: activation.session_id,
+    privacy: "private",
+    ledger: path.join(state.audit.runDirectory, "decisions.tsv"),
+    trace: path.join(state.audit.runDirectory, "events.tsv"),
+    decisions: 0,
+    events: 1,
+  });
 });
 
 test("activation is session isolated and later turns survive resume and compaction", async (t) => {
@@ -133,11 +178,74 @@ test("concurrent activation writes remain atomic and task-local", async (t) => {
   }
   const files = await fs.readdir(path.join(pluginData, "poteto-mode/sessions"));
   assert.equal(files.some((name) => name.endsWith(".tmp")), false);
+  assert.equal((await fs.readdir(path.join(pluginData, "poteto-mode/audits"))).length, 3);
+});
+
+test("concurrent processes replace one dead lock without creating duplicate audit runs", async (t) => {
+  const { pluginData, load } = await fixture(t);
+  const template = await load("activate.json");
+  const dead = spawnSync(process.execPath, ["--eval", ""]);
+  for (let index = 0; index < 100; index += 1) {
+    const activation = { ...template, session_id: `thr_process_${index}` };
+    const targets = statePaths(pluginData, activation.session_id);
+    await fs.mkdir(path.dirname(targets.state), { recursive: true });
+    const lockOwner = index % 5 === 0
+      ? `${process.pid}:wrong-start:stale`
+      : index % 4 === 0 ? "" : index % 4 === 1 ? "malformed" : `${dead.pid}:stale`;
+    await fs.writeFile(`${targets.state}.lock`, `${lockOwner}\n`);
+    if (index % 3 === 0) {
+      const claimOwner = index % 2 === 0 ? "" : `${dead.pid}:abandoned`;
+      await fs.writeFile(`${targets.state}.lock.takeover`, `${claimOwner}\n`);
+    }
+    await Promise.all([
+      runActivationProcess(activation, pluginData, 10_000 + index),
+      runActivationProcess(activation, pluginData, 20_000 + index),
+    ]);
+    await assert.rejects(fs.stat(`${targets.state}.lock`), { code: "ENOENT" });
+    await assert.rejects(fs.stat(`${targets.state}.lock.takeover`), { code: "ENOENT" });
+  }
+  assert.equal((await fs.readdir(path.join(pluginData, "poteto-mode/audits"))).length, 100);
+  assert.equal((await fs.readdir(path.join(pluginData, "poteto-mode/sessions"))).some((name) => name.endsWith(".tmp")), false);
+});
+
+test("a live lock with unknown start identity is never reclaimed", async (t) => {
+  const { pluginData, load } = await fixture(t);
+  const activation = await load("activate.json");
+  const targets = statePaths(pluginData, activation.session_id);
+  await fs.mkdir(path.dirname(targets.state), { recursive: true });
+  await fs.writeFile(`${targets.state}.lock`, `${process.pid}:unknown:held\n`);
+  await assert.rejects(handleHook(activation, { pluginData, now: 1_000 }), /timed out acquiring/);
+  assert.equal((await fs.readFile(`${targets.state}.lock`, "utf8")).trim(), `${process.pid}:unknown:held`);
+});
+
+test("stale cleanup cannot delete freshly activated state", async (t) => {
+  const { pluginData, load } = await fixture(t);
+  const template = await load("activate.json");
+  for (let index = 0; index < 30; index += 1) {
+    const activation = { ...template, session_id: `thr_cleanup_race_${index}` };
+    const targets = statePaths(pluginData, activation.session_id);
+    await fs.mkdir(path.dirname(targets.state), { recursive: true });
+    await fs.mkdir(path.dirname(targets.receipt), { recursive: true });
+    await fs.writeFile(targets.state, `${JSON.stringify({ schema: STATE_SCHEMA, active: true, updatedAt: new Date(0).toISOString(), projectFingerprint: projectFingerprint(activation.cwd), audit: { runId: "old", runDirectory: "/old" } })}\n`);
+    await fs.writeFile(targets.receipt, `${JSON.stringify({ schema: STATE_SCHEMA, lastHookAt: new Date(0).toISOString() })}\n`);
+    await Promise.all([
+      runCollectorProcess(pluginData, 100_000 + index, 1),
+      runActivationProcess(activation, pluginData, 200_000 + index),
+    ]);
+    assert.equal((await readActiveState({ pluginData, sessionId: activation.session_id, cwd: activation.cwd, now: 200_001 + index }))?.active, true);
+  }
+  assert.equal((await fs.readdir(path.join(pluginData, "poteto-mode/audits"))).length, 30);
 });
 
 test("explicit opt-out removes this session and its delegate context", async (t) => {
   const { pluginData, load } = await fixture(t);
   await handleHook(await load("activate.json"), { pluginData, now: 1_000 });
+  const state = await readActiveState({
+    pluginData,
+    sessionId: "thr_fixture_active",
+    cwd: "/workspace/project-a",
+    now: 1_500,
+  });
   await handleHook(await load("disable.json"), { pluginData, now: 2_000 });
   assert.equal(await handleHook(await load("later-turn.json"), { pluginData, now: 3_000 }), null);
   assert.equal(await handleSubagentHook(await load("poteto-subagent.json"), {
@@ -145,6 +253,36 @@ test("explicit opt-out removes this session and its delegate context", async (t)
     pluginRoot: root,
     now: 3_000,
   }), null);
+  assert.equal((await auditStatus(state.audit.runDirectory)).events, 2);
+});
+
+test("explicit opt-out revokes sticky state before a damaged audit can fail", async (t) => {
+  const { pluginData, load } = await fixture(t);
+  const activation = await load("activate.json");
+  const now = Date.now();
+  await handleHook(activation, { pluginData, now });
+  const state = await readActiveState({ pluginData, sessionId: activation.session_id, cwd: activation.cwd, now: now + 1 });
+  await fs.rm(path.join(state.audit.runDirectory, "run.json"));
+  await assert.rejects(handleHook(await load("disable.json"), { pluginData, now: now + 2 }), /ENOENT/);
+  assert.equal(await readActiveState({ pluginData, sessionId: activation.session_id, cwd: activation.cwd, now: now + 3 }), null);
+  await assert.rejects(fs.stat(statePaths(pluginData, activation.session_id).receipt), { code: "ENOENT" });
+});
+
+test("explicit opt-out cannot be resurrected by a concurrent active turn", async (t) => {
+  const { pluginData, load } = await fixture(t);
+  const activationTemplate = await load("activate.json");
+  const laterTemplate = await load("later-turn.json");
+  const disableTemplate = await load("disable.json");
+  for (let index = 0; index < 30; index += 1) {
+    const sessionId = `thr_disable_race_${index}`;
+    const activation = { ...activationTemplate, session_id: sessionId };
+    await runActivationProcess(activation, pluginData, 10_000 + index);
+    await Promise.all([
+      runActivationProcess({ ...laterTemplate, session_id: sessionId }, pluginData, 20_000 + index),
+      runActivationProcess({ ...disableTemplate, session_id: sessionId }, pluginData, 20_001 + index),
+    ]);
+    assert.equal(await readActiveState({ pluginData, sessionId, cwd: activation.cwd, now: 30_000 + index }), null);
+  }
 });
 
 test("opt-out removes authority state before its ancillary receipt and propagates failure", async () => {
@@ -160,14 +298,106 @@ test("opt-out removes authority state before its ancillary receipt and propagate
   assert.deepEqual(removed, ["authority.json", "receipt.json"]);
 });
 
-test("only the exact Poteto delegate receives portable context", async (t) => {
+test("all subagents receive the audit run while only the exact Poteto delegate receives its persona", async (t) => {
   const { pluginData, load } = await fixture(t);
   await handleHook(await load("activate.json"), { pluginData, now: 1_000 });
   const generic = await handleSubagentHook(await load("generic-subagent.json"), { pluginData, pluginRoot: root, now: 2_000 });
-  assert.equal(generic, null);
+  assert.match(generic.hookSpecificOutput.additionalContext, /Private audit run/);
+  assert.doesNotMatch(generic.hookSpecificOutput.additionalContext, /Poteto agent prompt/);
   const poteto = await handleSubagentHook(await load("poteto-subagent.json"), { pluginData, pluginRoot: root, now: 2_000 });
   assert.match(poteto.hookSpecificOutput.additionalContext, /Poteto agent prompt/);
   assert.match(poteto.hookSpecificOutput.additionalContext, /Do not infer write/);
+  assert.match(poteto.hookSpecificOutput.additionalContext, /stop hook records a stop observation/);
+  const state = await readActiveState({ pluginData, sessionId: "thr_fixture_active", cwd: "/workspace/project-a", now: 3_000 });
+  assert.equal((await auditStatus(state.audit.runDirectory)).events, 3);
+  assert.deepEqual(await handleSubagentHook(await load("poteto-subagent-stop.json"), {
+    pluginData,
+    pluginRoot: root,
+    now: 4_000,
+  }), {});
+  assert.equal((await auditStatus(state.audit.runDirectory)).events, 4);
+  const events = await fs.readFile(path.join(state.audit.runDirectory, "events.tsv"), "utf8");
+  assert.match(events, /\tstate\tobserved pstack-poteto-agent subagent stop hook\tnone\tstop-observed\t/);
+  assert.doesNotMatch(events, /\tterminal\tobserved pstack-poteto-agent subagent stop hook\t/);
+});
+
+test("subagents in another worktree adopt the parent session audit run", async (t) => {
+  const { pluginData, load } = await fixture(t);
+  const repo = path.join(pluginData, "repo");
+  const worktree = path.join(pluginData, "worktree");
+  await fs.mkdir(repo);
+  const git = (...args) => execFileSync("git", ["-C", repo, ...args], { encoding: "utf8" });
+  git("init", "--initial-branch=main");
+  git("config", "user.name", "Pstack Test");
+  git("config", "user.email", "pstack@example.invalid");
+  await fs.writeFile(path.join(repo, "tracked.txt"), "baseline\n");
+  git("add", "tracked.txt");
+  git("commit", "-m", "baseline");
+  git("worktree", "add", "-b", "agent-work", worktree);
+  const activation = { ...await load("activate.json"), cwd: repo };
+  await handleHook(activation, { pluginData, now: 1_000 });
+  const input = { ...await load("poteto-subagent.json"), cwd: worktree };
+  const output = await handleSubagentHook(input, { pluginData, pluginRoot: root, now: 2_000 });
+  assert.match(output.hookSpecificOutput.additionalContext, /Private audit run/);
+  const state = await readActiveState({ pluginData, sessionId: input.session_id, cwd: repo, now: 3_000 });
+  assert.equal((await auditStatus(state.audit.runDirectory)).events, 2);
+});
+
+test("subagent stops stay bound to the audit run captured at start", async (t) => {
+  const { pluginData, load } = await fixture(t);
+  const activation = await load("activate.json");
+  await handleHook(activation, { pluginData, now: 1_000 });
+  const firstState = await readActiveState({ pluginData, sessionId: activation.session_id, cwd: activation.cwd, now: 2_000 });
+  await handleSubagentHook(await load("poteto-subagent.json"), { pluginData, pluginRoot: root, now: 3_000 });
+
+  const replacement = { ...activation, cwd: "/workspace/project-b" };
+  await handleHook(replacement, { pluginData, now: 4_000 });
+  const secondState = await readActiveState({ pluginData, sessionId: replacement.session_id, cwd: replacement.cwd, now: 5_000 });
+  assert.notEqual(firstState.audit.runId, secondState.audit.runId);
+  assert.equal(await handleSubagentHook({ ...await load("generic-subagent.json"), cwd: activation.cwd }, {
+    pluginData,
+    pluginRoot: root,
+    now: 6_000,
+  }), null);
+  await handleSubagentHook(await load("poteto-subagent-stop.json"), { pluginData, pluginRoot: root, now: 7_000 });
+  assert.equal((await auditStatus(firstState.audit.runDirectory)).events, 3);
+  assert.equal((await auditStatus(secondState.audit.runDirectory)).events, 1);
+  const events = await fs.readFile(path.join(firstState.audit.runDirectory, "events.tsv"), "utf8");
+  assert.match(events, /\tagent_1\tunknown\t/);
+});
+
+test("subagent audit write failures exit visibly instead of being swallowed", async (t) => {
+  const { pluginData, load } = await fixture(t);
+  const activation = await load("activate.json");
+  const now = Date.now();
+  await handleHook(activation, { pluginData, now });
+  const state = await readActiveState({ pluginData, sessionId: activation.session_id, cwd: activation.cwd, now: now + 1 });
+  await fs.rm(path.join(state.audit.runDirectory, "run.json"));
+  const script = path.join(root, "hooks/scripts/poteto-subagent-context.mjs");
+  const result = spawnSync(process.execPath, [script], {
+    input: JSON.stringify(await load("poteto-subagent.json")),
+    env: { ...process.env, PLUGIN_DATA: pluginData, PLUGIN_ROOT: root },
+    encoding: "utf8",
+  });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /Poteto audit hook failed/);
+});
+
+test("main audit write failures exit with a useful error", async (t) => {
+  const { pluginData, load } = await fixture(t);
+  const activation = await load("activate.json");
+  const now = Date.now();
+  await handleHook(activation, { pluginData, now });
+  const state = await readActiveState({ pluginData, sessionId: activation.session_id, cwd: activation.cwd, now: now + 1 });
+  await fs.rm(path.join(state.audit.runDirectory, "run.json"));
+  const script = path.join(root, "hooks/scripts/poteto-mode-state.mjs");
+  const result = spawnSync(process.execPath, [script], {
+    input: JSON.stringify(await load("later-turn.json")),
+    env: { ...process.env, PLUGIN_DATA: pluginData },
+    encoding: "utf8",
+  });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /Poteto state hook failed/);
 });
 
 test("session end is advisory and keeps resumable state", async (t) => {
@@ -177,6 +407,8 @@ test("session end is advisory and keeps resumable state", async (t) => {
   await handleHook({ ...activation, hook_event_name: "SessionEnd", reason: "other" }, { pluginData, now: 2_000 });
   const resumed = await handleHook({ ...activation, prompt: "continue after resume" }, { pluginData, now: 3_000 });
   assert.match(resumed.hookSpecificOutput.additionalContext, /active for this session/);
+  const state = await readActiveState({ pluginData, sessionId: activation.session_id, cwd: activation.cwd, now: 4_000 });
+  assert.equal((await auditStatus(state.audit.runDirectory)).events, 3);
 });
 
 test("malformed identifiers fail closed while unusual safe identities are hashed", async (t) => {
@@ -199,6 +431,8 @@ test("stale schema and TTL state are collected without global fallback", async (
   await fs.mkdir(path.dirname(targets.state), { recursive: true });
   await fs.writeFile(targets.state, JSON.stringify({ schema: 0, active: true, updatedAt: new Date(1_000).toISOString() }));
   assert.equal(await handleHook({ ...activation, prompt: "continue" }, { pluginData, now: 2_000 }), null);
+  assert.equal((await fs.stat(targets.state)).isFile(), true);
+  await collectExpired(pluginData, 2_000, DEFAULT_TTL_MS);
   await assert.rejects(fs.stat(targets.state), { code: "ENOENT" });
 
   await handleHook(activation, { pluginData, now: 10_000 });
@@ -208,7 +442,7 @@ test("stale schema and TTL state are collected without global fallback", async (
   }), null);
 });
 
-test("definitively malformed state is deleted", async (t) => {
+test("definitively malformed state cleanup is collector-owned", async (t) => {
   const { pluginData, load } = await fixture(t);
   const activation = await load("activate.json");
   const targets = statePaths(pluginData, activation.session_id);
@@ -221,6 +455,8 @@ test("definitively malformed state is deleted", async (t) => {
     cwd: activation.cwd,
     now: 2_000,
   }), null);
+  assert.equal((await fs.stat(targets.state)).isFile(), true);
+  await collectExpired(pluginData, 2_000, DEFAULT_TTL_MS);
   await assert.rejects(fs.stat(targets.state), { code: "ENOENT" });
 });
 

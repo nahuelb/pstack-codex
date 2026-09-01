@@ -1,0 +1,18 @@
+schema: pstack-skill-behavior/v1
+authority: parent task and its private audit run only
+cases:
+  - id: activation
+    expected: one stable run identifies the parent task and links the canonical ledger and execution trace
+    proof: trusted activation creates private metadata and later turns adopt the same run ID
+  - id: lifecycle
+    expected: the main agent and every subagent expose start, meaningful state, wait, handoff, blocker, receipt, and terminal facts
+    proof: actor and parent identities link trace events without prompts or reasoning
+  - id: freshness
+    expected: phase, commit, worker-result, failed-gate, and irreversible-action boundaries append concise checkpoints
+    proof: unchanged long waits produce one wait or timeout event instead of duplicate ledger rows
+  - id: derived-state
+    expected: checklists, status pages, and handoffs point to the canonical ledger
+    proof: no derived artifact becomes a competing decision trail
+  - id: privacy
+    expected: repository cleanup cannot remove or publish the private audit artifacts
+    proof: evidence contains safe references and digests rather than secrets or payloads

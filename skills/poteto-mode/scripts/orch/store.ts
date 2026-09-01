@@ -22,6 +22,7 @@ const LOCK_TAKEOVER_FILE = ".orch.lock.takeover";
 const INBOX_DRAIN_PREFIX = ".inbox-drain-";
 const STORE_MARKER = ".pstack-orch-store";
 const STORE_MARKER_CONTENT = "pstack-orch-store/v1\n";
+const AUDIT_LINK_DEFAULT = "Private audit run: unlinked\nCanonical ledger: unlinked\nExecution trace: unlinked\n";
 
 export type Verdict =
   | "live-ui-verified"
@@ -1052,6 +1053,7 @@ function table(
 }
 
 function statusMarkdown(
+  auditLink: string,
   unitRows: readonly Unit[],
   ledgerRows: readonly LedgerEntry[],
   currentFrontier: Frontier,
@@ -1061,6 +1063,10 @@ function statusMarkdown(
   return `# Orchestrate status
 
 Generated: ${new Date().toISOString()}
+
+## Private audit
+
+${auditLink.trim() || "unlinked"}
 
 ## Units
 
@@ -1697,6 +1703,10 @@ export function openStore(
         const ledgerRows = await readLedger(store);
         const currentFrontier = await readFrontier(store);
         const gateRows = await readGates(store);
+        const auditPath = join(store, "audit.md");
+        const auditLink = await exists(auditPath)
+          ? await readFile(auditPath, "utf8")
+          : AUDIT_LINK_DEFAULT;
         const currentSummary = summarize(
           unitRows,
           ledgerRows,
@@ -1711,6 +1721,7 @@ export function openStore(
         await atomicWrite(
           path,
           statusMarkdown(
+            auditLink,
             unitRows,
             ledgerRows,
             currentFrontier,
@@ -1751,6 +1762,10 @@ export function openStore(
       await recoverInboxDrains(store);
       await writeIfMissing(join(store, "gates.md"), "");
       await writeIfMissing(join(store, "preferences.md"), "");
+      await writeIfMissing(
+        join(store, "audit.md"),
+        AUDIT_LINK_DEFAULT
+      );
       await writeIfMissing(join(store, "frontier.json"), "{}\n");
       return { store };
     },

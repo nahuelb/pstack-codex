@@ -1,83 +1,72 @@
 ---
 name: show-me-your-work
-description: "Keep a reviewable decision trail for long-running or unattended work: a TSV log with one row per decision (what, why, evidence, result). Local by default; commit it when a reviewer needs the trail to trust the result. Use for $show-me-your-work, autonomous or multi-phase runs, or work a human reviews after stepping away."
+description: "Keep a private, reviewable decision and execution trail for Poteto Mode, long-running work, or work reviewed after a delay. Use for $show-me-your-work, autonomous runs, multi-phase work, and audit review."
 ---
 
 # Show me your work
 
 Delegation and optional capabilities follow `../poteto-mode/references/codex-agent-runtime.md`.
 
-For work a human reviews after the fact, a decision trail lets them reconstruct what was decided, why, and on what evidence, without rerunning the work or reading the whole task history. Keep one canonical log so the trail is consistent and a future agent can find it.
+Keep one concise decision ledger and one linked execution trace. These artifacts let an owner distinguish progress, waiting, scope changes, and failure without reconstructing hidden reasoning or scraping host data.
 
-## The format
+## Start or adopt the run
 
-A single TSV file, one row per decision. TSV because GitHub renders it as a sortable table, `column -s$'\t' -t` and spreadsheets read it, and a row appends with one command. Cells stay single-line. Evidence is a pointer, not prose.
+Poteto Mode's trusted activation hook creates one private run beneath plugin data. Its receipt names the stable run ID, parent task, canonical ledger, and execution trace. Adopt that run. Resolve `scripts/audit.mjs` relative to this skill. Run `node scripts/audit.mjs status <run-dir>` before other work to verify the receipt.
 
-Copy `references/decision-log-template.tsv` (the header row) to start a clean log. Columns:
+If a Poteto activation has no usable receipt, initialize one private run before continuing:
 
-- **ts.** ISO8601 timestamp. The timeline axis.
-- **phase.** The phase or workstream.
-- **decision.** What was chosen or done, one line.
-- **why.** The reason in plain words. If a principle drove it, say it plainly (`explored options first, this was a one-way door`), not as a jargon tag.
-- **evidence.** A link or path that proves it: commit SHA, PR number, `file:line`, or an artifact, trace, or screenshot path. Never a paragraph.
-- **result.** The outcome or predicate state: `tests green`, `reverted`, `pixel-diff 0`, `INCONCLUSIVE`, `open`.
-
-An example, plain-spoken so a reviewer reads it at a glance. This is illustration only; don't copy these rows into a real log.
-
-```
-ts	phase	decision	why	evidence	result
-2026-05-24T09:02:00Z	frame	counted the work first, about 100 components and roughly 75 hours	wanted to know the size before starting a long run	commit 3a9f1c2	found 5 things to sort out before starting
-2026-05-24T09:40:00Z	harness	took screenshots of the old version before changing anything	so we can compare old against new and catch any visual change	scripts/snapshot.sh, baseline/	saved 120 reference screenshots
-2026-05-24T11:15:00Z	widget	moved the widget styles over without changing how it looks	keep the change small and the result identical	commit 7c21e0a, pixel-diff 0	looks identical, tests pass
-2026-05-24T12:30:00Z	widget	threw out a helper's work because its screenshots were blank	checked the real files instead of trusting its summary	worktree reset	reverted, tightened the instructions for next time
+```text
+node scripts/audit.mjs init <private-state-root> <parent-task-id> <project-dir>
 ```
 
-## Logging a row
+Use a runtime-owned private state root outside the repository. If no such root is writable, stop and report that Poteto Mode cannot satisfy its audit contract. Never replace the private ledger with a repository file, public issue, checklist, or task summary.
 
-Write each entry the way you'd tell a teammate what you did. Plain words, concrete actions, no AI speak or abstract jargon (the **unslop** skill applies to log text too). A reviewer should understand each row without decoding it.
+Standalone `$show-me-your-work` use may keep the older local `decisions.tsv` format through `scripts/log.sh`. Poteto Mode always uses the private run from `audit.mjs`.
 
-Use the helper so rows stay well-formed: `scripts/log.sh <logfile> <phase> <decision> <why> <evidence> <result>`. It stamps `ts`, writes the header on first use, strips stray tabs/newlines, and prefixes any cell starting with `=`, `+`, `-`, or `@` with a single quote so a reviewer opening the log in a spreadsheet doesn't trigger formula execution. A bare `printf` appending a row works too, but mind those same bytes if cells come from generated or user-supplied text.
+## Canonical decision ledger
 
-Log decision points and checkpoints, not every action: a fork chosen, a unit completed with its verification result, a pivot or revert with its trigger, a blocker surfaced, a gate fixed. For loop runs, one row per iteration. Skip the trivial and self-evident.
+`decisions.tsv` is append-only. It has `ts`, `run_id`, `phase`, `decision`, `why`, `evidence`, `result`, and `ref`. One row records one decision or meaningful checkpoint. `ref` points to the relevant task turn or agent when available.
 
-## Where it lives
+Append through:
 
-By default the log is a working artifact, not committed. Keep it at `decisions.tsv` in the work dir, or `.audit/<task-slug>.tsv` when several efforts run at once, and leave it out of git. Most work doesn't need a committed trail; the local log still keeps the run honest and can be discarded after.
+```text
+node scripts/audit.mjs decision <run-dir> <phase> <decision> <why> <evidence> <result> <ref>
+```
 
-Commit it only when the work is ambitious enough that a reviewer needs the trail to trust the result: a large cross-language port, a multi-week migration, anything where confidence has to be shown rather than assumed. A committed log renders as a table in the PR.
+Write the row as a concise teammate update. Record the current unit, scope or owner decision, remaining gates, and next action when they change. Evidence is a safe path, commit, digest, verification receipt, or task reference.
 
-## Rules
+## Private execution trace
 
-- One row is one decision or checkpoint. If it doesn't fit on one line, the decision isn't crisp yet.
-- Append-only. A wrong call gets a new row that supersedes it. Never edit or delete history.
-- Prefer evidence produced by committed scripts over hand-made one-offs, so a reviewer can re-run it (the **encode-lessons-in-structure** principle skill).
+`events.tsv` links to the ledger through `run_id`. It records only lifecycle facts needed to review performance. Its columns are `ts`, `run_id`, `actor_id`, `parent_actor_id`, `event`, `detail`, `evidence`, `state`, and `ref`.
 
-## Audit the log against supported task history
+Use events for run and agent starts, delegation, state changes, waits and timeouts, handoffs, checkpoints, commits, verification, actual blockers, review findings, and terminal states. The hooks record task turns, subagent starts, and stop observations. A stop observation is not terminal because another hook can continue the subagent. Each subagent records its own meaningful checkpoints. The main agent records the terminal event after receiving the result and reconciles any missing event before accepting it.
 
-At the end of the run, check the log against the current task through supported task-history APIs. If that surface is unavailable, use the active conversation digest plus live git and artifact state. Do not scrape a private host store. Walk the log against what actually happened:
+Append through:
 
-- Every row maps to a real action. Cut invented or aspirational entries.
-- Each row's evidence resolves and shows what the row claims.
-- A fork, pivot, or abandoned approach that shaped the work but isn't logged is a gap. Add it.
-- Drop padding. If nobody would audit a row, it doesn't earn its place.
+```text
+node scripts/audit.mjs event <run-dir> <actor> <parent> <event> <detail> <evidence> <state> <ref>
+```
 
-Fix the log, not the story. If the work diverged from what a row claims, the row is wrong.
+Do not record chain-of-thought, prompt text, commentary transcripts, unrelated commands, or routine tool calls. The trace explains lifecycle and visibility gaps. It is not a transcript.
 
-## Cross-model review of the trail
+## Freshness boundaries
 
-Before handing back, resolve `arena cross-judge pool` through `../setup-pstack/references/model-profile.md`. Select one exact resolved lane from a different observable model family when available. Use a generic independent agent with that role and lane. If independent agents are unavailable, fail closed on claiming cross-model review and report that limitation. The reviewer reads the audit trail and supported task history or digest, then flags what the user should inspect.
+Append a decision row before a new phase, after a commit, after a subagent result, after a failed gate, and before an irreversible action. Record scope changes and owner decisions when received. A commit or verification receipt also earns a matching trace event.
 
-- Decisions logged with weak or absent evidence.
-- Verification steps skipped or claimed without proof in task history, receipts, or live state.
-- Choices that look risky in hindsight (premature, scope-creeping, papering over a symptom).
-- Gaps the user would otherwise miss on a casual skim.
+During long active work, checkpoint at the next supported task turn or authorized heartbeat when the current unit, evidence, blocker, remaining gates, or next action changed. If nothing changed, do not duplicate the ledger row. Record one `wait` or `timeout` event with the awaited predicate and last evidence. Never create a fixed-frequency shell loop for audit logging.
 
-Every reply for a run that produced a trail ends with an "Attention" section. Lead with the reviewer's model on its own line (`reviewed by <model>`), then list each flag pointing to specific rows or moments. "No flags" is a valid value; the model name is not. The self-audit asks if the log told the truth; this asks what the user should still scrutinize even when it did.
+Any derived checklist, status page, or handoff names the audit run ID and canonical ledger path. It may summarize rows, but it cannot become another decision log.
 
-## Reviewing the trail
+## Privacy and evidence
 
-Read top to bottom, follow the evidence pointers, spot-check. GitHub renders a committed TSV as a table; `column -s$'\t' -t decisions.tsv` renders it in a terminal. A row whose evidence doesn't resolve, or whose result is unverified, is the audit catching a gap.
+The run metadata labels both artifacts `private`. Keep them outside the repository and never commit, upload, or paste them into public review. Public repository cleanup must leave the private run intact.
 
-## Composing this skill
+Use references and digests instead of payloads. Never store credentials, tokens, prompt bodies, environment dumps, customer data, or command output that can contain secrets. `audit.mjs` rejects common secret-shaped references and spreadsheet formulas, but the writer still owns content safety.
 
-Other skills route their audit trail here instead of inventing one. Reference it by name and let it own the format; don't restate the columns.
+## Review the run
+
+At handoff, compare both files with supported task history, live git, receipts, and artifacts. Do not scrape a private host store. Confirm that every row happened, every evidence pointer resolves, every agent has a start and terminal state, and every long gap has a wait, timeout, blocker, or checkpoint. Append corrections. Never edit or delete earlier rows.
+
+Before handoff, resolve `arena cross-judge pool` through `../setup-pstack/references/model-profile.md`. Use a different observable model family when available. If independent review is unavailable, report that limitation. Append each finding as a `review` event and a ledger row whose `ref` names the affected row or event. This keeps cross-model findings traceable.
+
+Every reply for a run with a trail ends with an `Attention` section. Name the reviewing model, then list flags with ledger or event references. `No flags` is valid.

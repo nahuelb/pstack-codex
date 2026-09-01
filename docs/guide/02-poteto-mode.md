@@ -24,7 +24,9 @@ The second prompt routes to a read-only investigation because the authority boun
 
 The explicit invocation always applies to the current turn. Trusted hooks can persist Poteto Mode for later turns in the same session. The hook state is keyed by session and project, expires, and does not authorize new actions.
 
-When hook trust or stable session context is unavailable, the mode reports `current-turn-only`. Invoke `$poteto-mode` again on a later turn. Do not assume that a prior activation survived a resume or compaction without a healthy receipt.
+The activation hook also creates one private audit run. Its receipt names the parent task, stable run ID, canonical decision ledger, and linked execution trace. Later turns and subagents adopt that run. The artifacts stay in private plugin data and survive repository cleanup.
+
+When hook trust or stable session context is unavailable, the mode reports `current-turn-only`. It must create a private fallback audit run before work continues. Invoke `$poteto-mode` again on a later turn. Do not assume that a prior activation survived a resume or compaction without a healthy receipt.
 
 Disable the session state with:
 

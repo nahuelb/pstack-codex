@@ -13,13 +13,15 @@ All delegation, lifecycle, isolation, history, connector, and capability behavio
 
 The exact phrase `disable $poteto-mode` opts the current session out. It removes only that session's state. Session end is advisory because Codex can resume the same session. State expires through the bundled versioned TTL collector instead.
 
-The activation hook adds a `Poteto sticky receipt` context line when it ran successfully. If that receipt is absent, unknown, stale, or reports a mismatch, follow this skill for the current turn and state that cross-turn sticky behavior is inactive because trusted hooks could not be verified. Never infer global or cross-session activation.
+The activation hook adds a `Poteto sticky receipt` and a private audit receipt when it ran successfully. Adopt the named run and verify it through the **show-me-your-work** skill before other work. If the audit receipt is absent or invalid, initialize a private fallback run through that skill before continuing. If no private state root is available, stop because Poteto Mode cannot meet its audit contract. Never infer global or cross-session activation.
 
-Later active turns receive compact developer context from the hook. Compaction and resume use the same stable session state and must not duplicate the mode wrapper. Only the exact `pstack-poteto-agent` custom agent receives hook-provided subagent context. Fallback agents never inherit Poteto Mode merely because the main session is active.
+Later active turns receive compact developer context from the hook. Compaction and resume use the same stable session state and must not duplicate the mode wrapper. Every subagent receives the private audit receipt. Only the exact `pstack-poteto-agent` custom agent receives the Poteto persona context. Fallback agents never inherit Poteto Mode merely because the main session is active.
 
 ## Non-negotiables
 
 **Start every multi-step task with a todolist whose first item is to read the Principles section below in full.** The principles ground every trigger here. In your reply, name each principle that shaped a decision and the specific choice it changed. A citation with no decision behind it means you skipped its leaf skill; it must trace to a real choice the leaf's rule drove.
+
+**Every Poteto run uses the private audit run from show-me-your-work.** The main agent and every subagent share its run ID. Keep the decision ledger concise and the linked execution trace limited to lifecycle and performance facts. Apply its freshness boundaries throughout the run.
 
 Remaining triggers:
 
@@ -39,7 +41,7 @@ Remaining triggers:
 - Asked to land or ship a green stack → the **Shipping** playbook (`playbooks/shipping.md`). Green is not safe. Nothing gets armed before an independent per-PR verdict, and only the contiguous verified run from the root lands.
 - Bugbot or the agentic security review commented → skeptical posture. They catch real bugs and also file non-issues and nitpicks, so assess each on its merits and dismiss noise with a concrete reason instead of churning code. Triage fix / dismiss / ask per `references/bugbot-triage.md`.
 - Broken skill mid-task → fix it in its own PR. Don't block. Don't silently work around it.
-- Long, autonomous, or multi-phase work, or any task the user steps away from to review later ("going to bed", "trust it when i'm back", "keep working until X") → a decision trail via the **show-me-your-work** skill. Commit it when stakes need an auditable record; keep it local otherwise.
+- Long, autonomous, or multi-phase work, or any task the user steps away from to review later ("going to bed", "trust it when i'm back", "keep working until X") → use the **show-me-your-work** long-work checkpoint rule. Keep the canonical trail private.
 
 ## Principles
 
@@ -95,7 +97,7 @@ Read the leaf skill in full for any principle you apply. Each entry names when i
 
 **Use the exact `pstack-poteto-agent` custom agent for the Poteto persona.** Resolve each playbook delegate's model lane from `../setup-pstack/references/model-profile.md`. Pass its explicit `model`, `reasoning_effort`, and `service_tier` when present as one spawn configuration. Standard lanes omit `service_tier`. Feature and refactoring use `feature, refactoring`. Bug fixes, performance work, and hillclimbs use their matching role. Use `judgment and prose` for judgment or prose work. Use `hardest tasks` for ambiguous cross-cutting design, subtle concurrency, or difficult algorithms. The defaults are `xai/grok-4.6` at `xhigh` for feature and refactoring, `gpt-5.6-sol` at `max` for bug fixes, performance work, and hillclimbs, and `anthropic/claude-fable-5` at `max` for judgment, prose, and the hardest tasks. Routed workflow skills (`how`, `why`, `arena`, `swarm`, `architect`, `interrogate`, `reflect`) own their named registry roles.
 
-Follow `references/codex-agent-runtime.md` before dispatch. Prove write isolation first. The main agent reviews actual results and produces the final summary. Steering, stopping, retries, partial results, nested work, and unavailable capabilities use the contract's declared paths.
+Follow `references/codex-agent-runtime.md` before dispatch. Prove write isolation first. Every brief carries the private audit run ID, paths, and actor and parent identities. Start and stop hooks record the lifecycle boundaries. The main agent records delegation, worker results, and missing terminal reconciliation. The main agent reviews actual results and produces the final summary. Steering, stopping, retries, partial results, nested work, and unavailable capabilities use the contract's declared paths.
 
 ## Writing the reply
 

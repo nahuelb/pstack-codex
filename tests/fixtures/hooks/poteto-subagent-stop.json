@@ -1,0 +1,10 @@
+{
+  "session_id": "thr_fixture_active",
+  "turn_id": "turn_2",
+  "agent_id": "agent_1",
+  "agent_type": "pstack-poteto-agent",
+  "cwd": "/workspace/project-a",
+  "hook_event_name": "SubagentStop",
+  "stop_hook_active": false,
+  "last_assistant_message": "done"
+}
