@@ -40,4 +40,8 @@ while read -r local_ref local_sha remote_ref remote_sha; do
   fi
 done
 
+while read -r variable; do
+  unset "$variable"
+done < <(git rev-parse --local-env-vars)
+
 npm run verify:offline

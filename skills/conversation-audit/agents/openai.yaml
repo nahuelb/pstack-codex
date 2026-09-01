@@ -1,0 +1,8 @@
+interface:
+  display_name: "Conversation Audit"
+  short_description: "Audit Codex runs and pstack performance"
+  default_prompt: "Use $conversation-audit to deeply audit this Codex conversation and propose evidence-backed pstack improvements."
+policy:
+  products:
+    - CODEX
+  allow_implicit_invocation: false
