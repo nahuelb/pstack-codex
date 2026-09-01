@@ -47,7 +47,7 @@ Role choices are a second JSON object keyed by the exact role labels from `refer
 {
   "feature, refactoring": {"model":"anthropic/claude-opus-5","reasoning_effort":"high"},
   "how critics": [
-    {"model":"anthropic/claude-fable-5","reasoning_effort":"xhigh"},
+    {"model":"anthropic/claude-fable-5-1","reasoning_effort":"xhigh"},
     {"model":"gpt-5.6-luna","reasoning_effort":"max","service_tier":"priority"},
     "inherit-parent"
   ]

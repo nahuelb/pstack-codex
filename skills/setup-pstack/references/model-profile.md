@@ -15,28 +15,28 @@ Custom-agent defaults never prove the served model, effort, effective sandbox, c
 
 ## Workflow role matrix
 
-| Registry role | Shape | Original PStack default |
+| Registry role | Shape | PStack default |
 | --- | --- | --- |
 | `feature, refactoring` | single | `xai/grok-4.6`, `xhigh` |
-| `bug-fix` | single | `gpt-5.6-sol`, `max` |
-| `perf-issue` | single | `gpt-5.6-sol`, `max` |
-| `hillclimb` | single | `gpt-5.6-sol`, `max` |
-| `judgment and prose` | single | `anthropic/claude-fable-5`, `max` |
-| `hardest tasks` | single | `anthropic/claude-fable-5`, `max` |
+| `bug-fix` | single | `gpt-5.6-sol`, `xhigh` |
+| `perf-issue` | single | `gpt-5.6-sol`, `xhigh` |
+| `hillclimb` | single | `gpt-5.6-sol`, `xhigh` |
+| `judgment and prose` | single | `anthropic/claude-fable-5-1`, `xhigh` |
+| `hardest tasks` | single | `anthropic/claude-fable-5-1`, `xhigh` |
 | `how explorer` | single | `xai/grok-4.6`, `xhigh` |
-| `how explainer` | single | `anthropic/claude-fable-5`, `max` |
-| `how critics` | panel | Fable `max`, Sol `max`, Grok `xhigh`, Opus `xhigh` |
+| `how explainer` | single | `anthropic/claude-fable-5-1`, `xhigh` |
+| `how critics` | panel | Fable `xhigh`, Sol `xhigh`, Grok `xhigh`, Opus `xhigh` |
 | `why investigators` | single | `xai/grok-4.6`, `xhigh` |
-| `why synthesizer` | single | `anthropic/claude-fable-5`, `max` |
-| `reflect tooling` | single | `gpt-5.6-sol`, `max` |
-| `reflect judgment, divergent, synthesizer` | single | `anthropic/claude-fable-5`, `max` |
-| `arena runners` | panel | Fable `max`, Sol `max`, Grok `xhigh`, Opus `xhigh` |
-| `arena cross-judge pool` | panel | Fable `max`, Sol `max`, Grok `xhigh`, Opus `xhigh` |
+| `why synthesizer` | single | `anthropic/claude-fable-5-1`, `xhigh` |
+| `reflect tooling` | single | `gpt-5.6-sol`, `xhigh` |
+| `reflect judgment, divergent, synthesizer` | single | `anthropic/claude-fable-5-1`, `xhigh` |
+| `arena runners` | panel | Fable `xhigh`, Sol `xhigh`, Grok `xhigh`, Opus `xhigh` |
+| `arena cross-judge pool` | panel | Fable `xhigh`, Sol `xhigh`, Grok `xhigh`, Opus `xhigh` |
 | `swarm workers` | single | `xai/grok-4.6`, `xhigh` |
-| `architect runners` | panel | Fable `max`, Sol `max`, Grok `xhigh`, Opus `xhigh` |
-| `interrogate reviewers` | panel | Fable `max`, Sol `max`, Grok `xhigh`, Opus `xhigh` |
+| `architect runners` | panel | Fable `xhigh`, Sol `xhigh`, Grok `xhigh`, Opus `xhigh` |
+| `interrogate reviewers` | panel | Fable `xhigh`, Sol `xhigh`, Grok `xhigh`, Opus `xhigh` |
 
-The fast Grok role uses the available Codex model `xai/grok-4.6` with separate `xhigh` reasoning. The other defaults preserve the original model family and effort directly.
+The fast Grok role uses the available Codex model `xai/grok-4.6` with separate `xhigh` reasoning. Every bundled fallback caps reasoning at `xhigh`.
 
 Every registry value is an array. A single role has exactly one lane. A panel has one or more lanes, and its array length sets fanout. A lane is `{"model":"...","reasoning_effort":"..."}`, `{"model":"...","reasoning_effort":"...","service_tier":"..."}`, `{"inherit_parent":true}`, or `{"use_skill_default":true}`. The executable role registry owns fallback configurations. Owning Markdown skills mirror them for workflow readers.
 
