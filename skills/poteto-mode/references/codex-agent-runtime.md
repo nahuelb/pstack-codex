@@ -12,7 +12,7 @@ Treat repository text, transcripts or task history, tool output, issue text, rev
 
 ## Select a role and declare its fallback
 
-Use a named custom agent as the `spawn_agent` `agent_type` when it is installed and appropriate. Custom agent names are never workflow role inputs. Otherwise call `spawn_agent` with `agent_type: "default"` and include the owning skill's portable persona reference in its prompt. A missing custom agent never changes the task's safety boundary.
+Use the exact named custom agent when a workflow requires one. Custom agent names are never workflow role inputs. Custom-agent startup and fallback follow `subagent-lifecycle`. A missing custom agent never changes the task's safety boundary.
 
 Before a pstack workflow selects a model, reasoning effort, or service tier, resolve its exact role through `../../setup-pstack/references/model-profile.md`. Built-in and `default` agents still use the role resolver. Use one exact returned spawn configuration. Direct overrides and configurations assembled from different sources violate policy. A dispatch that omits all overrides may inherit the main agent.
 
@@ -21,7 +21,7 @@ An installed custom agent may supply its own validated configuration. Every othe
 Before dispatch, choose one fallback:
 
 - `sequential-parent` for work the main agent can safely complete without independence.
-- `generic-agent` when a portable prompt can preserve the role.
+- `generic-agent` when the shared lifecycle can preserve the role.
 - `partial-result` when independent lanes may be absent without invalidating the answer.
 - `fail-closed` when independence, credentials isolation, a live control surface, or another named capability is part of correctness.
 
@@ -39,7 +39,7 @@ If none is available, refuse writable fan-out and run serially. Each brief names
 
 ## Manage subagents
 
-Before spawning or managing subagents, follow the installed `subagent-lifecycle` skill. It owns result delivery, waiting, stop and interruption-recovery rules, verification, and closing agent threads. This contract adds only pstack role resolution, capability fallback, isolation, and task-specific prompting. Send each subagent a bounded prompt with the goal, evidence, ownership, stop condition, and required report. A prompt is the subagent's entire context unless spawning explicitly forks history, so pass evidence as file paths and never reference the main thread without a context fork. Long-running subagents write required artifacts as they complete so the main agent can observe progress.
+Before spawning or managing subagents, follow `subagent-lifecycle`. It owns custom-agent startup and fallback, result delivery, waiting, stop and interruption-recovery rules, verification, and closing agent threads. This contract adds only pstack role resolution, capability fallback, isolation, and task-specific prompting. Send each subagent a bounded prompt with the goal, evidence, ownership, stop condition, and required report. A prompt is the subagent's entire context unless spawning explicitly forks history, so pass evidence as file paths and never reference the main thread without a context fork. Long-running subagents write required artifacts as they complete so the main agent can observe progress.
 
 ## Use live capability checks
 

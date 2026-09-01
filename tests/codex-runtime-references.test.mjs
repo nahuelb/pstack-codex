@@ -15,6 +15,7 @@ const FORBIDDEN_RUNTIME_PATTERNS = [
   [/`Task`|\bsubagent_type\b|\bcloud_base_branch\b|`environment:\s*"(?:cloud|local)"`|`readonly`:\s*(?:true|false)/i, "non-Codex agent schema"],
   [/\bAskQuestion\b/i, "Cursor question tool"],
   [/\brun_in_background\b/i, "Cursor background flag"],
+  [/(?:\bGlob\b|\bGrep\b|`Read` tool)/, "Claude file-tool name"],
   [/\bcloud[- ]agent\b/i, "Cursor cloud-agent recipe"],
   [/(?:terminal\s+)?\/loop\b|cloud-sleeper|monitored-shell[^\n]*sleep/i, "unsupported loop mechanic"],
   [/supported Codex task history\/?|supported task history\//i, "invented task-history path"],
@@ -118,20 +119,38 @@ test("internal review delegation cannot create a separate task", async () => {
   assert.match(runtime, /Call `spawn_agent` for both custom agents and built-in agents/);
   assert.match(runtime, /Never use `create_thread` or another separate-task API for a subagent/);
   assert.match(runtime, /Custom agent names are never workflow role inputs/);
-  assert.match(noComments, /`agent_type: "pstack-comment-sicko"`/);
-  assert.match(noComments, /`agent_type: "default"`/);
-  assert.match(noComments, /Call `wait_agent` because step 2 requires the report/);
-  assert.match(noComments, /If `spawn_agent` is unavailable, report the review capability as blocked/);
+  assert.match(noComments, /Start the `pstack-comment-sicko` custom agent/);
+  assert.match(noComments, /Follow `subagent-lifecycle`/);
+  assert.doesNotMatch(noComments, /`agent_type: "default"`/);
+  assert.match(noComments, /If no subagent can run, report the review capability as blocked/);
 });
 
-test("Poteto composes the shared subagent lifecycle skill", async () => {
+test("Poteto delegates custom-agent fallback to the shared lifecycle", async () => {
   const runtime = await fs.readFile(
     path.join(skillsRoot, "poteto-mode", "references", "codex-agent-runtime.md"),
     "utf8",
   );
 
-  assert.match(runtime, /follow the installed `subagent-lifecycle` skill/);
-  assert.match(runtime, /It owns result delivery, waiting, stop and interruption-recovery rules/);
+  assert.match(runtime, /follow `subagent-lifecycle`/);
+  assert.match(runtime, /It owns custom-agent startup and fallback, result delivery, waiting/);
+  assert.doesNotMatch(runtime, /start a `default` agent with the complete portable persona prompt/);
   assert.doesNotMatch(runtime, /pstack completion callback/);
   assert.doesNotMatch(runtime, /15-minute timeout/);
+});
+
+test("bundled lifecycle owns portable custom-agent fallback", async () => {
+  const [lifecycle, runtime, noComments, poteto] = await Promise.all([
+    fs.readFile(path.join(skillsRoot, "subagent-lifecycle", "SKILL.md"), "utf8"),
+    fs.readFile(path.join(skillsRoot, "poteto-mode", "references", "codex-agent-runtime.md"), "utf8"),
+    fs.readFile(path.join(skillsRoot, "no-comments", "SKILL.md"), "utf8"),
+    fs.readFile(path.join(skillsRoot, "poteto-mode", "SKILL.md"), "utf8"),
+  ]);
+
+  assert.match(lifecycle, /`pstack-poteto-agent`: `\.\.\/poteto-mode\/references\/poteto-agent-prompt\.md`/);
+  assert.match(lifecycle, /`pstack-comment-sicko`: `\.\.\/no-comments\/references\/comment-sicko-prompt\.md`/);
+  assert.match(lifecycle, /start a `default` agent with the complete portable persona prompt/);
+  assert.match(lifecycle, /must not invoke the owning orchestration skill or start another copy of itself/);
+  assert.doesNotMatch(runtime, /poteto-agent-prompt\.md|comment-sicko-prompt\.md/);
+  assert.doesNotMatch(noComments, /comment-sicko-prompt\.md/);
+  assert.doesNotMatch(poteto, /poteto-agent-prompt\.md/);
 });

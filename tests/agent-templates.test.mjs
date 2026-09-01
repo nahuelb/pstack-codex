@@ -24,7 +24,8 @@ test("portable prompt assets replace the legacy top-level personas", async () =>
 
   const poteto = await fs.readFile(path.join(root, "skills/poteto-mode/references/poteto-agent-prompt.md"), "utf8");
   const comments = await fs.readFile(path.join(root, "skills/no-comments/references/comment-sicko-prompt.md"), "utf8");
-  assert.match(poteto, /Read the `poteto-mode` skill's `SKILL\.md` in full/);
+  assert.match(poteto, /Do not invoke `poteto-mode` or start another Poteto delegate/);
+  assert.doesNotMatch(poteto, /Read the `poteto-mode` skill/);
   assert.match(comments, /Yes\.\.\. Ha ha ha\.\.\. Yes!/);
 });
 

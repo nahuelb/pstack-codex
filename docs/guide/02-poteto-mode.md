@@ -40,10 +40,10 @@ Codex agents can share a filesystem. Before parallel writes, give each agent exc
 $poteto-mode compare two parser designs. Put each disposable candidate in its own output directory. Do not edit production code.
 ```
 
-The parent integrates the winner and runs the authoritative checks.
+The main agent integrates the winner and runs the authoritative checks.
 
 ## Expect visible fallbacks
 
-A playbook declares what happens when a custom profile, subagent, connector, control tool, or history API is unavailable. The common fallbacks are sequential parent work, a generic agent with a portable prompt, a labeled partial result, or a closed stop. Poteto Mode does not silently drop a lane.
+A playbook declares what happens when a custom agent, subagent, connector, control tool, or history API is unavailable. `subagent-lifecycle` owns custom-agent fallback. Poteto Mode does not silently drop a lane.
 
 Next: [Understand the code](./03-understand.md).
