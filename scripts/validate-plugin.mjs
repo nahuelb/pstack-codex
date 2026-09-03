@@ -122,6 +122,11 @@ export async function validateManifest(root, manifest) {
       if (typeof ui[field] !== "string" || !ui[field].trim()) errors.push(`manifest interface.${field} is required`);
     }
     if (ui.category !== "Developer Tools") errors.push("manifest interface.category must be Developer Tools");
+    if (ui.logo !== "./assets/logo.png") errors.push("manifest interface.logo must be ./assets/logo.png");
+    if (ui.logo === "./assets/logo.png") {
+      const stat = await fs.stat(path.join(root, "assets/logo.png")).catch(() => null);
+      if (!stat?.isFile()) errors.push("manifest logo is missing");
+    }
   }
   return errors;
 }

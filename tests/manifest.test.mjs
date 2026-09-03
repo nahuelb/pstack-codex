@@ -17,6 +17,8 @@ test("Codex manifest and repo marketplace expose the root plugin", async () => {
   assert.deepEqual(await validateMarketplace(root, marketplace), []);
   assert.equal(manifest.name, "pstack-for-codex");
   assert.equal(manifest.skills, "./skills/");
+  assert.equal(manifest.interface.logo, "./assets/logo.png");
+  assert.ok((await fs.stat(path.join(root, "assets/logo.png"))).isFile());
   assert.equal(marketplace.plugins[0].source.path, "./");
   await assert.rejects(fs.stat(path.join(root, ".cursor-plugin/plugin.json")), { code: "ENOENT" });
 });
@@ -41,6 +43,8 @@ test("manifest validation accepts the local cachebuster version", async (context
   const temporary = await fs.mkdtemp(path.join(os.tmpdir(), "pstack-cachebuster-test-"));
   context.after(() => fs.rm(temporary, { recursive: true, force: true }));
   await fs.mkdir(path.join(temporary, "skills"));
+  await fs.mkdir(path.join(temporary, "assets"));
+  await fs.writeFile(path.join(temporary, "assets/logo.png"), "logo");
 
   const manifest = JSON.parse(await fs.readFile(path.join(root, ".codex-plugin/plugin.json"), "utf8"));
   manifest.version = "0.2.0+codex.20260828120000";

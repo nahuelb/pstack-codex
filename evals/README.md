@@ -1,6 +1,6 @@
 # Release evaluation evidence
 
-This directory is the release ledger for `pstack-for-codex` version `0.2.0`, derived from upstream pstack `0.14.5` at `fd878692de15a3069c21c8f429eb0b9f2fe178fa`. The immutable upstream file inventory is [`../upstream.lock.json`](../upstream.lock.json); [`cases/coverage.yaml`](cases/coverage.yaml) maps all 45 upstream skills and all 23 upstream playbooks, while [`cases/representative.yaml`](cases/representative.yaml) covers direct, indirect, incomplete-input, negative-trigger, unsupported-capability, setup, hook, and connector boundaries.
+This directory is the release ledger for `pstack-for-codex` version `0.2.0`, derived from upstream pstack `0.14.8` at `7314f723a487ec406b6369fe5865ba034cfed166`. The immutable upstream file inventory is [`../upstream.lock.json`](../upstream.lock.json); [`cases/coverage.yaml`](cases/coverage.yaml) maps all 45 upstream skills and all 23 upstream playbooks, while [`cases/representative.yaml`](cases/representative.yaml) covers direct, indirect, incomplete-input, negative-trigger, unsupported-capability, setup, hook, and connector boundaries.
 
 ## Recorded environment
 

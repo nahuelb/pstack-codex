@@ -109,6 +109,36 @@ test("model-role guidance passes the complete spawn configuration", async () => 
   }
 });
 
+test("PR stack workflows use GitHub base branches and regression lanes", async () => {
+  const relativePaths = [
+    "skills/poteto-mode/playbooks/autopilot-full.md",
+    "skills/poteto-mode/playbooks/autopilot-stack.md",
+    "skills/poteto-mode/playbooks/babysit.md",
+    "skills/poteto-mode/playbooks/multi-phase-plan.md",
+    "skills/poteto-mode/playbooks/opening-a-pr.md",
+    "skills/poteto-mode/playbooks/shipping.md",
+  ];
+  const content = await Promise.all(relativePaths.map((relativePath) => fs.readFile(path.join(root, relativePath), "utf8")));
+  for (const [index, source] of content.entries()) {
+    assert.doesNotMatch(source, /Graphite|\bgt\b|\borigin pr\b/i, relativePaths[index]);
+  }
+  assert.match(content[1], /base-branch stack/);
+  assert.match(content[3], /Regression lane against trunk/);
+  assert.match(content[4], /gh pr create --base/);
+  assert.match(content[5], /gh pr merge <pr> --squash --auto/);
+  assert.match(content[5], /base-to-head.*patch-id|patch-id.*base-to-head/s);
+});
+
+test("TypeScript guidance prefers existing runtime schemas over duplicate guards", async () => {
+  const [skill, patterns] = await Promise.all([
+    fs.readFile(path.join(root, "skills/typescript-best-practices/SKILL.md"), "utf8"),
+    fs.readFile(path.join(root, "skills/typescript-best-practices/references/patterns.md"), "utf8"),
+  ]);
+  assert.match(skill, /Schemas before guards/);
+  assert.match(patterns, /z\.infer/);
+  assert.match(patterns, /Do not add a new dependency for one guard/);
+});
+
 test("internal review delegation cannot create a separate task", async () => {
   const runtime = await fs.readFile(
     path.join(skillsRoot, "poteto-mode", "references", "codex-agent-runtime.md"),

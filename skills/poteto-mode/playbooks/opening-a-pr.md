@@ -22,10 +22,10 @@ Invoked at the end of every other playbook.
 
 After these sections, attach videos or screenshots when they prove a claim. Do not use `## Summary` or `## Test plan` boilerplate. A commit body does not restate its subject.
 
-**Size and stacks.** Prefer five narrow PRs to one large PR. Stack follow-ups with Graphite (`gt`), and keep the ordered stack visible to reviewers. Branch from main only for independent work. Rebase on `main` before substantial stack work.
+**Size and stacks.** Prefer five narrow PRs to one large PR. A stack is a base-branch chain on GitHub. The root PR targets main. Each child branch rebases onto its parent's exact tip, and its PR targets that parent branch. Create a child with `gh pr create --base <parent-branch>`. Retarget one with `gh pr edit <pr> --base <parent-branch>`. Branch from main only for independent work.
 
-**Readiness.** Open every PR ready, never as a draft. Set `draft: false` on PR API calls. If a PR still opens as a draft, run the host's ready command, such as `gh pr ready <number>`. Run `gh pr view <number>` before you refer to PR status.
+**Readiness.** Open every PR ready, never as a draft. Omit `--draft` with `gh`, and set `draft: false` on PR API calls. If a PR still opens as a draft, run `gh pr ready <number>`. Run `gh pr view <number>` before you refer to PR status.
 
 **Babysit.** Opening a PR does not start a babysit. Post the URL and keep building. Finish the phase or stack first. Run a separate babysit pass only when the user asks for one after the whole stack exists. A babysit for each new PR stalls the build and spends checks on commits that later waves restart. Push back when feedback drifts from intent.
 
-A subagent that opens a PR runs `$interrogate`, `$unslop`, and `$no-comments`. It returns the URL and does not babysit. Return to the parent.
+A subagent that opens a PR runs `$interrogate`, `$unslop`, and `$no-comments`. It returns the URL and does not babysit. Return to the main agent.

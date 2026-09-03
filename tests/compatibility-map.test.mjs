@@ -19,8 +19,8 @@ test("every locked upstream path has one complete compatibility entry", async ()
   const map = JSON.parse(await fs.readFile(path.join(root, "compatibility/pstack-map.json"), "utf8"));
   const result = validateCompatibility(lock, map);
   assert.deepEqual(result.errors, []);
-  assert.equal(map.entries.length, 157);
-  assert.equal(new Set(map.entries.map((entry) => entry.upstreamPath)).size, 157);
+  assert.equal(map.entries.length, 158);
+  assert.equal(new Set(map.entries.map((entry) => entry.upstreamPath)).size, 158);
 });
 
 test("new upstream files block promotion until classified", () => {

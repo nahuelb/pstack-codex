@@ -3,8 +3,8 @@
   "upstream": {
     "repository": "https://github.com/cursor/plugins",
     "subdirectory": "pstack",
-    "commit": "fd878692de15a3069c21c8f429eb0b9f2fe178fa",
-    "version": "0.14.5"
+    "commit": "7314f723a487ec406b6369fe5865ba034cfed166",
+    "version": "0.14.8"
   },
   "classifications": [
     "preserved",
@@ -15,7 +15,7 @@
   "entries": [
     {
       "upstreamPath": ".cursor-plugin/plugin.json",
-      "upstreamSha256": "ba4b0f227dfaca817512cac1d926eb5609b2a0886ac14bf0664997427a31588f",
+      "upstreamSha256": "01cdd5599f6d36ed8a1665f539626f3e9fbb0c695b03d30f8e573d2c75d3ede0",
       "classification": "replaced",
       "derivedPath": ".codex-plugin/plugin.json",
       "preservedInvariants": [
@@ -26,7 +26,12 @@
       "validations": [
         "manifest",
         "installed-plugin"
-      ]
+      ],
+      "refreshDisposition": {
+        "upstreamSha256": "01cdd5599f6d36ed8a1665f539626f3e9fbb0c695b03d30f8e573d2c75d3ede0",
+        "disposition": "codex-adapted",
+        "rationale": "Ported the logo through Codex interface.logo while retaining the Codex manifest identity and schema."
+      }
     },
     {
       "upstreamPath": ".gitignore",
@@ -65,6 +70,23 @@
         "agent-template",
         "skill-behavior"
       ]
+    },
+    {
+      "upstreamPath": "assets/logo.png",
+      "upstreamSha256": "672f6791589ef758b0ced2c4c477913fa2758623c438e265639a0d539ce90695",
+      "classification": "preserved",
+      "derivedPath": "assets/logo.png",
+      "preservedInvariants": [
+        "the upstream artifact remains byte-identical"
+      ],
+      "validations": [
+        "upstream-hash"
+      ],
+      "refreshDisposition": {
+        "upstreamSha256": "672f6791589ef758b0ced2c4c477913fa2758623c438e265639a0d539ce90695",
+        "disposition": "preserved-byte-identical",
+        "rationale": "Preserved the new upstream logo byte-for-byte as the Codex plugin presentation asset."
+      }
     },
     {
       "upstreamPath": "automations/benny/FOR_AGENTS.md",
@@ -272,7 +294,7 @@
     },
     {
       "upstreamPath": "docs/guide/06-verify-and-ship.md",
-      "upstreamSha256": "12e0540d20ac06b2b01ff4be7023f1e83d510882cd95f56d8ea52a53ab8ccf8a",
+      "upstreamSha256": "c93cd50c0359ce875a82b3f7d64eab102a4b0815dbbecdb8e0e5e910bd2d18e9",
       "classification": "adapted",
       "derivedPath": "docs/guide/06-verify-and-ship.md",
       "preservedInvariants": [
@@ -280,11 +302,16 @@
       ],
       "validations": [
         "documentation"
-      ]
+      ],
+      "refreshDisposition": {
+        "upstreamSha256": "c93cd50c0359ce875a82b3f7d64eab102a4b0815dbbecdb8e0e5e910bd2d18e9",
+        "disposition": "codex-adapted",
+        "rationale": "Documented per-PR verification and bottom-up GitHub shipping for base-branch stacks."
+      }
     },
     {
       "upstreamPath": "docs/guide/07-overnight.md",
-      "upstreamSha256": "d3ff086392beb2a0da27a6ef881cb280a9d0a4214ef9b3d36173ac11d7c6c708",
+      "upstreamSha256": "eefbc665ad411ee22b6430d779674e5e8d8f304d51fafd80a62ab2334d095ebc",
       "classification": "adapted",
       "derivedPath": "docs/guide/07-overnight.md",
       "preservedInvariants": [
@@ -292,7 +319,12 @@
       ],
       "validations": [
         "documentation"
-      ]
+      ],
+      "refreshDisposition": {
+        "upstreamSha256": "eefbc665ad411ee22b6430d779674e5e8d8f304d51fafd80a62ab2334d095ebc",
+        "disposition": "codex-adapted",
+        "rationale": "Documented the Codex base-branch Autopilot-stack handoff without adding landing authority."
+      }
     },
     {
       "upstreamPath": "docs/guide/08-principles.md",
@@ -428,7 +460,7 @@
     },
     {
       "upstreamPath": "README.md",
-      "upstreamSha256": "c4cc4610b9411958db27b16c455fcf175a48e7a2d464efd584de149d20a82e65",
+      "upstreamSha256": "4fe423d7147cab0f2602abecb011f4621138443f524e6b9edad96a1fdcae6a6d",
       "classification": "adapted",
       "derivedPath": "README.md",
       "preservedInvariants": [
@@ -436,7 +468,12 @@
       ],
       "validations": [
         "documentation"
-      ]
+      ],
+      "refreshDisposition": {
+        "upstreamSha256": "4fe423d7147cab0f2602abecb011f4621138443f524e6b9edad96a1fdcae6a6d",
+        "disposition": "codex-adapted",
+        "rationale": "Updated the Codex model defaults and documented GitHub base-branch stack behavior."
+      }
     },
     {
       "upstreamPath": "skills/architect/references/design-red-flags.md",
@@ -476,7 +513,7 @@
     },
     {
       "upstreamPath": "skills/architect/SKILL.md",
-      "upstreamSha256": "585d7a9e03c0cced84c80d4b60c09c8dc76010bb36c579f92d9e4deafec53df7",
+      "upstreamSha256": "9dc60bcf8d8d09000cdd88636ddb7371c576282880a8bb17993d2a1ea1900285",
       "classification": "adapted",
       "derivedPath": "skills/architect/SKILL.md",
       "preservedInvariants": [
@@ -484,11 +521,16 @@
       ],
       "validations": [
         "skill-behavior"
-      ]
+      ],
+      "refreshDisposition": {
+        "upstreamSha256": "9dc60bcf8d8d09000cdd88636ddb7371c576282880a8bb17993d2a1ea1900285",
+        "disposition": "codex-adapted",
+        "rationale": "The Fable 5.1 default was already represented in Codex model and reasoning syntax."
+      }
     },
     {
       "upstreamPath": "skills/arena/SKILL.md",
-      "upstreamSha256": "a2241e8500a44d9c16bd3260c8c70e28c4bb8a857c33061d42b267057e6f7093",
+      "upstreamSha256": "c090878efc50d71605e8be518d12e71d00b451b76c2fd38ea9e0bb2a3e2f6cda",
       "classification": "adapted",
       "derivedPath": "skills/arena/SKILL.md",
       "preservedInvariants": [
@@ -496,7 +538,12 @@
       ],
       "validations": [
         "skill-behavior"
-      ]
+      ],
+      "refreshDisposition": {
+        "upstreamSha256": "c090878efc50d71605e8be518d12e71d00b451b76c2fd38ea9e0bb2a3e2f6cda",
+        "disposition": "codex-adapted",
+        "rationale": "The Fable 5.1 defaults were already represented in the Codex role registry."
+      }
     },
     {
       "upstreamPath": "skills/automate-me/SKILL.md",
@@ -644,7 +691,7 @@
     },
     {
       "upstreamPath": "skills/how/SKILL.md",
-      "upstreamSha256": "fe503e7a9b2a3a7ad2622a2de6124cb06c466922fb44bc61817b49b52042b885",
+      "upstreamSha256": "3a554ff564d66a4200a07e20164558e820ea7a9795beb98a4a06546146c98f5f",
       "classification": "adapted",
       "derivedPath": "skills/how/SKILL.md",
       "preservedInvariants": [
@@ -652,7 +699,12 @@
       ],
       "validations": [
         "skill-behavior"
-      ]
+      ],
+      "refreshDisposition": {
+        "upstreamSha256": "3a554ff564d66a4200a07e20164558e820ea7a9795beb98a4a06546146c98f5f",
+        "disposition": "codex-adapted",
+        "rationale": "Codex already uses Fable 5.1 and agents/openai.yaml for explicit-only invocation."
+      }
     },
     {
       "upstreamPath": "skills/interrogate/references/code-quality-review.md",
@@ -704,7 +756,7 @@
     },
     {
       "upstreamPath": "skills/interrogate/SKILL.md",
-      "upstreamSha256": "a009220dfe6869c8f7980a94fb1c9c7763a081a0b32fb6d0afb65b8ff1868146",
+      "upstreamSha256": "c9a42c706a84cab50d3cf1c7cf91149bac2e0d2ad24da2b8ff518ea0918ae3bb",
       "classification": "adapted",
       "derivedPath": "skills/interrogate/SKILL.md",
       "preservedInvariants": [
@@ -712,7 +764,12 @@
       ],
       "validations": [
         "skill-behavior"
-      ]
+      ],
+      "refreshDisposition": {
+        "upstreamSha256": "c9a42c706a84cab50d3cf1c7cf91149bac2e0d2ad24da2b8ff518ea0918ae3bb",
+        "disposition": "codex-adapted",
+        "rationale": "The Fable 5.1 reviewer default was already represented in Codex model and reasoning syntax."
+      }
     },
     {
       "upstreamPath": "skills/maintain-verification-skill/SKILL.md",
@@ -728,7 +785,7 @@
     },
     {
       "upstreamPath": "skills/make-bot-ui/SKILL.md",
-      "upstreamSha256": "19570abe130a9659f5238a78cabd2768beba448cdfa49bfb14156e08f04813e3",
+      "upstreamSha256": "3624c8ef16cf2e48deb2a4049e72c6962a9431c8d6c6af90e7bd7ea0375224ec",
       "classification": "adapted",
       "derivedPath": "skills/make-bot-ui/SKILL.md",
       "preservedInvariants": [
@@ -736,7 +793,12 @@
       ],
       "validations": [
         "skill-behavior"
-      ]
+      ],
+      "refreshDisposition": {
+        "upstreamSha256": "3624c8ef16cf2e48deb2a4049e72c6962a9431c8d6c6af90e7bd7ea0375224ec",
+        "disposition": "codex-adapted",
+        "rationale": "Codex already enforces explicit-only invocation through agents/openai.yaml."
+      }
     },
     {
       "upstreamPath": "skills/no-comments/SKILL.md",
@@ -776,7 +838,7 @@
     },
     {
       "upstreamPath": "skills/poteto-mode/playbooks/autopilot-full.md",
-      "upstreamSha256": "5ad2358069b95003a08dca297ffc792f3446af8458f16cdbc8e7025902d6c018",
+      "upstreamSha256": "0fbebbd42feb5be7771307ad48edc88f26b257309e86c0a3d6184f36c957da72",
       "classification": "adapted",
       "derivedPath": "skills/poteto-mode/playbooks/autopilot-full.md",
       "preservedInvariants": [
@@ -784,11 +846,16 @@
       ],
       "validations": [
         "skill-behavior"
-      ]
+      ],
+      "refreshDisposition": {
+        "upstreamSha256": "0fbebbd42feb5be7771307ad48edc88f26b257309e86c0a3d6184f36c957da72",
+        "disposition": "codex-adapted",
+        "rationale": "Ported early durable PR trails, trunk regression verification, and GitHub-only merge behavior."
+      }
     },
     {
       "upstreamPath": "skills/poteto-mode/playbooks/autopilot-stack.md",
-      "upstreamSha256": "9ef6ead011127a4cd641ab6979e42e903d15342eef5a2c2b5ab3da028d514311",
+      "upstreamSha256": "779fbc9525db85eccda650535cdfc77426b107ace8e76d810681e24485c23105",
       "classification": "adapted",
       "derivedPath": "skills/poteto-mode/playbooks/autopilot-stack.md",
       "preservedInvariants": [
@@ -796,11 +863,16 @@
       ],
       "validations": [
         "skill-behavior"
-      ]
+      ],
+      "refreshDisposition": {
+        "upstreamSha256": "779fbc9525db85eccda650535cdfc77426b107ace8e76d810681e24485c23105",
+        "disposition": "codex-adapted",
+        "rationale": "Replaced Graphite topology with a single-writer GitHub base-branch chain and patch-id revalidation."
+      }
     },
     {
       "upstreamPath": "skills/poteto-mode/playbooks/babysit.md",
-      "upstreamSha256": "84eddcd4d1560ca79a81465cf354f08d1267b114c0470e4a87e1266820c92f86",
+      "upstreamSha256": "afd5d1af6deda89dfdb1092c8311c0f89908ec708d7c052817b20a31ab996773",
       "classification": "adapted",
       "derivedPath": "skills/poteto-mode/playbooks/babysit.md",
       "preservedInvariants": [
@@ -808,11 +880,16 @@
       ],
       "validations": [
         "skill-behavior"
-      ]
+      ],
+      "refreshDisposition": {
+        "upstreamSha256": "afd5d1af6deda89dfdb1092c8311c0f89908ec708d7c052817b20a31ab996773",
+        "disposition": "codex-adapted",
+        "rationale": "Removed Graphite mutations while retaining the GitHub watcher, authority boundary, and frontier order."
+      }
     },
     {
       "upstreamPath": "skills/poteto-mode/playbooks/bug-fix.md",
-      "upstreamSha256": "ffb71024f8af25923e6a937399d6424c07bc09363eb8a81c708c0a68c4afcb9d",
+      "upstreamSha256": "283bd4013dc13bba1b80844b0aec9e078b9c175dcaa8fed14a08566856346515",
       "classification": "adapted",
       "derivedPath": "skills/poteto-mode/playbooks/bug-fix.md",
       "preservedInvariants": [
@@ -820,7 +897,12 @@
       ],
       "validations": [
         "skill-behavior"
-      ]
+      ],
+      "refreshDisposition": {
+        "upstreamSha256": "283bd4013dc13bba1b80844b0aec9e078b9c175dcaa8fed14a08566856346515",
+        "disposition": "codex-adapted",
+        "rationale": "Changed the Codex bug-fix role default to Fable 5.1 at xhigh reasoning."
+      }
     },
     {
       "upstreamPath": "skills/poteto-mode/playbooks/eval.md",
@@ -848,7 +930,7 @@
     },
     {
       "upstreamPath": "skills/poteto-mode/playbooks/hillclimb.md",
-      "upstreamSha256": "0078ed4be36486f257cf0ceeea4aec39e1e4d1900dacbffc58ef242b9037d6b0",
+      "upstreamSha256": "12f8f7a08098f0b5b3e5b61c98fadde8609bf05554b4d73efdd696cdb4e83f10",
       "classification": "adapted",
       "derivedPath": "skills/poteto-mode/playbooks/hillclimb.md",
       "preservedInvariants": [
@@ -856,7 +938,12 @@
       ],
       "validations": [
         "skill-behavior"
-      ]
+      ],
+      "refreshDisposition": {
+        "upstreamSha256": "12f8f7a08098f0b5b3e5b61c98fadde8609bf05554b4d73efdd696cdb4e83f10",
+        "disposition": "codex-adapted",
+        "rationale": "Changed the Codex hillclimb role default to Fable 5.1 at xhigh reasoning."
+      }
     },
     {
       "upstreamPath": "skills/poteto-mode/playbooks/investigation.md",
@@ -872,7 +959,7 @@
     },
     {
       "upstreamPath": "skills/poteto-mode/playbooks/multi-phase-plan.md",
-      "upstreamSha256": "273af50da917358eeb2277a7438dae13a4670889f255ee82b1835670a4206a95",
+      "upstreamSha256": "1f09461cb4dc2b1588fd22b8277a9f6da33ac25add8e505ddfe9df6af034022a",
       "classification": "adapted",
       "derivedPath": "skills/poteto-mode/playbooks/multi-phase-plan.md",
       "preservedInvariants": [
@@ -880,11 +967,16 @@
       ],
       "validations": [
         "skill-behavior"
-      ]
+      ],
+      "refreshDisposition": {
+        "upstreamSha256": "1f09461cb4dc2b1588fd22b8277a9f6da33ac25add8e505ddfe9df6af034022a",
+        "disposition": "codex-adapted",
+        "rationale": "Added trunk regression lanes, dual-sided performance budgets, and GitHub base-branch PR mechanics."
+      }
     },
     {
       "upstreamPath": "skills/poteto-mode/playbooks/opening-a-pr.md",
-      "upstreamSha256": "61bdec4b0df78d5d3fe2c966cd9b76afcc8686572c9e74c90e28268999f6c5ec",
+      "upstreamSha256": "0603d41ddc067fc3c11965c2696e8f7ccb36ade7f6325e2f6bbaf9e635b9ce96",
       "classification": "adapted",
       "derivedPath": "skills/poteto-mode/playbooks/opening-a-pr.md",
       "preservedInvariants": [
@@ -892,7 +984,12 @@
       ],
       "validations": [
         "skill-behavior"
-      ]
+      ],
+      "refreshDisposition": {
+        "upstreamSha256": "0603d41ddc067fc3c11965c2696e8f7ccb36ade7f6325e2f6bbaf9e635b9ce96",
+        "disposition": "codex-adapted",
+        "rationale": "Replaced Graphite stack creation with ready GitHub PRs whose bases form the chain."
+      }
     },
     {
       "upstreamPath": "skills/poteto-mode/playbooks/orchestrate.md",
@@ -920,7 +1017,7 @@
     },
     {
       "upstreamPath": "skills/poteto-mode/playbooks/perf-issue.md",
-      "upstreamSha256": "afb819ff5252f9d410a108bad60c42d31a10989b856c48b1993c68abd555b710",
+      "upstreamSha256": "3c1e7a4d7d273e6160cc4cfab58db3b7cef9e2a6099930012eed1c90e8c3de16",
       "classification": "adapted",
       "derivedPath": "skills/poteto-mode/playbooks/perf-issue.md",
       "preservedInvariants": [
@@ -928,7 +1025,12 @@
       ],
       "validations": [
         "skill-behavior"
-      ]
+      ],
+      "refreshDisposition": {
+        "upstreamSha256": "3c1e7a4d7d273e6160cc4cfab58db3b7cef9e2a6099930012eed1c90e8c3de16",
+        "disposition": "codex-adapted",
+        "rationale": "Changed the Codex performance role default to Fable 5.1 at xhigh reasoning."
+      }
     },
     {
       "upstreamPath": "skills/poteto-mode/playbooks/prototype.md",
@@ -980,7 +1082,7 @@
     },
     {
       "upstreamPath": "skills/poteto-mode/playbooks/shipping.md",
-      "upstreamSha256": "828d7360c40ff68f3bf23e5b4e8d1eb826b3ef89436e342ea33ee1288289c39e",
+      "upstreamSha256": "802556ac81c20fd7c2f5701d4583207943106eaea86fb8eca53f2aad1f00685a",
       "classification": "adapted",
       "derivedPath": "skills/poteto-mode/playbooks/shipping.md",
       "preservedInvariants": [
@@ -988,7 +1090,12 @@
       ],
       "validations": [
         "skill-behavior"
-      ]
+      ],
+      "refreshDisposition": {
+        "upstreamSha256": "802556ac81c20fd7c2f5701d4583207943106eaea86fb8eca53f2aad1f00685a",
+        "disposition": "codex-adapted",
+        "rationale": "Replaced Graphite draining with verified bottom-up GitHub squash merges and one-PR auto-merge."
+      }
     },
     {
       "upstreamPath": "skills/poteto-mode/playbooks/trace-forensics.md",
@@ -1028,7 +1135,7 @@
     },
     {
       "upstreamPath": "skills/poteto-mode/references/bugbot-triage.md",
-      "upstreamSha256": "fb9e5cdc5ce20a1e4d1a5bdece14eac8b0161be19872a2f5fe08acdc32d811a3",
+      "upstreamSha256": "b2d146c770d8d3593e1ef3d77b668039b8e1f78093ea1a86f1d45d7f99614309",
       "classification": "adapted",
       "derivedPath": "skills/poteto-mode/references/bugbot-triage.md",
       "preservedInvariants": [
@@ -1036,7 +1143,12 @@
       ],
       "validations": [
         "skill-behavior"
-      ]
+      ],
+      "refreshDisposition": {
+        "upstreamSha256": "b2d146c770d8d3593e1ef3d77b668039b8e1f78093ea1a86f1d45d7f99614309",
+        "disposition": "codex-adapted",
+        "rationale": "Replaced Graphite stack discovery with verified GitHub PR lists and diffs."
+      }
     },
     {
       "upstreamPath": "skills/poteto-mode/scripts/bootstrap.ts",
@@ -1280,7 +1392,7 @@
     },
     {
       "upstreamPath": "skills/poteto-mode/SKILL.md",
-      "upstreamSha256": "3b6793bdaeada0bfc7291bcc00422093bd8d10e64a9bc3b6707008ba3c4c7316",
+      "upstreamSha256": "7c4ba1987c39044947946f7cf8399acfcea156672e5ad92bbaacb448830ca954",
       "classification": "adapted",
       "derivedPath": "skills/poteto-mode/SKILL.md",
       "preservedInvariants": [
@@ -1288,7 +1400,12 @@
       ],
       "validations": [
         "skill-behavior"
-      ]
+      ],
+      "refreshDisposition": {
+        "upstreamSha256": "7c4ba1987c39044947946f7cf8399acfcea156672e5ad92bbaacb448830ca954",
+        "disposition": "codex-adapted",
+        "rationale": "Updated the changed role defaults and routed stack shipping through GitHub base branches."
+      }
     },
     {
       "upstreamPath": "skills/principle-boundary-discipline/SKILL.md",
@@ -1604,7 +1721,7 @@
     },
     {
       "upstreamPath": "skills/reflect/SKILL.md",
-      "upstreamSha256": "5485347991eb60ee226ca78c5972f9c694f6927cff3263b7f48b631ed7a9de56",
+      "upstreamSha256": "5c0fd61b383a2cf98dfd597544c6fc0fdd6eb90802f1ada4f92fa0762c323ebc",
       "classification": "adapted",
       "derivedPath": "skills/reflect/SKILL.md",
       "preservedInvariants": [
@@ -1612,11 +1729,16 @@
       ],
       "validations": [
         "skill-behavior"
-      ]
+      ],
+      "refreshDisposition": {
+        "upstreamSha256": "5c0fd61b383a2cf98dfd597544c6fc0fdd6eb90802f1ada4f92fa0762c323ebc",
+        "disposition": "codex-adapted",
+        "rationale": "The Fable 5.1 review defaults were already represented in Codex model and reasoning syntax."
+      }
     },
     {
       "upstreamPath": "skills/setup-pstack/SKILL.md",
-      "upstreamSha256": "3b62d9fd4cce8f450b36b2bc6b1df2f00d887e0a3abd55e7fc1ccbde5db96cea",
+      "upstreamSha256": "6ed4840c3005fd455e347d2a97d7fc271df7e21ecadf3298a7e2b3d46dc58701",
       "classification": "adapted",
       "derivedPath": "skills/setup-pstack/SKILL.md",
       "preservedInvariants": [
@@ -1625,7 +1747,12 @@
       "validations": [
         "skill-behavior",
         "model-config"
-      ]
+      ],
+      "refreshDisposition": {
+        "upstreamSha256": "6ed4840c3005fd455e347d2a97d7fc271df7e21ecadf3298a7e2b3d46dc58701",
+        "disposition": "codex-adapted",
+        "rationale": "Kept the Codex registry contract and moved bug, performance, and hillclimb defaults to Fable 5.1."
+      }
     },
     {
       "upstreamPath": "skills/show-me-your-work/references/decision-log-template.tsv",
@@ -1713,7 +1840,7 @@
     },
     {
       "upstreamPath": "skills/typescript-best-practices/references/patterns.md",
-      "upstreamSha256": "83d89dd2fdb81021eb18c77c57437f60314a60da79447756a547f08ece64b433",
+      "upstreamSha256": "eb73b5f3514c0c14d14bafca59ffb54b161422ea5fc5fe65e60c5b4d71c40178",
       "classification": "adapted",
       "derivedPath": "skills/typescript-best-practices/references/patterns.md",
       "preservedInvariants": [
@@ -1721,11 +1848,16 @@
       ],
       "validations": [
         "skill-behavior"
-      ]
+      ],
+      "refreshDisposition": {
+        "upstreamSha256": "eb73b5f3514c0c14d14bafca59ffb54b161422ea5fc5fe65e60c5b4d71c40178",
+        "disposition": "codex-adapted",
+        "rationale": "Added the schema-derived type example and kept validation at system boundaries."
+      }
     },
     {
       "upstreamPath": "skills/typescript-best-practices/SKILL.md",
-      "upstreamSha256": "df0ecd7518b33778f4b02c2f85ee577bbaea52caa1c49df6816b0594e128bb64",
+      "upstreamSha256": "b854da40f946f1cd4681785d3e802a2a592322d351f770f5057b56430edb35d0",
       "classification": "adapted",
       "derivedPath": "skills/typescript-best-practices/SKILL.md",
       "preservedInvariants": [
@@ -1733,11 +1865,16 @@
       ],
       "validations": [
         "skill-behavior"
-      ]
+      ],
+      "refreshDisposition": {
+        "upstreamSha256": "b854da40f946f1cd4681785d3e802a2a592322d351f770f5057b56430edb35d0",
+        "disposition": "codex-adapted",
+        "rationale": "Ported schema-first validation guidance; Codex explicit invocation remains in agents/openai.yaml."
+      }
     },
     {
       "upstreamPath": "skills/unslop/SKILL.md",
-      "upstreamSha256": "181883e539caec8258ec9129e3ba5f133409144a2cbf2aa361158ab94cfc3441",
+      "upstreamSha256": "2789ab80477b7e382292e4d7acca1057784df19713fffb74622ff0f83b2f3733",
       "classification": "adapted",
       "derivedPath": "skills/unslop/SKILL.md",
       "preservedInvariants": [
@@ -1745,7 +1882,12 @@
       ],
       "validations": [
         "skill-behavior"
-      ]
+      ],
+      "refreshDisposition": {
+        "upstreamSha256": "2789ab80477b7e382292e4d7acca1057784df19713fffb74622ff0f83b2f3733",
+        "disposition": "codex-adapted",
+        "rationale": "Codex already enforces explicit-only invocation through agents/openai.yaml."
+      }
     },
     {
       "upstreamPath": "skills/why/references/epistemics.md",
@@ -1893,7 +2035,7 @@
     },
     {
       "upstreamPath": "skills/why/SKILL.md",
-      "upstreamSha256": "dc8f2d8a7dbef7d0467cca8e6d055a4dbde027db6e2cbbfb18aa9071d8f20b6c",
+      "upstreamSha256": "a9423bb7bab7c3280d17478ebe97bb283ea6ed12d9dcae590fc2f81f41660990",
       "classification": "adapted",
       "derivedPath": "skills/why/SKILL.md",
       "preservedInvariants": [
@@ -1901,7 +2043,12 @@
       ],
       "validations": [
         "skill-behavior"
-      ]
+      ],
+      "refreshDisposition": {
+        "upstreamSha256": "a9423bb7bab7c3280d17478ebe97bb283ea6ed12d9dcae590fc2f81f41660990",
+        "disposition": "codex-adapted",
+        "rationale": "Codex already uses Fable 5.1 and agents/openai.yaml for explicit-only invocation."
+      }
     }
   ]
 }

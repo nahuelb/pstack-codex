@@ -18,9 +18,9 @@ test("fork and upstream identities remain separate", async () => {
   assert.equal(manifest.version.split("+")[0], "0.2.0");
   assert.match(manifest.version, /^0\.2\.0(?:\+codex\.[0-9A-Za-z.-]+)?$/);
   assert.equal(packageJson.version, "0.2.0");
-  assert.equal(lock.source.version, "0.14.5");
-  assert.equal(lock.source.commit, "fd878692de15a3069c21c8f429eb0b9f2fe178fa");
-  assert.equal(lock.inventory.fileCount, 157);
+  assert.equal(lock.source.version, "0.14.8");
+  assert.equal(lock.source.commit, "7314f723a487ec406b6369fe5865ba034cfed166");
+  assert.equal(lock.inventory.fileCount, 158);
 });
 
 test("inventory accounts for every upstream file, skill, and playbook", async () => {
@@ -29,8 +29,8 @@ test("inventory accounts for every upstream file, skill, and playbook", async ()
     readJson("compatibility/pstack-map.json"),
     listSkillRecords(root),
   ]);
-  assert.equal(new Set(lock.files.map((entry) => entry.path)).size, 157);
-  assert.equal(compatibility.entries.length, 157);
+  assert.equal(new Set(lock.files.map((entry) => entry.path)).size, 158);
+  assert.equal(compatibility.entries.length, 158);
   assert.deepEqual(
     new Set(compatibility.entries.map((entry) => entry.upstreamPath)),
     new Set(lock.files.map((entry) => entry.path)),

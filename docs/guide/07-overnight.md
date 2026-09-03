@@ -34,7 +34,9 @@ In the morning, inspect:
 4. the agent receipt, including missing lanes, fallbacks, and observed or unverified model pairs.
 5. remaining processes, worktrees, and scratch outputs.
 
-Treat every child report as a claim until the parent checks the artifact.
+Treat every subagent report as a claim until the main agent checks the artifact.
+
+For a coupled PR queue, Autopilot-stack prepares one reviewed base-branch chain and leaves every landing action to the operator.
 
 ## Configure Benny separately
 

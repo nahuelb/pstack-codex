@@ -18,9 +18,9 @@ Custom-agent defaults never prove the served model, effort, effective sandbox, c
 | Registry role | Shape | PStack default |
 | --- | --- | --- |
 | `feature, refactoring` | single | `xai/grok-4.6`, `xhigh` |
-| `bug-fix` | single | `gpt-5.6-sol`, `xhigh` |
-| `perf-issue` | single | `gpt-5.6-sol`, `xhigh` |
-| `hillclimb` | single | `gpt-5.6-sol`, `xhigh` |
+| `bug-fix` | single | `anthropic/claude-fable-5-1`, `xhigh` |
+| `perf-issue` | single | `anthropic/claude-fable-5-1`, `xhigh` |
+| `hillclimb` | single | `anthropic/claude-fable-5-1`, `xhigh` |
 | `judgment and prose` | single | `anthropic/claude-fable-5-1`, `xhigh` |
 | `hardest tasks` | single | `anthropic/claude-fable-5-1`, `xhigh` |
 | `how explorer` | single | `xai/grok-4.6`, `xhigh` |

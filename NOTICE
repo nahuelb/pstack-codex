@@ -4,9 +4,9 @@ Copyright (c) 2026 pstack-for-codex contributors
 This project is a derivative of pstack by Lauren Tan, originally distributed
 in the Cursor plugins repository under the MIT License:
 
-  https://github.com/cursor/plugins/tree/fd878692de15a3069c21c8f429eb0b9f2fe178fa/pstack
+  https://github.com/cursor/plugins/tree/7314f723a487ec406b6369fe5865ba034cfed166/pstack
 
-The imported source snapshot was pstack version 0.14.5 at commit
-fd878692de15a3069c21c8f429eb0b9f2fe178fa. The original license is preserved
+The imported source snapshot was pstack version 0.14.8 at commit
+7314f723a487ec406b6369fe5865ba034cfed166. The original license is preserved
 in LICENSE. Changes adapt the workflows for OpenAI Codex; this project is not
 an official Cursor or OpenAI project.

@@ -42,9 +42,9 @@ const MULTI_MODEL_DEFAULTS = [
 
 export const MODEL_ROLE_SPECS = [
   { name: "feature, refactoring", kind: "single", defaults: [{ model: "xai/grok-4.6", reasoning_effort: "xhigh" }] },
-  { name: "bug-fix", kind: "single", defaults: [{ model: "gpt-5.6-sol", reasoning_effort: "xhigh" }] },
-  { name: "perf-issue", kind: "single", defaults: [{ model: "gpt-5.6-sol", reasoning_effort: "xhigh" }] },
-  { name: "hillclimb", kind: "single", defaults: [{ model: "gpt-5.6-sol", reasoning_effort: "xhigh" }] },
+  { name: "bug-fix", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "xhigh" }] },
+  { name: "perf-issue", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "xhigh" }] },
+  { name: "hillclimb", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "xhigh" }] },
   { name: "judgment and prose", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "xhigh" }] },
   { name: "hardest tasks", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "xhigh" }] },
   { name: "how explorer", kind: "single", defaults: [{ model: "xai/grok-4.6", reasoning_effort: "xhigh" }] },

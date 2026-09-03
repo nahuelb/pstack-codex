@@ -2,7 +2,7 @@
 
 `pstack-for-codex` is a Codex-native derivative of [pstack](https://github.com/cursor/plugins/tree/main/pstack). It packages deliberate engineering workflows as 47 explicit-only skills and 23 Poteto Mode playbooks.
 
-Use `$poteto-mode` for a substantial engineering task. It selects a playbook, records the work as verifiable steps, and invokes narrower skills when the steps need them. The parent task keeps authority for integration, external writes, commits, pushes, and the final result.
+Use `$poteto-mode` for a substantial engineering task. It selects a playbook, records the work as verifiable steps, and invokes narrower skills when the steps need them. The main agent keeps authority for integration, external writes, commits, pushes, and the final result.
 
 ## Install
 
@@ -35,6 +35,8 @@ The skills keep the original PStack model defaults in their Markdown instruction
 
 - `pstack-poteto-agent` for implementation and orchestration.
 - `pstack-comment-sicko` for read-only comment review.
+
+The current defaults use Fable 5.1 for bug fixes, performance work, hillclimbs, judgment, and prose. Fast mechanical feature work remains on Grok.
 
 Setup writes profiles under `.codex/agents/` or `~/.codex/agents/`. It writes the complete role mapping to `.codex/pstack-models.json` or `~/.codex/pstack-models.json`. Fresh mappings refer back to the defaults in the Markdown skills. Project configuration overrides user configuration. Partial updates preserve omitted roles. The receipt records every owned file and refuses to overwrite other files. Setup accepts an explicit `model` and `reasoning_effort` only when a supported Codex model-list surface proves them. A standard lane omits `service_tier`. A fast lane requests `service_tier: "priority"`, which both the model list and live spawn surface must support. Without those checks, the lane inherits the parent and the receipt records the complete unverified request.
 
@@ -73,7 +75,9 @@ Browse the [complete skill directory](./skills/) or read the [pstack guide](./do
 
 Codex agents may share one filesystem. Read-only work can share a checkout. Parallel writers need exclusive file ownership, separate worktrees, or separate output directories. When safe isolation is unavailable, pstack runs the work serially.
 
-The active user request is the authority boundary. A child cannot add an external write, destination, credential, repository, or lifecycle object. Goals, heartbeats, scheduled tasks, monitors, and separate user-owned tasks are created only when the user requests that lifecycle or gives an equivalent terminal condition such as an overnight run.
+The active user request is the authority boundary. A subagent cannot add an external write, destination, credential, repository, or lifecycle object. Goals, heartbeats, scheduled tasks, monitors, and separate user-owned tasks are created only when the user requests that lifecycle or gives an equivalent terminal condition such as an overnight run.
+
+PR stacks use GitHub base branches. The root PR targets trunk, each child targets its parent branch, and authorized shipping lands them bottom-up.
 
 Hooks can keep Poteto Mode active across later turns only after Codex trusts the plugin hook source. Without trusted hook evidence, `$poteto-mode` still works for the current turn and reports `current-turn-only`. Say `disable $poteto-mode` to clear the session state.
 

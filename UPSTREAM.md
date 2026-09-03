@@ -1,12 +1,12 @@
 # Upstream maintenance
 
-This repository derives from `pstack` in `https://github.com/cursor/plugins`. The locked source is version `0.14.5` at commit `fd878692de15a3069c21c8f429eb0b9f2fe178fa`.
+This repository derives from `pstack` in `https://github.com/cursor/plugins`. The locked source is version `0.14.8` at commit `7314f723a487ec406b6369fe5865ba034cfed166`.
 
 The delivered repository contains only the modified Codex version. Do not push a raw upstream branch or snapshot commit. Do not keep an upstream remote in the delivered checkout.
 
 ## Local upstream copy
 
-This checkout keeps a full upstream clone at `.upstream/plugins`. Its local branch `locked-0.14.5` points at the locked commit `fd878692de15a3069c21c8f429eb0b9f2fe178fa`.
+This checkout keeps a full upstream clone at `.upstream/plugins`. Its local branch `locked-0.14.8` points at the locked commit `7314f723a487ec406b6369fe5865ba034cfed166`.
 
 The checkout-local `.git/info/exclude` ignores `.upstream/`. Do not add this entry to the tracked `.gitignore`. That file is hash-locked as preserved in `compatibility/pstack-map.json`, so editing it makes `compatibility:check` fail.
 
@@ -15,14 +15,14 @@ Recreate the local copy after a fresh checkout of this repository:
 ```bash
 printf '%s\n' '.upstream/' >> .git/info/exclude
 git clone https://github.com/cursor/plugins .upstream/plugins
-git -C .upstream/plugins switch --create locked-0.14.5 \
-  fd878692de15a3069c21c8f429eb0b9f2fe178fa
+git -C .upstream/plugins switch --create locked-0.14.8 \
+  7314f723a487ec406b6369fe5865ba034cfed166
 ```
 
 ## Provenance files
 
 - [`NOTICE`](./NOTICE) records attribution and the source commit.
-- [`upstream.lock.json`](./upstream.lock.json) records the 157 source paths, sizes, and SHA-256 hashes.
+- [`upstream.lock.json`](./upstream.lock.json) records the 158 source paths, sizes, and SHA-256 hashes.
 - [`compatibility/pstack-map.json`](./compatibility/pstack-map.json) assigns each source path a Codex path, classification, invariant, and validation.
 - [`compatibility/report.md`](./compatibility/report.md) is the generated human-readable report.
 
@@ -41,7 +41,7 @@ node scripts/generate-compatibility-report.mjs \
   --upstream-dir .upstream/plugins/pstack
 ```
 
-The import command must report `Verified 157 files`.
+The import command must report `Verified 158 files`.
 
 When `.upstream/plugins` is absent, use the repository URL as a fallback. The import helper removes its temporary clone, and it never writes into the derived tree.
 
@@ -49,12 +49,12 @@ When `.upstream/plugins` is absent, use the repository URL as a fallback. The im
 node scripts/import-upstream.mjs \
   --source https://github.com/cursor/plugins \
   --subdirectory pstack \
-  --commit fd878692de15a3069c21c8f429eb0b9f2fe178fa \
+  --commit 7314f723a487ec406b6369fe5865ba034cfed166 \
   --verify-lock \
   --dry-run
 ```
 
-This import command must also report `Verified 157 files`.
+This import command must also report `Verified 158 files`.
 
 ## Review a newer source commit
 
@@ -63,7 +63,7 @@ Fetch the persistent local clone and list newer commits that changed `pstack`:
 ```bash
 git -C .upstream/plugins fetch origin
 git -C .upstream/plugins log --oneline \
-  locked-0.14.5..origin/main -- pstack
+  locked-0.14.8..origin/main -- pstack
 ```
 
 Then review a candidate:

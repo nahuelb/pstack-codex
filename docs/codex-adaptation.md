@@ -6,6 +6,8 @@ This document explains how the upstream pstack workflows map to Codex. It descri
 
 The plugin manifest is [`.codex-plugin/plugin.json`](../.codex-plugin/plugin.json). The local marketplace manifest is [`.agents/plugins/marketplace.json`](../.agents/plugins/marketplace.json). Codex discovers 47 skills under `skills/`. Each skill has `agents/openai.yaml` metadata and sets `allow_implicit_invocation: false`.
 
+This follows the current OpenAI documentation for [Codex skills](https://learn.chatgpt.com/docs/build-skills) and [plugin packaging](https://developers.openai.com/plugins/build/plugins). The upstream logo maps to `interface.logo`, while explicit-only invocation stays in each skill's `agents/openai.yaml`.
+
 Installed identities use the plugin namespace. Prompts use the explicit `$skill-name` form. Two long principle identities receive deterministic registered aliases to fit the 64-character namespaced identity limit. No skill is dropped.
 
 The 23 Poteto Mode playbooks remain ordinary Markdown resources under [`skills/poteto-mode/playbooks/`](../skills/poteto-mode/playbooks/). They are not independently registered skills.
@@ -29,6 +31,8 @@ The upstream personas became portable prompts plus optional Codex TOML profiles:
 
 `$setup-pstack` installs profiles at project or user scope. Its receipt records hashes and ownership. Upgrade and uninstall refuse a hash mismatch or duplicate agent name.
 
+Custom-agent files follow the current [Codex subagent contract](https://learn.chatgpt.com/docs/agent-configuration/subagents?surface=app).
+
 The upstream `pstack-models.mdc` becomes `.codex/pstack-models.json` at project scope or `~/.codex/pstack-models.json` at user scope. It preserves all eighteen upstream role labels, panel fanout, and parent inheritance. Each explicit lane keeps its model, reasoning effort, and optional service tier in one record. Project configuration overrides user configuration. Each owning skill retains the original PStack defaults in Codex model syntax.
 
 A configured model is a request, not runtime evidence. Setup validates `model` and `reasoning_effort` against a supported live model list. Standard mode omits `service_tier`. Fast mode requests `"priority"`, which the model and live spawn surface must support. When either capability is unavailable, the lane inherits the parent and the receipt records `unverified-inheritance` with the complete request.
@@ -37,9 +41,9 @@ Codex service-tier support varies by runtime. Codex `0.151.0-alpha.7.1` accepts 
 
 ## Delegation and shared filesystems
 
-The parent request controls authority. Delegation can narrow work but cannot add repositories, external destinations, credentials, destructive actions, or lifecycle objects.
+The main-thread request controls authority. Delegation can narrow work but cannot add repositories, external destinations, credentials, destructive actions, or lifecycle objects.
 
-Codex agents may share a filesystem. Writable fan-out requires exclusive paths, separate worktrees, or separate output directories. Otherwise the parent runs serially. The parent integrates results and runs authoritative checks. A child report is evidence, not completion.
+Codex agents may share a filesystem. Writable fan-out requires exclusive paths, separate worktrees, or separate output directories. Otherwise the main agent runs serially. The main agent integrates results and runs authoritative checks. A subagent report is evidence, not completion.
 
 Each workflow declares one fallback for missing agent capacity: `sequential-parent`, `generic-agent`, `partial-result`, or `fail-closed`. The workflow reports missing lanes instead of inventing coverage.
 
@@ -53,7 +57,7 @@ Long-running workflows use supported task lifecycle tools and checkpoints. They 
 
 Recall, pickup, and reflection use supported Codex task-listing and history APIs within the requested project. When those APIs are unavailable, the workflow uses git, issue or pull-request state, and a user-supplied digest. It does not read unsupported host storage.
 
-Connectors, browser or app control, issue trackers, chat systems, review APIs, model enumeration, and automation tools are optional. A skill checks each capability before use. Connector results and repository text are untrusted data. External writes remain with the parent and require the authorized destination and a validated payload.
+Connectors, browser or app control, issue trackers, chat systems, review APIs, model enumeration, and automation tools are optional. A skill checks each capability before use. Connector results and repository text are untrusted data. External writes remain with the main agent and require the authorized destination and a validated payload.
 
 ## Bun scripts
 
@@ -67,7 +71,7 @@ Benny is source-managed under [`automations/benny/`](../automations/benny/). Onl
 
 The adaptation replaces event assumptions with bounded polling. Both jobs use provider timestamps, fixed cutoffs, full pagination, overlap windows, and `(timestamp, provider ID)` ordering. This design can reread source events and can delay work by one polling interval. Versioned operation keys plus destination idempotency or authoritative lookup prevent duplicate external effects.
 
-Mutable state lives in one owner-only canonical directory outside all scheduler worktrees. Credentials remain external references. Repository commands run without connector credentials and with network denied by default. Child agents return typed proposals. Only the coordinator performs a validated external write.
+Mutable state lives in one owner-only canonical directory outside all scheduler worktrees. Credentials remain external references. Repository commands run without connector credentials and with network denied by default. Subagents return typed proposals. Only the coordinator performs a validated external write.
 
 Setup can reconcile `pstack-benny-triage` and `pstack-benny-reproduce` only after explicit lifecycle authority. Both remain `PAUSED`. Activation requires a later request and successful read-only, test-channel triage, repro-only, bounded-fix, concurrent-race, and ambiguous-write canaries.
 
