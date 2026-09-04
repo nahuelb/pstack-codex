@@ -34,26 +34,26 @@ const ROLE_SPECS = [
 ];
 
 const MULTI_MODEL_DEFAULTS = [
-  { model: "anthropic/claude-fable-5-1", reasoning_effort: "xhigh" },
-  { model: "gpt-5.6-sol", reasoning_effort: "xhigh" },
+  { model: "anthropic/claude-fable-5-1", reasoning_effort: "high" },
+  { model: "gpt-6-astra", reasoning_effort: "high" },
   { model: "xai/grok-4.6", reasoning_effort: "xhigh" },
   { model: "anthropic/claude-opus-5", reasoning_effort: "xhigh" },
 ];
 
 export const MODEL_ROLE_SPECS = [
   { name: "feature, refactoring", kind: "single", defaults: [{ model: "xai/grok-4.6", reasoning_effort: "xhigh" }] },
-  { name: "bug-fix", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "xhigh" }] },
-  { name: "perf-issue", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "xhigh" }] },
-  { name: "hillclimb", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "xhigh" }] },
-  { name: "judgment and prose", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "xhigh" }] },
-  { name: "hardest tasks", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "xhigh" }] },
+  { name: "bug-fix", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "high" }] },
+  { name: "perf-issue", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "high" }] },
+  { name: "hillclimb", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "high" }] },
+  { name: "judgment and prose", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "high" }] },
+  { name: "hardest tasks", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "high" }] },
   { name: "how explorer", kind: "single", defaults: [{ model: "xai/grok-4.6", reasoning_effort: "xhigh" }] },
-  { name: "how explainer", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "xhigh" }] },
+  { name: "how explainer", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "high" }] },
   { name: "how critics", kind: "panel", defaults: MULTI_MODEL_DEFAULTS },
   { name: "why investigators", kind: "single", defaults: [{ model: "xai/grok-4.6", reasoning_effort: "xhigh" }] },
-  { name: "why synthesizer", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "xhigh" }] },
-  { name: "reflect tooling", kind: "single", defaults: [{ model: "gpt-5.6-sol", reasoning_effort: "xhigh" }] },
-  { name: "reflect judgment, divergent, synthesizer", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "xhigh" }] },
+  { name: "why synthesizer", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "high" }] },
+  { name: "reflect tooling", kind: "single", defaults: [{ model: "gpt-6-astra", reasoning_effort: "high" }] },
+  { name: "reflect judgment, divergent, synthesizer", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "high" }] },
   { name: "arena runners", kind: "panel", defaults: MULTI_MODEL_DEFAULTS },
   { name: "arena cross-judge pool", kind: "panel", defaults: MULTI_MODEL_DEFAULTS },
   { name: "swarm workers", kind: "single", defaults: [{ model: "xai/grok-4.6", reasoning_effort: "xhigh" }] },

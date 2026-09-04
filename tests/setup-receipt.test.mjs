@@ -142,14 +142,14 @@ test("an existing unowned model registry is never overwritten", async (t) => {
 
 test("a schema-one receipt upgrades without losing validated persona choices", async (t) => {
   const { projectRoot, userHome } = await fixture(t);
-  const requested = { model: "gpt-5.6-sol", reasoning_effort: "high" };
+  const requested = { model: "gpt-6-astra", reasoning_effort: "high" };
   const installed = await installAgents({
     pluginRoot: root,
     projectRoot,
     userHome,
     scope: "project",
     profile: { "pstack-poteto-agent": requested },
-    observableModels: [{ slug: "gpt-5.6-sol", reasoning_efforts: ["high"] }],
+    observableModels: [{ slug: "gpt-6-astra", reasoning_efforts: ["high"] }],
   });
   const receiptPath = path.join(projectRoot, installed.receiptPath);
   const receipt = JSON.parse(await fs.readFile(receiptPath, "utf8"));
@@ -164,20 +164,20 @@ test("a schema-one receipt upgrades without losing validated persona choices", a
     projectRoot,
     userHome,
     scope: "project",
-    observableModels: [{ slug: "gpt-5.6-sol", reasoning_efforts: ["high"] }],
+    observableModels: [{ slug: "gpt-6-astra", reasoning_efforts: ["high"] }],
   });
   const profile = await fs.readFile(path.join(projectRoot, ".codex/agents/pstack-poteto-agent.toml"), "utf8");
-  assert.match(profile, /^model = "gpt-5\.6-sol"$/m);
+  assert.match(profile, /^model = "gpt-6-astra"$/m);
   assert.equal(JSON.parse(await fs.readFile(path.join(projectRoot, upgraded.receiptPath), "utf8")).schema_version, 2);
   await fs.stat(path.join(projectRoot, upgraded.registryPath));
 });
 
 test("a partial role update preserves every omitted lane", async (t) => {
   const { projectRoot, userHome } = await fixture(t);
-  const sol = { model: "gpt-5.6-sol", reasoning_effort: "high" };
+  const astra = { model: "gpt-6-astra", reasoning_effort: "high" };
   const luna = { model: "gpt-5.6-luna", reasoning_effort: "max", service_tier: "priority" };
   const observableModels = [
-    { slug: "gpt-5.6-sol", reasoning_efforts: ["high"] },
+    { slug: "gpt-6-astra", reasoning_efforts: ["high"] },
     { slug: "gpt-5.6-luna", reasoning_efforts: ["max"], service_tiers: ["priority"] },
   ];
   const runtimeCapabilities = { spawn_service_tier_override: true };
@@ -186,7 +186,7 @@ test("a partial role update preserves every omitted lane", async (t) => {
     projectRoot,
     userHome,
     scope: "project",
-    roleProfile: { "bug-fix": sol, "perf-issue": luna },
+    roleProfile: { "bug-fix": astra, "perf-issue": luna },
     observableModels,
     runtimeCapabilities,
   });
@@ -278,14 +278,14 @@ test("an unobservable fast role records intent and writes an inherited lane", as
 
 test("a partial update can restore an explicit role to its skill default", async (t) => {
   const { projectRoot, userHome } = await fixture(t);
-  const requested = { model: "gpt-5.6-sol", reasoning_effort: "high" };
+  const requested = { model: "gpt-6-astra", reasoning_effort: "high" };
   await installAgents({
     pluginRoot: root,
     projectRoot,
     userHome,
     scope: "project",
     roleProfile: { "bug-fix": requested },
-    observableModels: [{ slug: "gpt-5.6-sol", reasoning_efforts: ["high"] }],
+    observableModels: [{ slug: "gpt-6-astra", reasoning_efforts: ["high"] }],
   });
   const updated = await installAgents({
     pluginRoot: root,
@@ -301,15 +301,15 @@ test("a partial update can restore an explicit role to its skill default", async
 
 test("a partial update stops when a preserved model is no longer observable", async (t) => {
   const { projectRoot, userHome } = await fixture(t);
-  const sol = { model: "gpt-5.6-sol", reasoning_effort: "high" };
+  const astra = { model: "gpt-6-astra", reasoning_effort: "high" };
   const luna = { model: "gpt-5.6-luna", reasoning_effort: "max" };
   const installed = await installAgents({
     pluginRoot: root,
     projectRoot,
     userHome,
     scope: "project",
-    roleProfile: { "bug-fix": sol },
-    observableModels: [{ slug: "gpt-5.6-sol", reasoning_efforts: ["high"] }],
+    roleProfile: { "bug-fix": astra },
+    observableModels: [{ slug: "gpt-6-astra", reasoning_efforts: ["high"] }],
   });
   const receiptPath = path.join(projectRoot, installed.receiptPath);
   const registryPath = path.join(projectRoot, installed.registryPath);
@@ -327,7 +327,7 @@ test("a partial update stops when a preserved model is no longer observable", as
       roleProfile: { "perf-issue": luna },
       observableModels: [{ slug: "gpt-5.6-luna", reasoning_efforts: ["max"] }],
     }),
-    /model "gpt-5.6-sol" is not in the observable model list/,
+    /model "gpt-6-astra" is not in the observable model list/,
   );
   assert.equal(await fs.readFile(receiptPath, "utf8"), receiptBefore);
   assert.equal(await fs.readFile(registryPath, "utf8"), registryBefore);

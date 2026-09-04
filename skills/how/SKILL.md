@@ -66,7 +66,7 @@ Then proceed to Step 3.
 
 Spawn a single subagent that explores and explains in one pass:
 
-- Role: the configured `how explainer` lane, default `anthropic/claude-fable-5-1` with `xhigh` reasoning, with the explainer prompt.
+- Role: the configured `how explainer` lane, default `anthropic/claude-fable-5-1` with `high` reasoning, with the explainer prompt.
 - Access: read-only. If no subagent is available, the main agent explains sequentially.
 
 The agent explores the codebase and writes the explanation directly. Read `references/explainer-prompt.md` for the communication style and output format. Same structure, just no explorer findings as input.
@@ -77,7 +77,7 @@ Proceed to Step 4.
 
 Once all explorers return, spawn a single subagent to synthesize their findings into one coherent explanation:
 
-- Role: the configured `how explainer` lane, default `anthropic/claude-fable-5-1` with `xhigh` reasoning, with the explainer prompt.
+- Role: the configured `how explainer` lane, default `anthropic/claude-fable-5-1` with `high` reasoning, with the explainer prompt.
 - Access: read-only. A missing synthesizer falls back to main-agent synthesis.
 
 The explainer gets all explorers' findings and writes the human-facing explanation (output format below). Read `references/explainer-prompt.md` for the full prompt template. The explainer reconciles overlapping findings, resolves contradictions, and weaves the slices into a unified picture.
@@ -110,7 +110,7 @@ Run the full explain flow above (Steps 1-4). You must understand the architectur
 
 ### Step 2. Spawn Critics
 
-After the explanation is complete, spawn one architectural critic per `how critics` lane, all in a single message. The default lanes use `xhigh` reasoning with `anthropic/claude-fable-5-1`, `gpt-5.6-sol`, `xai/grok-4.6`, and `anthropic/claude-opus-5`.
+After the explanation is complete, spawn one architectural critic per `how critics` lane, all in a single message. The default lanes are `anthropic/claude-fable-5-1` at `high`, `gpt-6-astra` at `high`, `xai/grok-4.6` at `xhigh`, and `anthropic/claude-opus-5` at `xhigh`.
 
 For each critic:
 - Role: one validated `how critics` lane per agent.

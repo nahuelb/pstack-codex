@@ -36,7 +36,7 @@ Persona profiles are a JSON object keyed by namespaced agent name:
 
 ```json
 {
-  "pstack-poteto-agent": {"model":"gpt-5.6-sol","reasoning_effort":"high"},
+  "pstack-poteto-agent": {"model":"gpt-6-astra","reasoning_effort":"high"},
   "pstack-comment-sicko": {"model":"gpt-5.6-terra","reasoning_effort":"medium"}
 }
 ```
@@ -47,7 +47,7 @@ Role choices are a second JSON object keyed by the exact role labels from `refer
 {
   "feature, refactoring": {"model":"anthropic/claude-opus-5","reasoning_effort":"high"},
   "how critics": [
-    {"model":"anthropic/claude-fable-5-1","reasoning_effort":"xhigh"},
+    {"model":"anthropic/claude-fable-5-1","reasoning_effort":"high"},
     {"model":"gpt-5.6-luna","reasoning_effort":"max","service_tier":"priority"},
     "inherit-parent"
   ]

@@ -104,54 +104,61 @@ async function makeGitStack(directory: string): Promise<{
   };
 }
 
-async function withFakeGt<T>({
+async function withFakeGitHub<T>({
+  current,
   directory,
   operation,
   output,
+  views = {},
 }: {
+  current: string;
   directory: string;
-  operation: (outputPath: string) => Promise<T>;
+  operation: () => Promise<T>;
   output: string;
+  views?: Readonly<Record<number, string>>;
 }): Promise<T> {
   const bin = join(directory, "bin");
-  const outputPath = join(directory, "gt-output.txt");
-  await mkdir(bin);
+  const outputPath = join(directory, "gh-output.json");
+  const currentPath = join(directory, "gh-current.json");
+  await mkdir(bin, { recursive: true });
   await writeFile(outputPath, output);
-  const gt = join(bin, "gt");
+  await writeFile(currentPath, current);
+  const viewCases: string[] = [];
+  for (const [pr, value] of Object.entries(views)) {
+    const viewPath = join(directory, `gh-view-${pr}.json`);
+    await writeFile(viewPath, value);
+    viewCases.push(`  "pr view ${pr} --json number,headRefName,baseRefName,headRefOid,state,isCrossRepository")\n    cat "${viewPath}"\n    ;;`);
+  }
+  const gh = join(bin, "gh");
   await writeFile(
-    gt,
+    gh,
     `#!/usr/bin/env bash
 set -euo pipefail
 if [ "$(pwd -P)" != "${realpathSync(join(directory, "repo"))}" ]; then
-  printf 'gt ran outside the fixture repo: %s\\n' "$(pwd -P)" >&2
+  printf 'gh ran outside the fixture repo: %s\\n' "$(pwd -P)" >&2
   exit 2
 fi
 case "$*" in
-  "--no-interactive log short --stack --reverse")
+  "pr view --json number,headRefName,baseRefName,headRefOid,state,isCrossRepository")
+    cat "${currentPath}"
+    ;;
+${viewCases.join("\n")}
+  "pr list --state open --limit 1001 --json number,headRefName,baseRefName,headRefOid,state,isCrossRepository")
     cat "${outputPath}"
     ;;
-  "--no-interactive info stack/merged")
-    printf 'stack/merged\\nPR #10 (Merged) merged change\\n'
-    ;;
-  "--no-interactive info stack/closed")
-    printf 'stack/closed\\nPR #13 (Closed) closed change\\n'
-    ;;
-  "--no-interactive info stack/open")
-    printf 'stack/open\\nPR #11 (Needs approvals) open change\\n'
-    ;;
   *)
-    printf 'unexpected gt arguments: %s\\n' "$*" >&2
+    printf 'unexpected gh arguments: %s\\n' "$*" >&2
     exit 2
     ;;
 esac
 `
   );
-  await chmod(gt, 0o755);
+  await chmod(gh, 0o755);
 
   const originalPath = process.env.PATH;
   process.env.PATH = `${bin}:${originalPath ?? ""}`;
   try {
-    return await operation(outputPath);
+    return await operation();
   } finally {
     if (originalPath === undefined) {
       delete process.env.PATH;
@@ -489,18 +496,17 @@ describe("Store", () => {
     ]);
   });
 
-  it("resolves the ordered Graphite frontier and validates an optional pin", async () => {
+  it("resolves the ordered GitHub frontier and validates an optional pin", async () => {
     const { directory, store } = await initializedStore();
     const stack = await makeGitStack(directory);
-    const output = `◯ main
-◯ stack/merged
-◯ stack/closed
-◉ stack/open (current)
-`;
+    const root = { number: 10, headRefName: "stack/merged", baseRefName: "main", headRefOid: stack.mergedSha, state: "OPEN", isCrossRepository: false };
+    const middle = { number: 13, headRefName: "stack/closed", baseRefName: "stack/merged", headRefOid: stack.closedSha, state: "OPEN", isCrossRepository: false };
+    const top = { number: 11, headRefName: "stack/open", baseRefName: "stack/closed", headRefOid: stack.openSha, state: "OPEN", isCrossRepository: false };
 
-    await withFakeGt({
+    await withFakeGitHub({
+      current: JSON.stringify(top),
       directory,
-      output,
+      output: JSON.stringify([top, root, middle]),
       operation: async () => {
         expect(await store.frontier.set({ repo: stack.repo })).toEqual({
           generation: 1,
@@ -509,13 +515,13 @@ describe("Store", () => {
               pr: 10,
               branches: "stack/merged",
               sha: stack.mergedSha,
-              state: "MERGED",
+              state: "OPEN",
             },
             {
               pr: 13,
               branches: "stack/closed",
               sha: stack.closedSha,
-              state: "CLOSED",
+              state: "OPEN",
             },
             {
               pr: 11,
@@ -524,8 +530,24 @@ describe("Store", () => {
               state: "OPEN",
             },
           ],
-          lowestUnmerged: 11,
+          lowestUnmerged: 10,
         });
+      },
+    });
+
+    const mergedRoot = { ...root, state: "MERGED" };
+    const closedMiddle = { ...middle, state: "CLOSED" };
+    const retargetedTop = { ...top, baseRefName: "main" };
+    await withFakeGitHub({
+      current: JSON.stringify(mergedRoot),
+      directory,
+      output: JSON.stringify([retargetedTop]),
+      views: {
+        10: JSON.stringify(mergedRoot),
+        11: JSON.stringify(retargetedTop),
+        13: JSON.stringify(closedMiddle),
+      },
+      operation: async () => {
         expect(
           (
             await store.frontier.set({
@@ -534,14 +556,22 @@ describe("Store", () => {
             })
           ).generation
         ).toBe(2);
-        expect((await store.frontier.show()).generation).toBe(2);
+        expect(await store.frontier.show()).toMatchObject({
+          generation: 2,
+          prs: [
+            { pr: 10, state: "MERGED" },
+            { pr: 13, state: "CLOSED" },
+            { pr: 11, state: "OPEN" },
+          ],
+          lowestUnmerged: 11,
+        });
         await expect(
           store.frontier.set({
             repo: stack.repo,
             prs: [10, 11, 12],
           })
         ).rejects.toThrow(
-          "frontier pin mismatch: missing from gt: 12; extra in gt: 13"
+          "frontier pin mismatch: missing from GitHub: 12; extra in GitHub: 13"
         );
         await expect(
           store.frontier.set({
@@ -549,7 +579,7 @@ describe("Store", () => {
             prs: [13, 10, 11],
           })
         ).rejects.toThrow(
-          "frontier pin mismatch: order differs: expected 13,10,11; gt 10,13,11"
+          "frontier pin mismatch: order differs: expected 13,10,11; GitHub 10,13,11"
         );
         await expect(
           store.frontier.set({
@@ -561,18 +591,85 @@ describe("Store", () => {
     });
   });
 
-  it("rejects unparseable Graphite output loudly", async () => {
+  it("rejects invalid GitHub frontier output loudly", async () => {
     const { directory, store } = await initializedStore();
     const stack = await makeGitStack(directory);
 
-    await withFakeGt({
+    await withFakeGitHub({
+      current: JSON.stringify({
+        number: 11,
+        headRefName: "stack/open",
+        baseRefName: "main",
+        headRefOid: stack.openSha,
+        state: "OPEN",
+        isCrossRepository: false,
+      }),
       directory,
-      output: "◯ main\nthis line is not Graphite output\n",
+      output: "not JSON\n",
       operation: async () => {
         await expect(
           store.frontier.set({ repo: stack.repo })
         ).rejects.toThrow(
-          'gt log short output has an unparseable line 2: "this line is not Graphite output"'
+          "gh pr list returned invalid JSON"
+        );
+      },
+    });
+  });
+
+  it("ignores fork branch collisions during GitHub frontier discovery", async () => {
+    const { directory, store } = await initializedStore();
+    const stack = await makeGitStack(directory);
+    const current = {
+      number: 11,
+      headRefName: "stack/open",
+      baseRefName: "main",
+      headRefOid: stack.openSha,
+      state: "OPEN",
+      isCrossRepository: false,
+    };
+    const fork = {
+      number: 99,
+      headRefName: "main",
+      baseRefName: "main",
+      headRefOid: "9".repeat(40),
+      state: "OPEN",
+      isCrossRepository: true,
+    };
+    await withFakeGitHub({
+      current: JSON.stringify(current),
+      directory,
+      output: JSON.stringify([current, fork]),
+      operation: async () => {
+        expect((await store.frontier.set({ repo: stack.repo })).prs).toEqual([
+          {
+            pr: 11,
+            branches: "stack/open",
+            sha: stack.openSha,
+            state: "OPEN",
+          },
+        ]);
+      },
+    });
+  });
+
+  it("rejects potentially truncated GitHub frontier discovery", async () => {
+    const { directory, store } = await initializedStore();
+    const stack = await makeGitStack(directory);
+    const rows = Array.from({ length: 1001 }, (_, index) => ({
+      number: index + 1,
+      headRefName: `stack/${index + 1}`,
+      baseRefName: index === 0 ? "main" : `stack/${index}`,
+      headRefOid: (index + 1).toString(16).padStart(40, "0"),
+      state: "OPEN",
+      isCrossRepository: false,
+    }));
+    await withFakeGitHub({
+      current: JSON.stringify(rows[0]),
+      directory,
+      output: JSON.stringify(rows),
+      operation: async () => {
+        await expect(store.frontier.set({ repo: stack.repo })).rejects.toThrow(
+          "gh pr list may be truncated"
         );
       },
     });

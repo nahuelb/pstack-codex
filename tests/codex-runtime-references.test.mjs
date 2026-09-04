@@ -20,7 +20,7 @@ const FORBIDDEN_RUNTIME_PATTERNS = [
   [/(?:terminal\s+)?\/loop\b|cloud-sleeper|monitored-shell[^\n]*sleep/i, "unsupported loop mechanic"],
   [/supported Codex task history\/?|supported task history\//i, "invented task-history path"],
   [/\bcreate-skill\b|`mcps\/`/i, "non-Codex skill or connector discovery"],
-  [/\b(?:claude-fable-5(?:-1)?-thinking-(?:xhigh|max)|grok-4\.6-fast-xhigh|claude-opus-5-thinking-xhigh|gpt-5\.6-sol-max)\b/i, "combined model slug"],
+  [/\b(?:claude-fable-5(?:-1)?-thinking-(?:xhigh|max)|grok-4\.6-fast-xhigh|claude-opus-5-thinking-xhigh|gpt-5\.6-sol-max|gpt-6-astra-high)\b/i, "combined model slug"],
 ];
 
 // These are external GitHub review identities accepted as untrusted input, not

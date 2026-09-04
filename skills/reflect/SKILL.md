@@ -31,15 +31,15 @@ Resolve `reflect tooling` and `reflect judgment, divergent, synthesizer` through
 
 | Lens | `model` | Prompt template |
 |---|---|---|
-| Judgment | `reflect judgment, divergent, synthesizer`, default `anthropic/claude-fable-5-1` at `xhigh` | `references/judgment-reviewer.md` |
-| Tooling | `reflect tooling`, default `gpt-5.6-sol` at `xhigh` | `references/tooling-reviewer.md` |
-| Divergent | `reflect judgment, divergent, synthesizer`, default `anthropic/claude-fable-5-1` at `xhigh` | `references/divergent-reviewer.md` |
+| Judgment | `reflect judgment, divergent, synthesizer`, default `anthropic/claude-fable-5-1` at `high` | `references/judgment-reviewer.md` |
+| Tooling | `reflect tooling`, default `gpt-6-astra` at `high` | `references/tooling-reviewer.md` |
+| Divergent | `reflect judgment, divergent, synthesizer`, default `anthropic/claude-fable-5-1` at `high` | `references/divergent-reviewer.md` |
 
 Pass each template verbatim, substituting supported task history or the digest where marked. Reviewers return findings in the subagent result. If fewer than three independent agents are available, return a labeled partial review rather than inventing consensus.
 
 ### 3. Synthesize
 
-Use `reflect judgment, divergent, synthesizer`, default `anthropic/claude-fable-5-1` at `xhigh`, for synthesis. Otherwise synthesize sequentially in the parent. Its connector lookups stay read-only and scoped to cited evidence. Use `references/synthesizer.md` with each completed reviewer's output. The result is a structured Accepted / Rejected / Backlog list and names missing lanes.
+Use `reflect judgment, divergent, synthesizer`, default `anthropic/claude-fable-5-1` at `high`, for synthesis. Otherwise synthesize sequentially in the parent. Its connector lookups stay read-only and scoped to cited evidence. Use `references/synthesizer.md` with each completed reviewer's output. The result is a structured Accepted / Rejected / Backlog list and names missing lanes.
 
 ### 4. Structural enforcement check
 

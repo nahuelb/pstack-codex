@@ -38,8 +38,8 @@ Launch all reviewers in a single message using the supported subagent tools. Res
 
 | Subagent | Default model |
 |----------|---------------|
-| Reviewer A | `anthropic/claude-fable-5-1`, `xhigh` |
-| Reviewer B | `gpt-5.6-sol`, `xhigh` |
+| Reviewer A | `anthropic/claude-fable-5-1`, `high` |
+| Reviewer B | `gpt-6-astra`, `high` |
 | Reviewer C | `xai/grok-4.6`, `xhigh` |
 | Reviewer D | `anthropic/claude-opus-5`, `xhigh` |
 

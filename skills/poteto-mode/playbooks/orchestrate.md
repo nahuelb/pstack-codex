@@ -80,7 +80,7 @@ A dependency is a context relay, not just ordering: undeclared upstream context 
 
 #### Stack safety
 
-- The frontier is a computed object, never narrative. Recompute `frontier.json` from `gt` after every merge and stack mutation because GitHub base refs drift mid-restack while gt tracking is authoritative: ordered PR list, branch names, head SHAs, a generation number, the lowest unmerged PR. Resolve it where gt knows the stack, normally the stacker's clone; a checkout whose gt metadata never saw the submits reports no PRs and the command errors rather than guessing.
+- The frontier is a computed object, never narrative. Recompute `frontier.json` from GitHub after every merge and stack mutation because base refs define the stack: ordered PR list, branch names, head SHAs, a generation number, and the lowest unmerged PR. Resolve it from a checkout whose current branch has a pull request; missing or ambiguous GitHub relationships stop instead of guessing.
 - Exactly one stacker per stack may run `gt`, serialized within its isolated worktree; record the holder in the standing orders.
 - Workers never rebase and never run `gt`. Babysitters follow `playbooks/babysit.md`, one per stack, scoped to one immutable frontier generation; they report conflicts to the stacker rather than restacking.
 - PR closes and retargets go through the stacker only; closing a base PR orphans every chain above it. Merges and stack surgery are units with briefs like any other.

@@ -110,20 +110,20 @@ test("an existing unowned target path without a parseable name is never overwrit
 
 test("a model pair is rendered only after the observable list validates it", async (t) => {
   const { projectRoot, userHome } = await fixture(t);
-  const requested = { model: "gpt-5.6-sol", reasoning_effort: "high" };
+  const requested = { model: "gpt-6-astra", reasoning_effort: "high" };
   const result = await installAgents({
     pluginRoot: root,
     projectRoot,
     userHome,
     scope: "project",
     profile: { "pstack-poteto-agent": requested },
-    observableModels: [{ slug: "gpt-5.6-sol", reasoning_efforts: ["high"] }],
+    observableModels: [{ slug: "gpt-6-astra", reasoning_efforts: ["high"] }],
   });
   const content = await fs.readFile(
     path.join(projectRoot, ".codex/agents/pstack-poteto-agent.toml"),
     "utf8",
   );
-  assert.match(content, /^model = "gpt-5\.6-sol"$/m);
+  assert.match(content, /^model = "gpt-6-astra"$/m);
   assert.match(content, /^model_reasoning_effort = "high"$/m);
   assert.doesNotMatch(content, /^service_tier\s*=/m);
   const policy = result.files.find((file) => file.path.endsWith("pstack-poteto-agent.toml")).model_policy;
@@ -182,10 +182,10 @@ test("a fast custom-agent profile inherits when role-level tier support is unver
 
 test("the full upstream role matrix renders validated single and panel lanes", async (t) => {
   const { projectRoot, userHome } = await fixture(t);
-  const sol = { model: "gpt-5.6-sol", reasoning_effort: "high" };
+  const astra = { model: "gpt-6-astra", reasoning_effort: "high" };
   const luna = { model: "gpt-5.6-luna", reasoning_effort: "max", service_tier: "priority" };
   const roles = Object.fromEntries(
-    MODEL_ROLE_SPECS.map((spec) => [spec.name, spec.kind === "panel" ? [sol, luna] : sol]),
+    MODEL_ROLE_SPECS.map((spec) => [spec.name, spec.kind === "panel" ? [astra, luna] : astra]),
   );
   const result = await installAgents({
     pluginRoot: root,
@@ -194,7 +194,7 @@ test("the full upstream role matrix renders validated single and panel lanes", a
     scope: "project",
     roleProfile: roles,
     observableModels: [
-      { slug: "gpt-5.6-sol", reasoning_efforts: ["high"] },
+      { slug: "gpt-6-astra", reasoning_efforts: ["high"] },
       { slug: "gpt-5.6-luna", reasoning_efforts: ["max"], service_tiers: ["priority"] },
     ],
     runtimeCapabilities: { spawn_service_tier_override: true },
@@ -203,7 +203,7 @@ test("the full upstream role matrix renders validated single and panel lanes", a
   const registry = JSON.parse(await fs.readFile(path.join(projectRoot, result.registryPath), "utf8"));
   for (const spec of MODEL_ROLE_SPECS) {
     assert.equal(registry.roles[spec.name].length, spec.kind === "panel" ? 2 : 1);
-    assert.deepEqual(registry.roles[spec.name][0], sol);
+    assert.deepEqual(registry.roles[spec.name][0], astra);
     if (spec.kind === "panel") assert.deepEqual(registry.roles[spec.name][1], luna);
   }
 });

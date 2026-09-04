@@ -49,19 +49,19 @@ test("unobservable model inventory preserves the requested spawn configuration a
 
 test("observable model inventory validates the exact model and reasoning pair", () => {
   const observableModels = [
-    { slug: "gpt-5.6-sol", reasoning_efforts: ["low", "medium", "high", "xhigh", "max", "ultra"] },
+    { slug: "gpt-6-astra", reasoning_efforts: ["low", "medium", "high", "xhigh", "max"] },
   ];
   assert.deepEqual(
-    resolveModelPolicy({ requested: { model: "gpt-5.6-sol", reasoning_effort: "high" }, observableModels }),
+    resolveModelPolicy({ requested: { model: "gpt-6-astra", reasoning_effort: "high" }, observableModels }),
     {
       status: "verified-explicit",
-      requested: { model: "gpt-5.6-sol", reasoning_effort: "high" },
-      resolved: { model: "gpt-5.6-sol", reasoning_effort: "high" },
-      toml: { model: "gpt-5.6-sol", model_reasoning_effort: "high" },
+      requested: { model: "gpt-6-astra", reasoning_effort: "high" },
+      resolved: { model: "gpt-6-astra", reasoning_effort: "high" },
+      toml: { model: "gpt-6-astra", model_reasoning_effort: "high" },
     },
   );
   assert.throws(
-    () => resolveModelPolicy({ requested: { model: "gpt-5.6-sol", reasoning_effort: "impossible" }, observableModels }),
+    () => resolveModelPolicy({ requested: { model: "gpt-6-astra", reasoning_effort: "impossible" }, observableModels }),
     /does not support reasoning effort/,
   );
   assert.throws(
@@ -117,7 +117,7 @@ test("no requested pair inherits without pretending runtime resolution is observ
 
 test("role configuration preserves every upstream role and panel cardinality", () => {
   assert.deepEqual(MODEL_ROLE_SPECS.map((spec) => spec.name), expectedRoles);
-  const standard = { model: "gpt-5.6-sol", reasoning_effort: "high" };
+  const standard = { model: "gpt-6-astra", reasoning_effort: "high" };
   const fast = { model: "gpt-5.6-luna", reasoning_effort: "max", service_tier: "priority" };
   const roleProfile = Object.fromEntries(
     MODEL_ROLE_SPECS.map((spec) => [spec.name, spec.kind === "panel" ? [standard, fast] : standard]),
@@ -126,7 +126,7 @@ test("role configuration preserves every upstream role and panel cardinality", (
     roleProfile,
     serviceTierOverrideSupported: true,
     observableModels: [
-      { slug: "gpt-5.6-sol", reasoning_efforts: ["high"] },
+      { slug: "gpt-6-astra", reasoning_efforts: ["high"] },
       { slug: "gpt-5.6-luna", reasoning_efforts: ["max"], service_tiers: ["priority"] },
     ],
   });
@@ -188,9 +188,12 @@ test("omitted roles use their owning Markdown skill defaults", () => {
   }
 });
 
-test("bundled role fallback defaults cap reasoning at xhigh", () => {
+test("bundled Astra and Fable fallbacks cap reasoning at high", () => {
   for (const spec of MODEL_ROLE_SPECS) {
-    assert.ok(spec.defaults.every((lane) => lane.reasoning_effort === "xhigh"), spec.name);
+    for (const lane of spec.defaults) {
+      const cappedAtHigh = lane.model === "gpt-6-astra" || lane.model === "anthropic/claude-fable-5-1";
+      assert.equal(lane.reasoning_effort, cappedAtHigh ? "high" : "xhigh", spec.name);
+    }
   }
 });
 
@@ -271,17 +274,19 @@ test("runtime contracts require role resolution and state its enforcement limit"
 
 test("owning Markdown skills and playbooks retain the current PStack default model choices", async () => {
   const expectations = [
-    ["skills/poteto-mode/SKILL.md", /defaults use `xhigh`.*xai\/grok-4\.6.*anthropic\/claude-fable-5-1.*bug fixes.*performance work.*hillclimbs/s],
-    ["skills/how/SKILL.md", /how explorer.*xai\/grok-4\.6.*xhigh.*how explainer.*anthropic\/claude-fable-5-1.*xhigh.*how critics.*anthropic\/claude-opus-5/s],
-    ["skills/why/SKILL.md", /why investigators.*xai\/grok-4\.6.*xhigh.*why synthesizer.*anthropic\/claude-fable-5-1.*xhigh/s],
-    ["skills/reflect/SKILL.md", /reflect tooling.*gpt-5\.6-sol.*xhigh.*reflect judgment, divergent, synthesizer.*anthropic\/claude-fable-5-1.*xhigh/s],
-    ["skills/arena/SKILL.md", /arena runners.*anthropic\/claude-fable-5-1.*gpt-5\.6-sol.*xai\/grok-4\.6.*anthropic\/claude-opus-5/s],
+    ["skills/poteto-mode/SKILL.md", /xai\/grok-4\.6.*xhigh.*anthropic\/claude-fable-5-1.*high.*bug fixes.*performance work.*hillclimbs/s],
+    ["skills/how/SKILL.md", /how explorer.*xai\/grok-4\.6.*xhigh.*how explainer.*anthropic\/claude-fable-5-1.*high.*how critics.*anthropic\/claude-opus-5/s],
+    ["skills/why/SKILL.md", /why investigators.*xai\/grok-4\.6.*xhigh.*why synthesizer.*anthropic\/claude-fable-5-1.*high/s],
+    ["skills/reflect/SKILL.md", /reflect tooling.*gpt-6-astra.*high.*reflect judgment, divergent, synthesizer.*anthropic\/claude-fable-5-1.*high/s],
+    ["skills/arena/SKILL.md", /arena runners.*anthropic\/claude-fable-5-1.*high.*gpt-6-astra.*high.*xai\/grok-4\.6.*anthropic\/claude-opus-5/s],
     ["skills/swarm/SKILL.md", /swarm workers.*xai\/grok-4\.6.*xhigh/s],
-    ["skills/architect/SKILL.md", /architect runners.*anthropic\/claude-fable-5-1.*gpt-5\.6-sol.*xai\/grok-4\.6.*anthropic\/claude-opus-5/s],
-    ["skills/interrogate/SKILL.md", /interrogate reviewers.*anthropic\/claude-fable-5-1.*gpt-5\.6-sol.*xai\/grok-4\.6.*anthropic\/claude-opus-5/s],
-    ["skills/poteto-mode/playbooks/bug-fix.md", /bug-fix.*anthropic\/claude-fable-5-1.*xhigh/s],
-    ["skills/poteto-mode/playbooks/perf-issue.md", /perf-issue.*anthropic\/claude-fable-5-1.*xhigh/s],
-    ["skills/poteto-mode/playbooks/hillclimb.md", /hillclimb.*anthropic\/claude-fable-5-1.*xhigh/s],
+    ["skills/architect/SKILL.md", /architect runners.*anthropic\/claude-fable-5-1.*high.*gpt-6-astra.*high.*xai\/grok-4\.6.*anthropic\/claude-opus-5/s],
+    ["skills/interrogate/SKILL.md", /interrogate reviewers.*anthropic\/claude-fable-5-1.*high.*gpt-6-astra.*high.*xai\/grok-4\.6.*anthropic\/claude-opus-5/s],
+    ["skills/setup-pstack/SKILL.md", /pstack-poteto-agent.*gpt-6-astra.*high/s],
+    [".agents/skills/review-before-push/SKILL.md", /gpt-6-astra.*medium/s],
+    ["skills/poteto-mode/playbooks/bug-fix.md", /bug-fix.*anthropic\/claude-fable-5-1.*high/s],
+    ["skills/poteto-mode/playbooks/perf-issue.md", /perf-issue.*anthropic\/claude-fable-5-1.*high/s],
+    ["skills/poteto-mode/playbooks/hillclimb.md", /hillclimb.*anthropic\/claude-fable-5-1.*high/s],
   ];
   for (const [relativePath, pattern] of expectations) {
     assert.match(await fs.readFile(path.join(root, relativePath), "utf8"), pattern, relativePath);

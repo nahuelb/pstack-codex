@@ -20,7 +20,7 @@ Resolve the upstream from repository evidence. Never assume the base branch.
 
 Use judgment to skip an independent review only for clearly trivial, non-behavioral changes.
 
-In Codex, start a `default` subagent with `gpt-5.6-sol` and `high` reasoning. Follow `subagent-lifecycle`. Tell the subagent to read `~/.codex/skills/.system/review-agent/SKILL.md` completely. Pass the resolved review target and intended outcome. Require read-only review and the complete findings and verdict.
+In Codex, start a `default` subagent with `gpt-6-astra` and `medium` reasoning. Follow `subagent-lifecycle`. Tell the subagent to read `~/.codex/skills/.system/review-agent/SKILL.md` completely. Pass the resolved review target and intended outcome. Require read-only review and the complete findings and verdict.
 
 Do not add a custom review focus unless the user requested one. If the reviewer fails, report the failure and do not claim a review occurred.
 

@@ -159,7 +159,7 @@ If your scope assessment suggests a single-commit trivial target where the PR de
 
 ## Step 4. Synthesize
 
-Resolve `why synthesizer` through `../setup-pstack/references/model-profile.md`, default `anthropic/claude-fable-5-1` with `xhigh` reasoning. Give it read-only access to cited evidence only. If no agent is available, synthesize sequentially in the parent and label that fallback.
+Resolve `why synthesizer` through `../setup-pstack/references/model-profile.md`, default `anthropic/claude-fable-5-1` with `high` reasoning. Give it read-only access to cited evidence only. If no agent is available, synthesize sequentially in the parent and label that fallback.
 
 The synthesizer gets:
 1. The investigator findings, including any null results and any categories skipped with justification
