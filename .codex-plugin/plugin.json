@@ -1,12 +1,12 @@
 {
   "name": "pstack-for-codex",
-  "version": "0.2.0+codex.20260907150209",
+  "version": "0.2.0+codex.20260907154120",
   "description": "Codex-native engineering workflows derived from pstack. Skills remain explicit-only so users retain workflow and authority control.",
   "author": {
     "name": "pstack-for-codex maintainers"
   },
-  "homepage": "https://github.com/Aqua-123/pstack-for-codex",
-  "repository": "https://github.com/Aqua-123/pstack-for-codex",
+  "homepage": "https://github.com/nahuelb/pstack-codex",
+  "repository": "https://github.com/nahuelb/pstack-codex",
   "license": "MIT",
   "keywords": [
     "pstack",

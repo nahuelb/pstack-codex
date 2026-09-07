@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/Aqua-123/pstack-for-codex/automations/benny/schemas/marker.schema.json",
+  "$id": "https://github.com/nahuelb/pstack-codex/automations/benny/schemas/marker.schema.json",
   "title": "Benny trusted verdict marker",
   "type": "object",
   "additionalProperties": false,

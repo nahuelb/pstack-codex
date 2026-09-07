@@ -7,7 +7,7 @@ This tutorial installs the plugin, checks skill discovery, and runs one represen
 Install the marketplace directly from the public GitHub repository:
 
 ```bash
-codex plugin marketplace add Aqua-123/pstack-for-codex
+codex plugin marketplace add nahuelb/pstack-codex
 codex plugin add pstack-for-codex@pstack-for-codex-local
 codex plugin list --json
 ```
