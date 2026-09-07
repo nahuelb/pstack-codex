@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { createHash } from "node:crypto";
-import { promises as fs } from "node:fs";
+import { promises as fs, readFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -33,36 +33,66 @@ const ROLE_SPECS = [
   },
 ];
 
-const MULTI_MODEL_DEFAULTS = [
-  { model: "anthropic/claude-fable-5-1", reasoning_effort: "high" },
-  { model: "gpt-6-astra", reasoning_effort: "high" },
-  { model: "xai/grok-4.6", reasoning_effort: "xhigh" },
-  { model: "anthropic/claude-opus-5", reasoning_effort: "xhigh" },
-];
-
-export const MODEL_ROLE_SPECS = [
-  { name: "feature, refactoring", kind: "single", defaults: [{ model: "xai/grok-4.6", reasoning_effort: "xhigh" }] },
-  { name: "bug-fix", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "high" }] },
-  { name: "perf-issue", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "high" }] },
-  { name: "hillclimb", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "high" }] },
-  { name: "judgment and prose", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "high" }] },
-  { name: "hardest tasks", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "high" }] },
-  { name: "how explorer", kind: "single", defaults: [{ model: "xai/grok-4.6", reasoning_effort: "xhigh" }] },
-  { name: "how explainer", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "high" }] },
-  { name: "how critics", kind: "panel", defaults: MULTI_MODEL_DEFAULTS },
-  { name: "why investigators", kind: "single", defaults: [{ model: "xai/grok-4.6", reasoning_effort: "xhigh" }] },
-  { name: "why synthesizer", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "high" }] },
-  { name: "reflect tooling", kind: "single", defaults: [{ model: "gpt-6-astra", reasoning_effort: "high" }] },
-  { name: "reflect judgment, divergent, synthesizer", kind: "single", defaults: [{ model: "anthropic/claude-fable-5-1", reasoning_effort: "high" }] },
-  { name: "arena runners", kind: "panel", defaults: MULTI_MODEL_DEFAULTS },
-  { name: "arena cross-judge pool", kind: "panel", defaults: MULTI_MODEL_DEFAULTS },
-  { name: "swarm workers", kind: "single", defaults: [{ model: "xai/grok-4.6", reasoning_effort: "xhigh" }] },
-  { name: "architect runners", kind: "panel", defaults: MULTI_MODEL_DEFAULTS },
-  { name: "interrogate reviewers", kind: "panel", defaults: MULTI_MODEL_DEFAULTS },
-];
-
 const RECEIPT_OWNER = "pstack-for-codex/setup-pstack";
 const REGISTRY_FILENAME = "pstack-models.json";
+export const BUNDLED_MODEL_DEFAULTS_PATH = fileURLToPath(
+  new URL("../references/model-defaults.json", import.meta.url),
+);
+
+const MODEL_ROLE_SHAPES = [
+  { name: "feature, refactoring", kind: "single" },
+  { name: "bug-fix", kind: "single" },
+  { name: "perf-issue", kind: "single" },
+  { name: "hillclimb", kind: "single" },
+  { name: "judgment and prose", kind: "single" },
+  { name: "hardest tasks", kind: "single" },
+  { name: "how explorer", kind: "single" },
+  { name: "how explainer", kind: "single" },
+  { name: "how critics", kind: "panel" },
+  { name: "why investigators", kind: "single" },
+  { name: "why synthesizer", kind: "single" },
+  { name: "reflect tooling", kind: "single" },
+  { name: "reflect judgment, divergent, synthesizer", kind: "single" },
+  { name: "arena runners", kind: "panel" },
+  { name: "arena cross-judge pool", kind: "panel" },
+  { name: "swarm workers", kind: "single" },
+  { name: "architect runners", kind: "panel" },
+  { name: "interrogate reviewers", kind: "panel" },
+];
+
+function loadBundledModelDefaults() {
+  const registry = JSON.parse(readFileSync(BUNDLED_MODEL_DEFAULTS_PATH, "utf8"));
+  if (registry?.schema_version !== 1 || registry?.owner !== RECEIPT_OWNER || !registry.roles) {
+    throw new Error("bundled pstack model defaults have an unknown owner or schema");
+  }
+  const expected = new Set(MODEL_ROLE_SHAPES.map((spec) => spec.name));
+  const actual = new Set(Object.keys(registry.roles));
+  if (expected.size !== actual.size || [...expected].some((name) => !actual.has(name))) {
+    throw new Error("bundled pstack model defaults do not match the role matrix");
+  }
+  return MODEL_ROLE_SHAPES.map((spec) => {
+    const defaults = registry.roles[spec.name];
+    if (!Array.isArray(defaults) || defaults.length === 0 || (spec.kind === "single" && defaults.length !== 1)) {
+      throw new Error(`bundled pstack model defaults have an invalid lane count for "${spec.name}"`);
+    }
+    for (const lane of defaults) {
+      if (
+        !lane ||
+        typeof lane.model !== "string" ||
+        lane.model.length === 0 ||
+        typeof lane.reasoning_effort !== "string" ||
+        lane.reasoning_effort.length === 0 ||
+        (lane.service_tier !== undefined && (typeof lane.service_tier !== "string" || lane.service_tier.length === 0)) ||
+        !Object.keys(lane).every((key) => key === "model" || key === "reasoning_effort" || key === "service_tier")
+      ) {
+        throw new Error(`bundled pstack model defaults have an invalid lane for "${spec.name}"`);
+      }
+    }
+    return { ...spec, defaults: structuredClone(defaults) };
+  });
+}
+
+export const MODEL_ROLE_SPECS = loadBundledModelDefaults();
 
 function sha256(value) {
   return createHash("sha256").update(value).digest("hex");
@@ -270,7 +300,7 @@ export function resolveRoleRegistry({
       continue;
     }
     if (!Object.hasOwn(roleProfile, spec.name)) {
-      const laneCount = spec.kind === "panel" ? 4 : 1;
+      const laneCount = spec.defaults.length;
       roles[spec.name] = Array.from({ length: laneCount }, () => ({ use_skill_default: true }));
       policies[spec.name] = Array.from({ length: laneCount }, () => ({
         status: "skill-default",

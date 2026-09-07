@@ -5,6 +5,7 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 
 import {
+  BUNDLED_MODEL_DEFAULTS_PATH,
   MODEL_ROLE_SPECS,
   resolveModelPolicy,
   resolveRoleRegistry,
@@ -165,7 +166,7 @@ test("role configuration rejects unknown roles and invalid single-role fanout", 
   );
 });
 
-test("an overridden role can return to its owning Markdown skill default", () => {
+test("an overridden role can return to its bundled JSON default", () => {
   const result = resolveRoleRegistry({
     roleProfile: {
       "bug-fix": "skill-default",
@@ -177,10 +178,10 @@ test("an overridden role can return to its owning Markdown skill default", () =>
   assert.equal(result.policies["bug-fix"][0].status, "skill-default");
 });
 
-test("omitted roles use their owning Markdown skill defaults", () => {
+test("omitted roles use their bundled JSON defaults", () => {
   const result = resolveRoleRegistry();
   for (const spec of MODEL_ROLE_SPECS) {
-    const expectedLaneCount = spec.kind === "panel" ? 4 : 1;
+    const expectedLaneCount = spec.defaults.length;
     assert.equal(result.roles[spec.name].length, expectedLaneCount);
     assert.equal(result.policies[spec.name].length, expectedLaneCount);
     assert.ok(result.roles[spec.name].every((lane) => lane.use_skill_default === true));
@@ -188,13 +189,12 @@ test("omitted roles use their owning Markdown skill defaults", () => {
   }
 });
 
-test("bundled Astra and Fable fallbacks cap reasoning at high", () => {
-  for (const spec of MODEL_ROLE_SPECS) {
-    for (const lane of spec.defaults) {
-      const cappedAtHigh = lane.model === "gpt-6-astra" || lane.model === "anthropic/claude-fable-5-1";
-      assert.equal(lane.reasoning_effort, cappedAtHigh ? "high" : "xhigh", spec.name);
-    }
-  }
+test("bundled fallbacks load from the model defaults JSON", async () => {
+  const registry = JSON.parse(await fs.readFile(BUNDLED_MODEL_DEFAULTS_PATH, "utf8"));
+  assert.deepEqual(
+    Object.fromEntries(MODEL_ROLE_SPECS.map((spec) => [spec.name, spec.defaults])),
+    registry.roles,
+  );
 });
 
 async function writeRegistry(rootDirectory, roles) {
@@ -272,23 +272,26 @@ test("runtime contracts require role resolution and state its enforcement limit"
   assert.match(trail, /resolve `arena cross-judge pool`/);
 });
 
-test("owning Markdown skills and playbooks retain the current PStack default model choices", async () => {
+test("workflow Markdown resolves roles without mirroring model defaults", async () => {
   const expectations = [
-    ["skills/poteto-mode/SKILL.md", /xai\/grok-4\.6.*xhigh.*anthropic\/claude-fable-5-1.*high.*bug fixes.*performance work.*hillclimbs/s],
-    ["skills/how/SKILL.md", /how explorer.*xai\/grok-4\.6.*xhigh.*how explainer.*anthropic\/claude-fable-5-1.*high.*how critics.*anthropic\/claude-opus-5/s],
-    ["skills/why/SKILL.md", /why investigators.*xai\/grok-4\.6.*xhigh.*why synthesizer.*anthropic\/claude-fable-5-1.*high/s],
-    ["skills/reflect/SKILL.md", /reflect tooling.*gpt-6-astra.*high.*reflect judgment, divergent, synthesizer.*anthropic\/claude-fable-5-1.*high/s],
-    ["skills/arena/SKILL.md", /arena runners.*anthropic\/claude-fable-5-1.*high.*gpt-6-astra.*high.*xai\/grok-4\.6.*anthropic\/claude-opus-5/s],
-    ["skills/swarm/SKILL.md", /swarm workers.*xai\/grok-4\.6.*xhigh/s],
-    ["skills/architect/SKILL.md", /architect runners.*anthropic\/claude-fable-5-1.*high.*gpt-6-astra.*high.*xai\/grok-4\.6.*anthropic\/claude-opus-5/s],
-    ["skills/interrogate/SKILL.md", /interrogate reviewers.*anthropic\/claude-fable-5-1.*high.*gpt-6-astra.*high.*xai\/grok-4\.6.*anthropic\/claude-opus-5/s],
-    ["skills/setup-pstack/SKILL.md", /pstack-poteto-agent.*gpt-6-astra.*high/s],
-    [".agents/skills/review-before-push/SKILL.md", /gpt-6-astra.*medium/s],
-    ["skills/poteto-mode/playbooks/bug-fix.md", /bug-fix.*anthropic\/claude-fable-5-1.*high/s],
-    ["skills/poteto-mode/playbooks/perf-issue.md", /perf-issue.*anthropic\/claude-fable-5-1.*high/s],
-    ["skills/poteto-mode/playbooks/hillclimb.md", /hillclimb.*anthropic\/claude-fable-5-1.*high/s],
+    ["skills/poteto-mode/SKILL.md", /feature, refactoring.*bug-fix.*perf-issue.*hillclimb/s],
+    ["skills/how/SKILL.md", /how explorer.*how explainer.*how critics/s],
+    ["skills/why/SKILL.md", /why investigators.*why synthesizer/s],
+    ["skills/reflect/SKILL.md", /reflect tooling.*reflect judgment, divergent, synthesizer/s],
+    ["skills/arena/SKILL.md", /arena runners/s],
+    ["skills/swarm/SKILL.md", /swarm workers/s],
+    ["skills/architect/SKILL.md", /architect runners/s],
+    ["skills/interrogate/SKILL.md", /interrogate reviewers/s],
+    ["skills/poteto-mode/playbooks/feature.md", /feature, refactoring/s],
+    ["skills/poteto-mode/playbooks/refactoring.md", /feature, refactoring/s],
+    ["skills/poteto-mode/playbooks/bug-fix.md", /bug-fix/s],
+    ["skills/poteto-mode/playbooks/perf-issue.md", /perf-issue/s],
+    ["skills/poteto-mode/playbooks/hillclimb.md", /hillclimb/s],
   ];
+  const modelPattern = /(?:gpt-6-astra|anthropic\/claude-fable-5-1|xai\/grok-4\.6|cursor\/grok-4\.6|anthropic\/claude-opus-5)/;
   for (const [relativePath, pattern] of expectations) {
-    assert.match(await fs.readFile(path.join(root, relativePath), "utf8"), pattern, relativePath);
+    const content = await fs.readFile(path.join(root, relativePath), "utf8");
+    assert.match(content, pattern, relativePath);
+    assert.doesNotMatch(content, modelPattern, relativePath);
   }
 });

@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "owner": "pstack-for-codex/setup-pstack",
+  "roles": {
+    "feature, refactoring": [
+      { "model": "gpt-6-astra", "reasoning_effort": "medium" }
+    ],
+    "bug-fix": [
+      { "model": "gpt-6-astra", "reasoning_effort": "high" }
+    ],
+    "perf-issue": [
+      { "model": "gpt-6-astra", "reasoning_effort": "high" }
+    ],
+    "hillclimb": [
+      { "model": "gpt-6-astra", "reasoning_effort": "high" }
+    ],
+    "judgment and prose": [
+      { "model": "anthropic/claude-fable-5-1", "reasoning_effort": "high" }
+    ],
+    "hardest tasks": [
+      { "model": "anthropic/claude-fable-5-1", "reasoning_effort": "high" }
+    ],
+    "how explorer": [
+      { "model": "gpt-6-astra", "reasoning_effort": "medium" }
+    ],
+    "how explainer": [
+      { "model": "anthropic/claude-fable-5-1", "reasoning_effort": "high" }
+    ],
+    "how critics": [
+      { "model": "anthropic/claude-fable-5-1", "reasoning_effort": "medium" },
+      { "model": "gpt-6-astra", "reasoning_effort": "medium" },
+      { "model": "xai/grok-4.6", "reasoning_effort": "high" },
+      { "model": "anthropic/claude-opus-5", "reasoning_effort": "high" }
+    ],
+    "why investigators": [
+      { "model": "cursor/grok-4.6", "reasoning_effort": "high" }
+    ],
+    "why synthesizer": [
+      { "model": "anthropic/claude-fable-5-1", "reasoning_effort": "high" }
+    ],
+    "reflect tooling": [
+      { "model": "gpt-6-astra", "reasoning_effort": "high" }
+    ],
+    "reflect judgment, divergent, synthesizer": [
+      { "model": "anthropic/claude-fable-5-1", "reasoning_effort": "high" }
+    ],
+    "arena runners": [
+      { "model": "anthropic/claude-fable-5-1", "reasoning_effort": "medium" },
+      { "model": "gpt-6-astra", "reasoning_effort": "medium" },
+      { "model": "xai/grok-4.6", "reasoning_effort": "high" },
+      { "model": "anthropic/claude-opus-5", "reasoning_effort": "high" }
+    ],
+    "arena cross-judge pool": [
+      { "model": "anthropic/claude-fable-5-1", "reasoning_effort": "medium" },
+      { "model": "gpt-6-astra", "reasoning_effort": "medium" },
+      { "model": "xai/grok-4.6", "reasoning_effort": "high" },
+      { "model": "anthropic/claude-opus-5", "reasoning_effort": "high" }
+    ],
+    "swarm workers": [
+      { "model": "cursor/grok-4.6", "reasoning_effort": "high" }
+    ],
+    "architect runners": [
+      { "model": "anthropic/claude-fable-5-1", "reasoning_effort": "medium" },
+      { "model": "gpt-6-astra", "reasoning_effort": "medium" },
+      { "model": "xai/grok-4.6", "reasoning_effort": "high" },
+      { "model": "anthropic/claude-opus-5", "reasoning_effort": "high" }
+    ],
+    "interrogate reviewers": [
+      { "model": "anthropic/claude-fable-5-1", "reasoning_effort": "medium" },
+      { "model": "gpt-6-astra", "reasoning_effort": "medium" },
+      { "model": "xai/grok-4.6", "reasoning_effort": "high" },
+      { "model": "anthropic/claude-opus-5", "reasoning_effort": "high" }
+    ]
+  }
+}

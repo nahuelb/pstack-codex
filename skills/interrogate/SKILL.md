@@ -34,14 +34,7 @@ Write one clear paragraph. Reviewers challenge whether the work achieves the int
 
 ## Step 3, Spawn Reviewers
 
-Launch all reviewers in a single message using the supported subagent tools. Resolve `interrogate reviewers` through `../setup-pstack/references/model-profile.md`, one reviewer per lane, extending or shrinking the Reviewer A/B/C/D labels below to the configured count.
-
-| Subagent | Default model |
-|----------|---------------|
-| Reviewer A | `anthropic/claude-fable-5-1`, `high` |
-| Reviewer B | `gpt-6-astra`, `high` |
-| Reviewer C | `xai/grok-4.6`, `xhigh` |
-| Reviewer D | `anthropic/claude-opus-5`, `xhigh` |
+Launch all reviewers in a single message using the supported subagent tools. Resolve `interrogate reviewers` through `../setup-pstack/references/model-profile.md`, one reviewer per lane, extending or shrinking the reviewer labels to the configured count.
 
 Each reviewer uses the complete spawn configuration from its lane, including `service_tier` when present. An inherited lane omits every override. Report skipped lanes and unverified served identities. Do not open a configuration PR unless the active request authorizes repository writes.
 

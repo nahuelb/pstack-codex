@@ -117,7 +117,7 @@ Aim for a complete **coverage map**, not a minimal one. A null result from an is
 
 Launch all matching investigators in a single message so they run concurrently. One investigator per category lets each specialize in one tool's query vocabulary and result shape. Don't ask one agent to cover multiple MCPs.
 
-Resolve `why investigators` through `../setup-pstack/references/model-profile.md`, default `xai/grok-4.6` with `xhigh` reasoning. Give each agent only the read capabilities required for its evidence category. If the runtime cannot prove a connector is read-only, perform that lookup in the parent or mark the category unavailable. A prose prohibition is not a sandbox.
+Resolve `why investigators` through `../setup-pstack/references/model-profile.md`. Give each agent only the read capabilities required for its evidence category. If the runtime cannot prove a connector is read-only, perform that lookup in the parent or mark the category unavailable. A prose prohibition is not a sandbox.
 
 Each investigator gets:
 1. The base prompt from `references/investigator-prompt.md`
@@ -159,7 +159,7 @@ If your scope assessment suggests a single-commit trivial target where the PR de
 
 ## Step 4. Synthesize
 
-Resolve `why synthesizer` through `../setup-pstack/references/model-profile.md`, default `anthropic/claude-fable-5-1` with `high` reasoning. Give it read-only access to cited evidence only. If no agent is available, synthesize sequentially in the parent and label that fallback.
+Resolve `why synthesizer` through `../setup-pstack/references/model-profile.md`. Give it read-only access to cited evidence only. If no agent is available, synthesize sequentially in the parent and label that fallback.
 
 The synthesizer gets:
 1. The investigator findings, including any null results and any categories skipped with justification

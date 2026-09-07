@@ -22,7 +22,7 @@ Read `references/model-profile.md` before changing configuration. The portable p
 
 Ask whether to keep the current mapping or change specific roles. Read the complete role list and runtime resolution rules in `references/model-profile.md`. A single role accepts one lane. A panel role accepts one or more lanes, and its list length controls fanout.
 
-Each lane is `skill-default`, `inherit-parent`, `auto`, or an explicit spawn configuration. An explicit lane contains `model` and `reasoning_effort`. It may contain `service_tier`. Standard mode omits `service_tier`. Fast mode uses `"priority"`. Treat these values as one configuration. `skill-default` returns to the original choice in the owning Markdown skill. The inheritance aliases omit explicit spawn overrides.
+Each lane is `skill-default`, `inherit-parent`, `auto`, or an explicit spawn configuration. An explicit lane contains `model` and `reasoning_effort`. It may contain `service_tier`. Standard mode omits `service_tier`. Fast mode uses `"priority"`. Treat these values as one configuration. `skill-default` returns to the bundled choice in `references/model-defaults.json`. The inheritance aliases omit explicit spawn overrides.
 
 If a supported Codex model-list surface is observable, convert it to JSON records shaped like:
 
@@ -65,7 +65,7 @@ node scripts/manage-agents.mjs install --scope user --project-root <repo> --user
 node scripts/manage-agents.mjs uninstall --scope project --project-root <repo> --user-home <home>
 ```
 
-Add `--profile <json-file>` for persona pairs, `--roles <json-file>` for role changes, and `--models <json-file>` only when the list came from an observable supported surface. Add `--capabilities <json-file>` when a fast request is present. Omitted roles keep their current mapping. On a fresh setup, omitted roles use the defaults in their owning Markdown skills. Do not create temporary files containing secrets; these files contain model identifiers only.
+Add `--profile <json-file>` for persona pairs, `--roles <json-file>` for role changes, and `--models <json-file>` only when the list came from an observable supported surface. Add `--capabilities <json-file>` when a fast request is present. Omitted roles keep their current mapping. On a fresh setup, omitted roles use `references/model-defaults.json`. Do not create temporary files containing secrets; these files contain model identifiers only.
 
 Setup writes `.codex/pstack-models.json` at project scope or `~/.codex/pstack-models.json` at user scope. The project registry overrides the user registry. On success, report the scope, profile paths, registry path, receipt path, and each role's setup status. Say that the new mapping applies to newly spawned agents. When a panel inherits or repeats one model, report reduced diversity instead of claiming which model served it.
 

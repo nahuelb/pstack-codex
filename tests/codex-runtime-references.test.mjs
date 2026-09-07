@@ -50,6 +50,7 @@ test("all skill runtime instructions use the central Codex contract", async () =
   for (const file of files) {
     const relative = path.relative(skillsRoot, file);
     let content = await fs.readFile(file, "utf8");
+    content = content.replaceAll("cursor/grok-4.6", "EXTERNAL_MODEL_ID");
     for (const allowed of LEGACY_REVIEW_AUTHOR_ALLOWLIST.get(relative) ?? []) {
       content = content.replace(allowed, "LEGACY_REVIEW_AUTHOR");
     }

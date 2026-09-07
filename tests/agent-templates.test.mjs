@@ -52,7 +52,7 @@ test("project-scoped templates render supported Codex agent TOML", async (t) => 
   const registry = JSON.parse(await fs.readFile(path.join(projectRoot, result.registryPath), "utf8"));
   assert.deepEqual(Object.keys(registry.roles), MODEL_ROLE_SPECS.map((spec) => spec.name));
   for (const spec of MODEL_ROLE_SPECS) {
-    assert.equal(registry.roles[spec.name].length, spec.kind === "panel" ? 4 : 1);
+    assert.equal(registry.roles[spec.name].length, spec.defaults.length);
     assert.ok(registry.roles[spec.name].every((lane) => lane.use_skill_default === true));
   }
 });

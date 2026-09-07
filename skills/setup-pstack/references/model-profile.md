@@ -15,30 +15,30 @@ Custom-agent defaults never prove the served model, effort, effective sandbox, c
 
 ## Workflow role matrix
 
-| Registry role | Shape | PStack default |
-| --- | --- | --- |
-| `feature, refactoring` | single | `xai/grok-4.6`, `xhigh` |
-| `bug-fix` | single | `anthropic/claude-fable-5-1`, `high` |
-| `perf-issue` | single | `anthropic/claude-fable-5-1`, `high` |
-| `hillclimb` | single | `anthropic/claude-fable-5-1`, `high` |
-| `judgment and prose` | single | `anthropic/claude-fable-5-1`, `high` |
-| `hardest tasks` | single | `anthropic/claude-fable-5-1`, `high` |
-| `how explorer` | single | `xai/grok-4.6`, `xhigh` |
-| `how explainer` | single | `anthropic/claude-fable-5-1`, `high` |
-| `how critics` | panel | Fable `high`, Astra `high`, Grok `xhigh`, Opus `xhigh` |
-| `why investigators` | single | `xai/grok-4.6`, `xhigh` |
-| `why synthesizer` | single | `anthropic/claude-fable-5-1`, `high` |
-| `reflect tooling` | single | `gpt-6-astra`, `high` |
-| `reflect judgment, divergent, synthesizer` | single | `anthropic/claude-fable-5-1`, `high` |
-| `arena runners` | panel | Fable `high`, Astra `high`, Grok `xhigh`, Opus `xhigh` |
-| `arena cross-judge pool` | panel | Fable `high`, Astra `high`, Grok `xhigh`, Opus `xhigh` |
-| `swarm workers` | single | `xai/grok-4.6`, `xhigh` |
-| `architect runners` | panel | Fable `high`, Astra `high`, Grok `xhigh`, Opus `xhigh` |
-| `interrogate reviewers` | panel | Fable `high`, Astra `high`, Grok `xhigh`, Opus `xhigh` |
+| Registry role | Shape |
+| --- | --- |
+| `feature, refactoring` | single |
+| `bug-fix` | single |
+| `perf-issue` | single |
+| `hillclimb` | single |
+| `judgment and prose` | single |
+| `hardest tasks` | single |
+| `how explorer` | single |
+| `how explainer` | single |
+| `how critics` | panel |
+| `why investigators` | single |
+| `why synthesizer` | single |
+| `reflect tooling` | single |
+| `reflect judgment, divergent, synthesizer` | single |
+| `arena runners` | panel |
+| `arena cross-judge pool` | panel |
+| `swarm workers` | single |
+| `architect runners` | panel |
+| `interrogate reviewers` | panel |
 
-The Astra and Fable fallbacks use `high` reasoning. Every other bundled fallback caps reasoning at `xhigh`.
+Bundled fallback lanes live only in `model-defaults.json`. Workflow Markdown names roles but never mirrors their model values.
 
-Every registry value is an array. A single role has exactly one lane. A panel has one or more lanes, and its array length sets fanout. A lane is `{"model":"...","reasoning_effort":"..."}`, `{"model":"...","reasoning_effort":"...","service_tier":"..."}`, `{"inherit_parent":true}`, or `{"use_skill_default":true}`. The executable role registry owns fallback configurations. Owning Markdown skills mirror them for workflow readers.
+Every registry value is an array. A single role has exactly one lane. A panel has one or more lanes, and its array length sets fanout. A lane is `{"model":"...","reasoning_effort":"..."}`, `{"model":"...","reasoning_effort":"...","service_tier":"..."}`, `{"inherit_parent":true}`, or `{"use_skill_default":true}`. The active registry overrides the bundled JSON defaults.
 
 A standard lane omits `service_tier`. A fast lane requests the `priority` service tier:
 
@@ -80,4 +80,4 @@ Panel workflows must report reduced diversity when inheritance or repeated confi
 
 Setup records scope, relative path, SHA-256, template source, requested model policy, role policies, and configuration status. Upgrade and uninstall may replace or remove a file only while its current hash matches the receipt. A mismatch requires human review and leaves the file and receipt intact.
 
-An update preserves existing validated lanes when no replacement is requested. A partial role file changes only the named roles. Omitted roles retain their current mapping, or use their Markdown skill defaults on a fresh install. Use `skill-default` to return an overridden lane to its owning Markdown default.
+An update preserves existing validated lanes when no replacement is requested. A partial role file changes only the named roles. Omitted roles retain their current mapping, or use `model-defaults.json` on a fresh install. Use `skill-default` to return an overridden lane to its bundled JSON default.
