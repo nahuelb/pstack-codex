@@ -16,6 +16,8 @@ const DISABLE = /^\s*disable \$poteto-mode[.!]?\s*$/iu;
 const REFERENCED_CHATS_PREAMBLE = /^\s*## Referenced chats with Codex:\r?\n[\s\S]*?\r?\n## My request:[ \t]*\r?\n/u;
 const LEADING_SLASH_COMMAND = /^\s*\/[a-z][\w-]*\s+/iu;
 const MAX_SESSION_ID_LENGTH = 512;
+const POTETO_SKILL_PATH = fileURLToPath(new URL("../../skills/poteto-mode/SKILL.md", import.meta.url));
+const MODE_GUIDANCE = `Main agent: apply the Poteto skill at ${JSON.stringify(POTETO_SKILL_PATH)}. Subagents: perform your assigned brief and persona directly; do not invoke poteto-mode or start its orchestration. Do not infer authority beyond the user request.`;
 
 export function hashValue(value) {
   return createHash("sha256").update(value).digest("hex");
@@ -222,7 +224,7 @@ export async function handleHook(input, options = {}) {
     return {
       hookSpecificOutput: {
         hookEventName: "SessionStart",
-        additionalContext: "Poteto Mode remains active for this resumed or compacted session. Apply the $poteto-mode skill. Do not infer authority beyond the user request.",
+        additionalContext: `Poteto Mode remains active for this resumed or compacted session. ${MODE_GUIDANCE}`,
       },
     };
   }
@@ -259,7 +261,7 @@ export async function handleHook(input, options = {}) {
   return {
     hookSpecificOutput: {
       hookEventName: "UserPromptSubmit",
-      additionalContext: "Poteto Mode is active for this session. Apply the $poteto-mode skill for this turn. Do not infer authority beyond the user request.",
+      additionalContext: `Poteto Mode is active for this session. ${MODE_GUIDANCE}`,
     },
   };
 }

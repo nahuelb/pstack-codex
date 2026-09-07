@@ -57,6 +57,24 @@ test("project-scoped templates render supported Codex agent TOML", async (t) => 
   }
 });
 
+test("comment auditor is self-contained and keeps a read-only action boundary under inherited permissions", async (t) => {
+  const { projectRoot, userHome } = await fixture(t);
+  const result = await installAgents({ pluginRoot: root, projectRoot, userHome, scope: "project" });
+  const record = result.files.find((file) => file.path.endsWith("pstack-comment-sicko.toml"));
+  const content = await fs.readFile(path.join(projectRoot, record.path), "utf8");
+  assert.match(content, /^sandbox_mode = "read-only"$/m);
+  assert.match(content, /complete delegated review procedure/);
+  assert.match(content, /without invoking `poteto-mode`, `no-comments`, or another orchestration skill/);
+  assert.match(content, /Do not spawn subagents/);
+  assert.match(content, /never edit files, run repository code, or execute commands with side effects/);
+  assert.match(content, /Do not use connectors or external network tools/);
+  assert.match(content, /Return the report in your final response/);
+  assert.match(content, /Broader inherited permissions do not authorize broader actions/);
+  assert.match(content, /If the task explicitly requires enforced isolation and it is unavailable, stop/);
+  assert.deepEqual(record.capability.skills, []);
+  assert.equal(record.capability.writable_scope, "none");
+});
+
 test("duplicate TOML names are detected across project and user layers regardless of filename", async (t) => {
   const { projectRoot, userHome } = await fixture(t);
   await fs.mkdir(path.join(projectRoot, ".codex/agents"), { recursive: true });

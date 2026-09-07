@@ -135,6 +135,25 @@ test("concurrent activation writes remain atomic and task-local", async (t) => {
   assert.equal(files.some((name) => name.endsWith(".tmp")), false);
 });
 
+test("sticky context scopes orchestration to the main agent and resolves the owning skill", async (t) => {
+  const { pluginData, load } = await fixture(t);
+  const activation = await load("activate.json");
+  await handleHook(activation, { pluginData, now: 1_000 });
+  const inputs = [
+    { ...activation, prompt: "Audit the supplied comments and return findings." },
+    { ...activation, hook_event_name: "SessionStart", source: "resume" },
+    { ...activation, hook_event_name: "SessionStart", source: "compact" },
+  ];
+  for (const input of inputs) {
+    const result = await handleHook(input, { pluginData, now: 2_000 });
+    const context = result.hookSpecificOutput.additionalContext;
+    assert.ok(context.includes(`Main agent: apply the Poteto skill at ${JSON.stringify(path.join(root, "skills/poteto-mode/SKILL.md"))}`));
+    assert.match(context, /Subagents: perform your assigned brief and persona directly/);
+    assert.match(context, /do not invoke poteto-mode or start its orchestration/);
+    assert.doesNotMatch(context, /Apply the \$poteto-mode skill for this turn/);
+  }
+});
+
 test("explicit opt-out removes this session and its delegate context", async (t) => {
   const { pluginData, load } = await fixture(t);
   await handleHook(await load("activate.json"), { pluginData, now: 1_000 });

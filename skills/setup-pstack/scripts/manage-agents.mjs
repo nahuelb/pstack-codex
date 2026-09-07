@@ -26,9 +26,9 @@ const ROLE_SPECS = [
     capability: {
       sandbox: "requested-read-only-unverified-until-runtime",
       writable_scope: "none",
-      connectors: "prohibited-fail-closed-if-not-constrained",
-      skills: ["how", "why"],
-      fallback: "constrained-generic-agent-or-skip",
+      connectors: "prohibited-by-review-scope",
+      skills: [],
+      fallback: "generic-agent-with-portable-prompt-and-review-scope",
     },
   },
 ];
