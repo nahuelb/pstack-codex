@@ -26,6 +26,24 @@ After the required pre-push review passes, use this command instead of `git push
 
 Pass normal push arguments to the wrapper when needed. It authorizes the tracked pre-push hook for that push, then reinstalls only after a successful push. If the push succeeds but installation fails, report both outcomes clearly. Do not claim that an existing Codex task loaded the update. Test the updated plugin in a new task.
 
+# Upstream maintenance
+
+Keep upstream pstack skills and playbooks close to their source to reduce future refresh conflicts.
+Check `upstream.lock.json` and `compatibility/pstack-map.json` before choosing which files to customize.
+
+Prefer separate Codex-specific reference files for local execution policies, such as parallelism and scheduling.
+Connect them through the existing `skills/poteto-mode/references/codex-agent-runtime.md` adapter with small, explicit references.
+State when each extension applies and verify that the workflow actually loads it.
+Avoid copying whole playbooks or spreading the same local guidance across upstream files.
+Keep model choices in the model registry rather than duplicating them in execution policies.
+
+Edit upstream-derived files when necessary for correctness or Codex compatibility, keeping the change small.
+Explain why a separate extension cannot express the required behavior.
+Local policies must preserve required verification, permission, and acceptance boundaries.
+
+Document extension ownership in `UPSTREAM.md` and preserve local extensions during upstream refreshes.
+Review semantic compatibility after refreshes, including extension loading and required gates; clean Git merges alone are insufficient.
+
 # Codex terminology
 
 Use the current official OpenAI documentation when changing Codex behavior, configuration, tools, or terminology. Open the relevant current page before editing. Start with the [Codex Subagents documentation](https://learn.chatgpt.com/docs/agent-configuration/subagents?surface=app) for subagent workflows. Prefer `learn.chatgpt.com` for ChatGPT and Codex app behavior and `developers.openai.com` for API behavior.
