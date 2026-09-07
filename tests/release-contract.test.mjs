@@ -30,6 +30,7 @@ test("the push wrapper reinstalls the local plugin only after a successful push"
   assert.match(script, /PSTACK_LOCAL_PLUGIN_PUSH=1 git push/);
   assert.match(hook, /PSTACK_LOCAL_PLUGIN_PUSH/);
   assert.match(hook, /npm run verify:offline/);
+  assert.match(hook, /git rev-parse --local-env-vars/);
   assert.match(hook, /\.codex-plugin\/plugin\.json/);
   assert.match(hook, /while read -r local_ref local_sha remote_ref remote_sha/);
   assert.match(hook, /git show "\$\{pushed_commit\}:\.codex-plugin\/plugin\.json"/);

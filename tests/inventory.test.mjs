@@ -42,7 +42,7 @@ test("inventory accounts for every upstream file, skill, and playbook", async ()
     .sort();
   assert.equal(upstreamSkills.length, 45);
   assert.equal(records.length, EXPECTED_SKILL_COUNT);
-  const codexOnlySkills = new Set(["setup-benny", "subagent-lifecycle"]);
+  const codexOnlySkills = new Set(["conversation-audit", "setup-benny", "subagent-lifecycle"]);
   assert.deepEqual(records.map((record) => record.directory).filter((name) => !codexOnlySkills.has(name)).sort(), upstreamSkills);
   assert.equal(records.filter((record) => record.directory === "setup-benny").length, 1);
   assert.equal(records.filter((record) => record.directory === "subagent-lifecycle").length, 1);
