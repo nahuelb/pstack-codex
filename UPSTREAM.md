@@ -4,6 +4,20 @@ This repository derives from `pstack` in `https://github.com/cursor/plugins`. Th
 
 The delivered repository contains only the modified Codex version. Do not push a raw upstream branch or snapshot commit. Do not keep an upstream remote in the delivered checkout.
 
+## Codex-owned execution policy
+
+`skills/poteto-mode/references/codex-agent-runtime.md` and `skills/poteto-mode/references/codex-parallelism.md` are local extensions, not upstream source files.
+The runtime contract is the single loading point for the parallelism policy. Keep scheduling preferences there instead of duplicating them across upstream skills.
+Model routing remains in the existing registry, and workflow acceptance and verification requirements remain authoritative.
+
+Preserve these extensions during upstream refreshes. Review their semantics against changed workflows, including dependencies, ownership, and required gates.
+Keep their loading and behavioral checks in `tests/codex-parallelism.test.mjs` and `evals/cases/codex-parallelism.json`.
+
+For a live behavioral check, generate scenarios without reference answers using `node scripts/grade-parallelism-eval.mjs --inputs`.
+Give those scenarios to a fresh agent through the runtime contract. Request a JSON array with `id`, `dispatch`, `blocked`, `close`, `invalidate`, `coordinator`, and `canFinish` for each scenario.
+The evaluation plans actions only; it must not execute them. Save the response and run `node scripts/grade-parallelism-eval.mjs <answers.json>`.
+Offline tests validate loading and grading, not model behavior. Retain live results separately and repeat them when scheduling semantics change.
+
 ## Local upstream copy
 
 This checkout keeps a full upstream clone at `.upstream/plugins`. Its local branch `locked-0.14.8` points at the locked commit `7314f723a487ec406b6369fe5865ba034cfed166`.

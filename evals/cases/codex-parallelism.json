@@ -1,0 +1,159 @@
+{
+  "schema_version": 1,
+  "policy": "skills/poteto-mode/references/codex-parallelism.md",
+  "instructions": "These are dry-run scheduling scenarios. Dispatch lists units to start as subagents; blocked lists units whose prerequisites prevent progress. Return one answer per case with id and the fields in expected. Array order is irrelevant. A main-agent action is not a subagent dispatch. Do not execute the scenarios.",
+  "cases": [
+    {
+      "id": "independent-before-wait",
+      "scenario": "Delegation is authorized. Core is already running. Provider and Docs are unstarted, have all required inputs, and own disjoint files in safe output directories. Two slots are free. Decide what main should dispatch before waiting for Core.",
+      "expected": {
+        "dispatch": [
+          "Provider",
+          "Docs"
+        ],
+        "blocked": [],
+        "close": [],
+        "invalidate": [],
+        "coordinator": "main",
+        "canFinish": false
+      }
+    },
+    {
+      "id": "shared-write-conflict",
+      "scenario": "Delegation is authorized. Core is running and owns schema.sql in the shared checkout. Migration is unstarted and would edit that same file without a separate worktree or ownership transfer. Docs is ready and owns docs.md. Two slots are free.",
+      "expected": {
+        "dispatch": [
+          "Docs"
+        ],
+        "blocked": [
+          "Migration"
+        ],
+        "close": [],
+        "invalidate": [],
+        "coordinator": "main",
+        "canFinish": false
+      }
+    },
+    {
+      "id": "contract-before-implementation",
+      "scenario": "Delegation is authorized. Core has published accepted API contract v1 and examples, but its implementation is still running and unverified. UI can implement from v1 in its own files and does not require working server behavior yet. Integration needs Core's passing behavior proof and completed UI. UI and Integration are unstarted. Two slots are free.",
+      "expected": {
+        "dispatch": [
+          "UI"
+        ],
+        "blocked": [
+          "Integration"
+        ],
+        "close": [],
+        "invalidate": [],
+        "coordinator": "main",
+        "canFinish": false
+      }
+    },
+    {
+      "id": "failed-prerequisite",
+      "scenario": "Delegation is authorized. The API prerequisite failed its required proof; its existing owner is correcting it. Release depends on that proof. Docs is unstarted, independent of the failed behavior, and has a settled contract and safe ownership. A slot is free.",
+      "expected": {
+        "dispatch": [
+          "Docs"
+        ],
+        "blocked": [
+          "Release"
+        ],
+        "close": [],
+        "invalidate": [],
+        "coordinator": "main",
+        "canFinish": false
+      }
+    },
+    {
+      "id": "no-nested-spawn",
+      "scenario": "Delegation is authorized. An implementation subagent cannot spawn. It identifies unstarted independent units Fixtures and Docs with complete inputs and disjoint ownership. Main has the supported spawn tool and two free slots. Choose the coordinator and next dispatches. No separate user-owned task is authorized.",
+      "expected": {
+        "dispatch": [
+          "Fixtures",
+          "Docs"
+        ],
+        "blocked": [],
+        "close": [],
+        "invalidate": [],
+        "coordinator": "main",
+        "canFinish": false
+      }
+    },
+    {
+      "id": "stale-integration-proof",
+      "scenario": "Delegation is authorized. Proof P1 passed for revision r1. The implementation has changed to r2 in behavior covered by P1. Reverify is an unstarted test unit ready to check r2 in an isolated snapshot. Release requires a passing proof for r2. A slot is free.",
+      "expected": {
+        "dispatch": [
+          "Reverify"
+        ],
+        "blocked": [
+          "Release"
+        ],
+        "close": [],
+        "invalidate": [
+          "P1"
+        ],
+        "coordinator": "main",
+        "canFinish": false
+      }
+    },
+    {
+      "id": "delegation-forbidden",
+      "scenario": "The user explicitly forbids subagents and asks main to make a small local change. UI and Docs are two unstarted parts with disjoint files and available inputs. Main can perform both directly. No checks have run yet. Tool capacity is available, but the user instruction remains in force.",
+      "expected": {
+        "dispatch": [],
+        "blocked": [],
+        "close": [],
+        "invalidate": [],
+        "coordinator": "main",
+        "canFinish": false
+      }
+    },
+    {
+      "id": "reclaim-completed-slot",
+      "scenario": "Delegation is authorized. Both available slots are occupied. Core is running. Explorer is completed, its result has been collected, and its retained context is no longer needed. Tests is unstarted, independent, and ready with safe ownership. Decide which thread can close and what can then start.",
+      "expected": {
+        "dispatch": [
+          "Tests"
+        ],
+        "blocked": [],
+        "close": [
+          "Explorer"
+        ],
+        "invalidate": [],
+        "coordinator": "main",
+        "canFinish": false
+      }
+    },
+    {
+      "id": "authentication-does-not-block-preparation",
+      "scenario": "Delegation is authorized for local preparation. Required user authentication for Deploy is pending. OfflineChecks is unstarted, ready, independently owned, and needs no authentication. Main retains production actions. A slot is free. Deploy is required for final completion.",
+      "expected": {
+        "dispatch": [
+          "OfflineChecks"
+        ],
+        "blocked": [
+          "Deploy"
+        ],
+        "close": [],
+        "invalidate": [],
+        "coordinator": "main",
+        "canFinish": false
+      }
+    },
+    {
+      "id": "finish-with-current-proof",
+      "scenario": "All accepted units, independent review, and required release checks have passed against unchanged revision r3 and unchanged relevant dependencies. All required results are collected and all agent threads are already closed. No work remains and no further unit is ready or required.",
+      "expected": {
+        "dispatch": [],
+        "blocked": [],
+        "close": [],
+        "invalidate": [],
+        "coordinator": "main",
+        "canFinish": true
+      }
+    }
+  ]
+}
