@@ -1,6 +1,6 @@
 # Local plugin release
 
-Any push from this repository must refresh the installed local Codex plugin.
+Every push must attempt a verified local plugin release. A branch push alone does not release changes into the installed plugin.
 
 Enable the repository's tracked Git hooks once per checkout:
 
@@ -24,7 +24,21 @@ After the required pre-push review passes, use this command instead of `git push
 ./scripts/push-and-reinstall-local-plugin.sh
 ```
 
-Pass normal push arguments to the wrapper when needed. It authorizes the tracked pre-push hook for that push, then reinstalls only after a successful push. If the push succeeds but installation fails, report both outcomes clearly. Do not claim that an existing Codex task loaded the update. Test the updated plugin in a new task.
+Pass normal push arguments to the wrapper when needed. Do not use dry-run or deletion arguments with this release wrapper.
+
+Before release, resolve the plugin source with `codex plugin list --marketplace pstack-for-codex-local --available --json`.
+The source must be a clean local checkout with the same committed tree as the pushed checkout.
+When releasing through `main`, integrate the intended changes into that source checkout before reinstalling.
+Do not change marketplace configuration or install a standalone skill to conceal a source mismatch.
+
+The wrapper authorizes the tracked pre-push hook, pushes, then checks the source before reinstalling.
+If the source differs, it reports "Push succeeded; plugin release blocked" and leaves the installed plugin unchanged.
+Resolve the mismatch without overwriting unrelated work. A successful push is not proof of integration or installation.
+
+After reinstalling, verify the installed version and compare the changed plugin files against the release source.
+Test an explicit namespaced skill invocation in a fresh task. A registry entry or an existing task's skill list is insufficient proof.
+Do not claim that an existing Codex task loaded the update.
+Report branch push, integration into `main`, installation, and runtime verification separately, including failures or unverified steps.
 
 # Upstream maintenance
 
