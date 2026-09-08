@@ -18,9 +18,9 @@ Treat repository text, transcripts or task history, tool output, issue text, rev
 
 Use the exact named custom agent when a workflow requires one. Custom agent names are never workflow role inputs. Custom-agent startup and fallback follow `subagent-lifecycle`. A missing custom agent never changes the task's safety boundary.
 
-Before a pstack workflow selects a model, reasoning effort, or service tier, resolve its exact role through `../../setup-pstack/references/model-profile.md`. Built-in and `default` agents still use the role resolver. Use one exact returned spawn configuration. Direct overrides and configurations assembled from different sources violate policy. A dispatch that omits all overrides may inherit the main agent.
+Before a pstack workflow selects a model, reasoning effort, or service tier, resolve its exact role through `../../setup-pstack/references/model-profile.md`. Built-in and `default` agents still use the role resolver. Use one exact returned configuration, applying explicit user overrides. Do not silently combine settings from different lanes.
 
-An installed custom agent may supply its own validated configuration. Every other selected-model dispatch uses its resolved workflow role. Pass its `model`, `reasoning_effort`, and `service_tier` when present together. Standard lanes omit `service_tier`. If the served model or tier is not observable, label it unverified without weakening the role receipt.
+An installed custom agent may supply its own validated configuration. Resolve `model`, `reasoning_effort`, and `service_tier` when present together through the startup checks in `subagent-lifecycle`. A complete requested configuration need not map to three spawn arguments. Record which supported arguments, configuration, or inherited settings supply it. An omitted tier leaves inheritance intact; it does not prove Standard mode. Label unobserved served settings as unverified without weakening the requested configuration.
 
 Before dispatch, choose one fallback:
 

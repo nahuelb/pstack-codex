@@ -40,9 +40,9 @@ When existing agents need newer portable instructions while retaining local mode
 
 Bundled fallback lanes live only in `model-defaults.json`. Workflow Markdown names roles but never mirrors their model values.
 
-Every registry value is an array. A single role has exactly one lane. A panel has one or more lanes, and its array length sets fanout. A lane is `{"model":"...","reasoning_effort":"..."}`, `{"model":"...","reasoning_effort":"...","service_tier":"..."}`, `{"inherit_parent":true}`, or `{"use_skill_default":true}`. The active registry overrides the bundled JSON defaults.
+Every registry value is an array. A single role has exactly one lane. A panel has one or more lanes, and its array length sets fanout. Panel entries are participants, not an implicit fallback ranking. Pool selection and fallback order follow the owning workflow or explicit user direction. A user-specified preference order does not authorize launching every fallback for diversity. A lane is `{"model":"...","reasoning_effort":"..."}`, `{"model":"...","reasoning_effort":"...","service_tier":"..."}`, `{"inherit_parent":true}`, or `{"use_skill_default":true}`. The active registry overrides the bundled JSON defaults.
 
-A standard lane omits `service_tier`. A fast lane requests the `priority` service tier:
+A lane without `service_tier` leaves the runtime's inherited tier unconstrained. A fast lane requests the `priority` service tier:
 
 ```json
 [
@@ -57,26 +57,28 @@ Before a pstack dispatch selects a model, reasoning effort, or service tier, cho
 
 Run `scripts/manage-agents.mjs resolve-role --role <exact-role> --project-root <task-cwd> --user-home <home>`, relative to this skill. The helper finds the nearest project registry without crossing a Git boundary. It reads that registry before the user registry and returns raw and resolved lanes.
 
-1. Select only from `resolvedLanes`. A lane's `model`, `reasoning_effort`, and optional `service_tier` are one indivisible spawn configuration.
-2. For an explicit or resolved skill-default lane, pass every present value only when the spawn surface advertises the exact configuration. Standard lanes omit `service_tier`. Otherwise inherit all values and report the unavailable configuration.
-3. For an inherited lane, omit all spawn overrides.
-4. Spawn one agent per panel lane unless the owning workflow selects one lane from a pool.
+1. Select only from `resolvedLanes`, then apply explicit user overrides. Treat the model, reasoning effort, and optional tier as one requested configuration.
+2. Follow `subagent-lifecycle` to establish a supported configuration path. Pass supported arguments explicitly. A missing per-spawn tier argument does not require dropping the requested model and effort; check live inheritance or supported configuration for the tier. Do not infer unsupported models from an abbreviated advertised list.
+3. For an inherited lane, omit spawn overrides and inspect the live settings when the task constrains them. Missing evidence remains unverified; it does not authorize weaker settings.
+4. Spawn one agent per panel lane unless the owning workflow selects from a pool or the user directs a preference or fallback order.
 5. Preserve duplicate lanes because each entry counts toward fanout.
 6. A present but invalid higher-precedence registry stops the affected dispatch. Do not fall through to another registry or bundled defaults.
-7. Record the exact role, registry source or unavailable status, selected lane, and requested spawn configuration in the runtime receipt.
+7. Record the exact role, registry source, selected lane, user overrides, requested configuration, configuration path, and observed settings in the runtime receipt. Keep unobserved backend model and tier claims unverified.
 
 The resolver and receipt make policy cheap to follow and easy to audit. They cannot make violations impossible because the spawn tool has no structured pstack role field.
 
 The registry proves only that setup validated the requested spawn configuration against the model list and override surface visible at that time. It does not prove which model or tier served a later agent.
 
-## Model resolution
+## Setup evidence and runtime capability
 
-- No requested configuration: omit `model`, `model_reasoning_effort`, and `service_tier`.
-- Requested configuration plus an observable model list: require an exact model and effort match. If `service_tier` is present, require it in the model's advertised `service_tiers` set and require the matching live spawn override capability.
-- Requested configuration without an observable model list: record `unverified-inheritance`, omit the TOML fields, and show the complete request only as unverified intent.
-- Missing entitlement or an unsupported value: stop without changing custom agents. Do not silently select a substitute.
+- Validate model and effort against supported live discovery. A tier capability describes the model; the running Codex version determines how configuration supplies it.
+- The setup helper's `spawn_service_tier_override` and `profile_service_tier_override` flags attest those specific override mechanisms. Do not set them to true as a substitute for inheritance evidence.
+- When setup cannot validate its supported mechanism, it records `unverified-inheritance` and preserves the complete request in its receipt. This is a limit of setup evidence, not proof that runtime inheritance cannot meet the request. Runtime dispatch still follows the checks above.
+- An observed entitlement denial or unsupported configuration blocks that path. Check compatible paths before declaring the model unavailable. Never silently select a substitute or downgrade an explicit requirement.
 
-Panel workflows must report reduced diversity when inheritance or repeated configurations collapse distinct lanes onto the same observable model. They must not invent a served-model receipt.
+Current Codex documents session settings and custom-agent precedence in the [subagent guide](https://learn.chatgpt.com/docs/agent-configuration/subagents). The [configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference) defines `service_tier`; inspect the running version before relying on a particular override or inheritance mechanism.
+
+Panel workflows must report reduced coverage when the user selects fewer participants, and reduced diversity when inheritance or repeated configurations use the same model. They must not invent a served-model receipt.
 
 ## Ownership receipt
 

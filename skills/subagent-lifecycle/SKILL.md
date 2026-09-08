@@ -11,14 +11,18 @@ Delegation must already be authorized.
 
 When a workflow names a custom agent, start that exact `agent_type` with a bounded task brief. The brief supplies scope, evidence, ownership, and the required report. Do not tell the subagent to invoke the skill or persona that owns the custom agent.
 
-If the custom agent is unavailable, start a `default` agent with the complete portable persona prompt followed by the same task brief. The default agent performs the persona directly. It must not invoke the owning orchestration skill or start another copy of itself.
+Resolve the requested model, reasoning effort, and service tier before launch. Use supported spawn arguments, configuration, or verified inheritance. Custom-agent settings can override spawn arguments. Preserve explicit user requirements across the complete configuration.
 
-Use these portable prompts:
+An abbreviated advertised model list or a missing spawn argument does not prove a capability is unavailable. Check supported live discovery and effective configuration, including inheritance and custom-agent overrides. Saved defaults do not establish the active task's settings. When uncertainty remains, use a bounded probe only if it preserves the user's constraints and has no external side effects. Report requested settings, observed settings, and unknowns separately. Successful completion alone does not prove the served model or tier.
+
+If the custom agent is unavailable or has conflicting fixed settings, check whether a `default` fallback preserves the requirements. If it does, start a `default` agent with the complete portable persona prompt and the same task brief. The default agent performs the persona directly. It must not invoke the owning orchestration skill or start another copy of itself. Preserve required settings, scope, isolation, and independence. Do not silently downgrade settings or change shared configuration to force a launch.
+
+Resolve portable prompts from the setup receipt or owning skill. For the bundled personas, use:
 
 - `pstack-poteto-agent`: `../poteto-mode/references/poteto-agent-prompt.md`
 - `pstack-comment-sicko`: `../no-comments/references/comment-sicko-prompt.md`
 
-If the prompt cannot be resolved, or the fallback cannot preserve required isolation or independence, report the subagent as blocked.
+If no supported path preserves the requirements or the prompt cannot be resolved, report the subagent as blocked.
 
 ## Collect results
 

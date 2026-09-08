@@ -97,17 +97,18 @@ test("all playbooks and orchestrated skills cite the runtime contract", async ()
   }
 });
 
-test("model-role guidance passes the complete spawn configuration", async () => {
+test("model-role guidance loads the shared configuration policy", async () => {
   const files = [
-    "skills/setup-pstack/references/model-profile.md",
     "skills/poteto-mode/SKILL.md",
     "skills/poteto-mode/references/codex-agent-runtime.md",
   ];
   for (const relativePath of files) {
     const content = await fs.readFile(path.join(root, relativePath), "utf8");
-    assert.match(content, /model.*reasoning_effort.*service_tier/is, relativePath);
-    assert.match(content, /standard (?:lane|lanes|mode).*omit(?:s)? `service_tier`/i, relativePath);
+    assert.match(content, /setup-pstack\/references\/model-profile\.md/, relativePath);
   }
+  const policy = await fs.readFile(path.join(root, "skills/setup-pstack/references/model-profile.md"), "utf8");
+  assert.match(policy, /model.*reasoning_effort.*service_tier/is);
+  assert.match(policy, /subagent-lifecycle/);
 });
 
 test("PR stack workflows use GitHub base branches and regression lanes", async () => {

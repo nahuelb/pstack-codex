@@ -22,7 +22,7 @@ Read `references/model-profile.md` before changing configuration. The portable p
 
 Ask whether to keep the current mapping or change specific roles. Read the complete role list and runtime resolution rules in `references/model-profile.md`. A single role accepts one lane. A panel role accepts one or more lanes, and its list length controls fanout.
 
-Each lane is `skill-default`, `inherit-parent`, `auto`, or an explicit spawn configuration. An explicit lane contains `model` and `reasoning_effort`. It may contain `service_tier`. Standard mode omits `service_tier`. Fast mode uses `"priority"`. Treat these values as one configuration. `skill-default` returns to the bundled choice in `references/model-defaults.json`. The inheritance aliases omit explicit spawn overrides.
+Each lane is `skill-default`, `inherit-parent`, `auto`, or an explicit requested configuration. An explicit lane contains `model` and `reasoning_effort`. It may contain `service_tier`; omission leaves the inherited tier unconstrained. Fast mode requests `"priority"`. Treat these values as one configuration. `skill-default` returns to the bundled choice in `references/model-defaults.json`. The inheritance aliases omit explicit spawn overrides.
 
 If a supported Codex model-list surface is observable, convert it to JSON records shaped like:
 
@@ -30,7 +30,7 @@ If a supported Codex model-list surface is observable, convert it to JSON record
 [{"slug":"gpt-5.6-luna","reasoning_efforts":["low","medium","high","xhigh","max"],"service_tiers":["priority"]}]
 ```
 
-Validate the model and effort before writing them. Validate `service_tier` when the lane requests it. A fast workflow lane also requires a live `spawn_agent` schema with a `service_tier` override. A fast custom profile requires the named role description to report its locked service tier. Record these checks in a capabilities JSON file with `spawn_service_tier_override` and `profile_service_tier_override` booleans. If the model list or required override surface is unavailable, omit the TOML fields, write an inherited role lane, and record `unverified-inheritance` with the complete request. Do not accept pasted entitlement claims as proof. A missing model or unsupported value is a hard stop. Let the user choose another configuration or inheritance.
+Validate model, effort, and any requested tier through supported live discovery. Follow the setup-evidence and runtime-capability rules in `references/model-profile.md`. The helper accepts `spawn_service_tier_override` and `profile_service_tier_override` booleans for those specific mechanisms. Do not claim either mechanism from inheritance evidence. If the helper cannot validate the request, report its `unverified-inheritance` result and retained request. That result does not establish runtime unavailability or authorize weaker settings for a task. An abbreviated model list is not a complete entitlement check.
 
 Persona profiles are a JSON object keyed by namespaced agent name:
 
