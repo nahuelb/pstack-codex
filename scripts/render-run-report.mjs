@@ -52,8 +52,15 @@ export function summarizeRun(evaluation) {
   const ordered = events.map((event, index) => ({ ...event, index })).sort((a, b) => time(a) - time(b) || a.index - b.index);
   const starts = ordered.filter((e) => e.type === 'run_started');
   const finishes = ordered.filter((e) => e.type === 'run_finished');
-  const elapsedMs = starts.length === 1 && finishes.length === 1 && time(finishes[0]) >= time(starts[0]) ? time(finishes[0]) - time(starts[0]) : null;
-  const runStatus = elapsedMs !== null ? 'observed' : !starts.length && !finishes.length ? 'missing' : 'incomplete or ambiguous';
+  const bounded = starts.length === 1 && finishes.length === 1 && time(finishes[0]) >= time(starts[0]);
+  const workTimes = ordered.flatMap((event) => {
+    if (/^(unit_|external_wait_)/.test(event.type) || ['integration_finished', 'release_finished'].includes(event.type)) return [time(event)];
+    if (event.type === 'check_recorded' && event.receipt?.origin === 'command') return [Date.parse(event.receipt.startedAt), Date.parse(event.receipt.finishedAt)];
+    return [];
+  });
+  const outsideScope = bounded && workTimes.some((at) => !Number.isFinite(at) || at < time(starts[0]) || at > time(finishes[0]));
+  const elapsedMs = bounded && !outsideScope ? time(finishes[0]) - time(starts[0]) : null;
+  const runStatus = outsideScope ? 'contradictory boundaries exclude recorded work' : elapsedMs !== null ? 'observed' : !starts.length && !finishes.length ? 'missing' : 'incomplete or ambiguous';
   const unitSpans = pairedSpans(ordered, 'unit_started', 'unit_finished', 'unitId');
   const missingUnitRecords = manifest.units.filter((unit) => !ordered.some((event) => event.type === 'unit_started' && event.unitId === unit.id) || !ordered.some((event) => event.type === 'unit_finished' && event.unitId === unit.id)).map((unit) => unit.id);
   if (missingUnitRecords.length && unitSpans.status === 'observed') unitSpans.status = 'partial';

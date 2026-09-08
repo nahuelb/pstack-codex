@@ -22,6 +22,8 @@ The Codex-owned run tools are `scripts/run-record.mjs`, `scripts/lib/run-record.
 
 The standalone prompt refresh extension consists of `skills/setup-pstack/scripts/refresh-agent-prompts.mjs`, `skills/setup-pstack/references/agent-prompt-refresh.md`, and `tests/agent-prompt-refresh.test.mjs`. Its small loading reference belongs in the existing Codex model adapter. Preserve it during refreshes and check compatibility with the installer receipt schema; prompt refresh must retain user configuration and expose, rather than silently adopt, model-registry drift.
 
+The existing Codex installer also rejects `preserved-unverified` records before rewriting files. This small guard belongs at the write boundary in `manage-agents.mjs`: a separate refresh helper cannot prevent a later installer from discarding preserved configuration.
+
 ## Local upstream copy
 
 This checkout keeps a full upstream clone at `.upstream/plugins`. Its local branch `locked-0.14.8` points at the locked commit `7314f723a487ec406b6369fe5865ba034cfed166`.

@@ -528,6 +528,9 @@ export async function installAgents({
   const target = layer(scope, projectRoot, userHome);
   const currentReceipt = await readReceipt(target.receipt);
   validateReceipt(currentReceipt, scope, target);
+  if (currentReceipt?.files.some((record) => record.model_policy?.status === "preserved-unverified")) {
+    throw new Error("review required for preserved custom-agent configurations; ordinary installation cannot rewrite them; use prompt-only refresh for instruction updates");
+  }
   const divergence = await inspectOwnedFiles(currentReceipt, target);
   if (divergence.length) {
     const summary = divergence.map(({ path: file, status }) => `${file} (${status})`).join(", ");

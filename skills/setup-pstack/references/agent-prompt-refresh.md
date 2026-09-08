@@ -27,6 +27,8 @@ The receipt records the refreshed agent hash and source hash. A divergent agent 
 
 Registry bytes and registry receipt records remain unchanged, even when their hashes differ. Registry role policies remain historical setup data. A divergent registry therefore still blocks ordinary installation. This helper does not repair or adopt it. Refresh does not validate model availability or runtime permissions.
 
+Ordinary installation also refuses any `preserved-unverified` custom-agent record, even when the registry matches its receipt. A reviewed prompt refresh must not let a later installation silently replace preserved settings with inheritance or template defaults. Continue using prompt refresh for instruction updates; changing these configurations requires a separate reviewed setup migration.
+
 Before mutation, the helper saves the complete plan and numbered original files under `.codex/pstack-prompt-refresh-backups/refresh-*`. The plan identifies each numbered file through `changes`. Apply regenerates the plan and compares all inputs before writing. Changed sources, configuration, receipt, or agent inventory require a new review.
 
 Write failures restore files changed by this operation. A concurrent edit is preserved and reported for manual recovery. Use the backup's `plan.json` and numbered `.before` files to inspect recovery. Do not restore over newer user changes.

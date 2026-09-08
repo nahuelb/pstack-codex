@@ -59,6 +59,27 @@ test('missing start, missing finish, and unverified served models each forbid co
   }
 });
 
+test('elapsed boundaries cannot exclude unit work, external waits or executed verification', async (t) => {
+  const a = await fixture(t, 'a');
+  const b = await fixture(t, 'b');
+  const altered = structuredClone(b.evaluation);
+  altered.events.find((event) => event.type === 'run_finished').at = new Date(1).toISOString();
+  let result = compareRuns([a.evaluation, altered]);
+  assert.equal(result.comparable, false);
+  assert.equal(result.runs[1].elapsedMs, null);
+  assert.match(result.runs[1].runStatus, /exclude recorded work/);
+  for (const event of [
+    { type: 'external_wait_started', at: new Date(110).toISOString(), waitId: 'late' },
+    { type: 'check_recorded', at: new Date(110).toISOString(), receipt: { origin: 'command', startedAt: new Date(70).toISOString(), finishedAt: new Date(110).toISOString() } },
+  ]) {
+    const late = structuredClone(b.evaluation);
+    late.events.push(event);
+    result = compareRuns([a.evaluation, late]);
+    assert.equal(result.comparable, false);
+    assert.equal(result.runs[1].elapsedMs, null);
+  }
+});
+
 test('missing, stale, and failed acceptance proof cannot qualify a finished run', async (t) => {
   const a = await fixture(t, 'a');
   const b = await fixture(t, 'b', { proof: false });

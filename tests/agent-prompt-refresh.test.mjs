@@ -23,6 +23,15 @@ async function fixture(t, scope = 'user') {
 }
 const apply = (plan) => applyPromptRefresh(plan, { expectedPlanHash: promptRefreshPlanHash(plan) });
 
+test('ordinary installation cannot erase a refreshed custom configuration with an unchanged registry', async (t) => {
+  const f = await fixture(t);
+  const plan = await planPromptRefresh(f.options);
+  await apply(plan);
+  const before = await Promise.all(plan.changes.map((item) => fs.readFile(item.file, 'utf8')));
+  await assert.rejects(installAgents({ ...f.options, pluginRoot }), /preserved custom-agent configurations/);
+  assert.deepEqual(await Promise.all(plan.changes.map((item) => fs.readFile(item.file, 'utf8'))), before);
+});
+
 for (const scope of ['user', 'project']) test(`${scope} refresh preserves non-prompt bytes and divergent registry ownership`, async (t) => {
   const f = await fixture(t, scope);
   const registry = `${await fs.readFile(f.registry, 'utf8')} \n`;
