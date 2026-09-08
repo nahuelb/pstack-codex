@@ -13,6 +13,8 @@ Pstack stores workflow model routing in project `.codex/pstack-models.json` or u
 
 Custom-agent defaults never prove the served model, effort, effective sandbox, connector set, or skill availability. A setup receipt describes written configuration only. Runtime receipts must come from an observable Codex surface.
 
+When existing agents need newer portable instructions while retaining local model choices, use the reviewed [prompt-only refresh](agent-prompt-refresh.md). It preserves the registry and does not turn divergent model records into validated policy.
+
 ## Workflow role matrix
 
 | Registry role | Shape |

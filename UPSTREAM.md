@@ -6,8 +6,8 @@ The delivered repository contains only the modified Codex version. Do not push a
 
 ## Codex-owned execution policy
 
-`skills/poteto-mode/references/codex-agent-runtime.md` and `skills/poteto-mode/references/codex-parallelism.md` are local extensions, not upstream source files.
-The runtime contract is the single loading point for the parallelism policy. Keep scheduling preferences there instead of duplicating them across upstream skills.
+`skills/poteto-mode/references/codex-agent-runtime.md`, `skills/poteto-mode/references/codex-parallelism.md`, and `skills/poteto-mode/references/codex-run-evidence.md` are local extensions, not upstream source files.
+The runtime contract is the single loading point for scheduling and run evidence. Keep execution preferences there instead of duplicating them across upstream skills.
 Model routing remains in the existing registry, and workflow acceptance and verification requirements remain authoritative.
 
 Preserve these extensions during upstream refreshes. Review their semantics against changed workflows, including dependencies, ownership, and required gates.
@@ -17,6 +17,10 @@ For a live behavioral check, generate scenarios without reference answers using 
 Give those scenarios to a fresh agent through the runtime contract. Request a JSON array with `id`, `dispatch`, `blocked`, `close`, `invalidate`, `coordinator`, and `canFinish` for each scenario.
 The evaluation plans actions only; it must not execute them. Save the response and run `node scripts/grade-parallelism-eval.mjs <answers.json>`.
 Offline tests validate loading and grading, not model behavior. Retain live results separately and repeat them when scheduling semantics change.
+
+The Codex-owned run tools are `scripts/run-record.mjs`, `scripts/lib/run-record.mjs`, `scripts/render-run-report.mjs`, and `scripts/benchmark-runs.mjs`. Preserve them and their `tests/run-*.test.mjs` checks during refreshes. They capture local evidence and produce reports; they neither perform external closeout actions nor replace required verification. Project-specific release helpers belong in the target project, outside this plugin.
+
+The standalone prompt refresh extension consists of `skills/setup-pstack/scripts/refresh-agent-prompts.mjs`, `skills/setup-pstack/references/agent-prompt-refresh.md`, and `tests/agent-prompt-refresh.test.mjs`. Its small loading reference belongs in the existing Codex model adapter. Preserve it during refreshes and check compatibility with the installer receipt schema; prompt refresh must retain user configuration and expose, rather than silently adopt, model-registry drift.
 
 ## Local upstream copy
 

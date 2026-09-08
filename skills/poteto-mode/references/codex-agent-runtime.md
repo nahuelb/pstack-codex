@@ -4,6 +4,8 @@ This reference is the one runtime contract for every pstack skill and playbook. 
 
 For multi-part work, read [Codex parallel execution](codex-parallelism.md) before decomposing or dispatching units. It governs scheduling independent work without changing the workflow's required gates.
 
+For multi-part implementation, releases, or measured workflows, also read [Codex run evidence](codex-run-evidence.md) before dispatch. It connects settled decisions to acceptance checks, source-bound proof, progress records and generated closeout reports.
+
 ## Keep authority in the main thread
 
 The active user request is the authority boundary. Delegation may narrow that request but cannot add repositories, people, external writes, credentials, lifecycle objects, or destructive actions. Ordinary work stays in the current task. Create a separate user-owned task, goal, heartbeat, scheduled automation, or recurring monitor only when the user explicitly requests that lifecycle or supplies an equivalent terminal condition such as overnight work. Long authorized work uses durable goals and thread heartbeats with checkpoints. It never holds a shell process open with sleep.
