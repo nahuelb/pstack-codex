@@ -16,7 +16,7 @@ When a discovered requirement replaces a foundation or adds a major prerequisite
 
 Before dispatching browser verification, establish the intended build, isolated runtime, ready URL, fixture access, expected flows and artifact destination. Delegate browser controls under the applicable browser policy; the runtime owner prepares and cleans its own services. A missing runtime is a setup dependency, not a browser failure.
 
-Use the project's preflight to check the actual checkout, toolchain, package versions, installed resolution and CI networking before broad verification or consumer import. Keep independent source and build ownership separate. Start task-owned emulators when their tests are ready; record readiness separately from background lifetime and stop them after the owning tests finish.
+Use the project's preflight to check the actual checkout, toolchain, package versions, installed resolution and CI networking before broad verification or consumer import. When building or extending a verifier, read [verified execution](codex-verified-execution.md) for source capture, execution binding and observed milestones. Keep independent source and build ownership separate. Start task-owned emulators when their tests are ready; record readiness separately from background lifetime and stop them after the owning tests finish.
 
 Reuse unaffected source-bound proof during correction, and rerun affected flows after relevant changes. Preserve required final integrated verification. Follow the existing browser recovery rule for failed controls; if recovery cannot establish the required observation, report the missing capability instead of repeatedly attempting the same unsupported path.
 

@@ -2,6 +2,8 @@
 
 Use these optional helpers when an explicit benchmark or a project verification gate needs structured receipts. The default audit path is [Codex run evidence](codex-run-evidence.md). Existing verifier receipts take precedence over duplicating them here. Read this reference only when using the helpers.
 
+Read [verified execution](codex-verified-execution.md) before creating or changing a check. It defines current snapshot, preflight, milestone and selective freshness semantics.
+
 ## Turn decisions into proof
 
 Before dispatching implementation, write the important settled decisions as acceptance criteria and name the checks that will establish them. For example, “expired invitations cannot grant access” needs an expired-invitation assertion, not just a successful build. Reuse existing tests. Add coverage only where the behavior lacks meaningful proof. If a decision is unresolved, leave its dependent unit blocked and advance independent work.
@@ -40,7 +42,7 @@ The manifest uses this shape. Replace the example with the actual acceptance con
 
 Include the source, shared contracts, relevant configuration and dependency locks that can affect each check. Directory snapshots include new files. `.git` and `node_modules` are excluded; name dependency lockfiles explicitly. Source symlinks are rejected rather than silently following unrecorded inputs. A snapshot cannot cover undeclared dependencies, environment changes or remote state: reverify those when they change. Keep generated build outputs outside a check's declared source inputs when possible.
 
-Verification captures the exact manifest, relevant source hashes before and after execution, exit code, timestamps and output hash. Changes during verification, later source changes or missing/altered proof make the receipt stale. Rerun affected checks after integration; reuse current evidence for unaffected checks. The record is an auditable local assertion, not a tamper-proof attestation or a sandbox. Run only commands authorized by the task, and keep secrets out of recorded output.
+Verification captures reconstructable check inputs, the relevant acceptance contract, source hashes before and after execution, exit code, timestamps and output hash. Changes to those inputs or missing/altered proof make the receipt stale; unrelated progress metadata does not. Rerun affected checks after integration; reuse current evidence for unaffected checks. The record is an auditable local assertion, not a tamper-proof attestation or a sandbox. Run only commands authorized by the task, and keep secrets out of recorded output.
 
 For browser, review or external tool evidence, the main agent reviews the actual result and attaches a proof file:
 

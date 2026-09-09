@@ -28,6 +28,8 @@ The narrow edits to Figure it out, Show me your work and Opening a PR remove con
 
 The optional assignment tools (`scripts/assignment-record.mjs`, `scripts/lib/assignment-record.mjs`, `tests/assignment-record.test.mjs`) and `skills/poteto-mode/references/codex-assignments.md` are Codex-owned. The parallelism adapter loads their usage only when complex handoffs benefit from a record. They check declared readiness and result revisions without starting agents or granting integration authority.
 
+`skills/poteto-mode/references/codex-verified-execution.md` documents the Codex-owned run tools' reconstructable snapshots, proof milestones, exact-checkout preflight and selective freshness rules. Its loading points are delivery flow and the optional run-record manual. Keep native/provider proof semantics in the project harness; generic milestone checks cannot establish those facts alone.
+
 ## Local upstream copy
 
 This checkout keeps a full upstream clone at `.upstream/plugins`. Its local branch `locked-0.14.8` points at the locked commit `7314f723a487ec406b6369fe5865ba034cfed166`.

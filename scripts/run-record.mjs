@@ -1,13 +1,13 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { appendEvent, attachProof, evaluateRun, initializeRun, runCheck } from "./lib/run-record.mjs";
+import { appendEvent, attachProof, createManifest, evaluateRun, initializeRun, runCheck } from "./lib/run-record.mjs";
 
 export async function main(args) {
   const [operation, runDir, input, extra] = args;
   if (!runDir || extra) throw new Error("usage: run-record.mjs init <run-dir> <manifest.json> | event <run-dir> <event.json> | verify <run-dir> <check-id> | attach <run-dir> <proof.json> | status <run-dir>");
   const read = async () => JSON.parse(await readFile(input, "utf8"));
-  if (operation === "init") { await initializeRun(runDir, await read()); return { initialized: path.resolve(runDir) }; }
+  if (operation === "init") { await initializeRun(runDir, createManifest(await read())); return { initialized: path.resolve(runDir) }; }
   if (operation === "event") return appendEvent(runDir, await read());
   if (operation === "verify") return runCheck(runDir, input);
   if (operation === "attach") { const { checkId, ...proof } = await read(); return attachProof(runDir, checkId, proof); }
