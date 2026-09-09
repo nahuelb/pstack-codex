@@ -14,7 +14,7 @@ After a partial reply, resolve only the matching request. A clear answer, reject
 
 ## Mark the main task title
 
-When the first unresolved request is presented, read the main task's actual current title through supported context or task APIs. Retain that exact original title and the title written by this agent in the existing task context. Set the title to `Needs Input: {original title}` through `set_thread_title` when available, or the supported `thread/name/set` API. In the app tool, omit `threadId` to target the calling task; otherwise use its verified ID. Subagents report blockers to the main agent and do not rename their agent threads or other tasks for this policy.
+Before presenting the first request or invoking a blocking question or approval call, read the main task's actual current title through supported context or task APIs. Retain that exact original title and the title written by this agent in the existing task context. Set the title to `Needs Input: {original title}` through `set_thread_title` when available, or the supported `thread/name/set` API. In the app tool, omit `threadId` to target the calling task; otherwise use its verified ID. Subagents report blockers to the main agent and do not rename their agent threads or other tasks for this policy. Present the prepared request immediately after marking the title; if the input control fails, use an available supported channel so the marker points to a visible request.
 
 Use one prefix only. If the title already starts with `Needs Input:`, leave it unchanged unless retained history establishes ownership of that marker. The title describes pending user input even when independent implementation remains active; it is not a native Codex status flag.
 

@@ -200,6 +200,15 @@
           "recover_ownership_before_restoration"
         ]
       }
+    },
+    {
+      "id": "blocking-input-title-order",
+      "scenario": "A concrete approval request is ready. The main task title is known, and supported rename and blocking input tools are available. The input call will suspend execution until the user answers. Choose: mark_title_then_present_request, present_request_then_mark_title, wait_for_answer_before_marking.",
+      "expected": {
+        "actions": [
+          "mark_title_then_present_request"
+        ]
+      }
     }
   ]
 }
