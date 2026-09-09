@@ -9,7 +9,7 @@ Delegation and optional capabilities follow `../poteto-mode/references/codex-age
 
 For work a human reviews after the fact, a decision trail lets them reconstruct what was decided, why, and on what evidence, without rerunning the work or reading the whole task history. Keep one canonical log so the trail is consistent and a future agent can find it.
 
-For automatic invocation by another workflow, follow [Codex run evidence](../poteto-mode/references/codex-run-evidence.md) and return to that workflow. Existing history and artifacts may already supply the trail. The standalone log and review below apply when the user explicitly requests this skill or a separate reviewable trail.
+For automatic invocation by another workflow, follow [Codex run evidence](../poteto-mode/references/codex-run-evidence.md). If the caller requires a durable trail, named format or trail review, preserve that artifact and review through the sections below. Otherwise reuse existing history and artifacts, then return to the caller. An explicit user request for this skill also uses the standalone log and review below.
 
 ## The format
 

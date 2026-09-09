@@ -1,6 +1,6 @@
 # Codex run evidence
 
-Use this policy for multi-part implementation and releases. Its purpose is to preserve facts needed to explain inefficiency later, with little work during implementation. Explicit benchmark or project evidence requirements still apply.
+Use this policy for multi-part implementation and releases. Its purpose is to preserve facts needed to explain inefficiency later, with little work during implementation. Explicit benchmark, project evidence and invoking-workflow checkpoint or trail-review requirements still apply.
 
 ## Reuse the record that already exists
 
@@ -26,6 +26,6 @@ Do not manually transcribe agent IDs, model choices, commands, test output or ti
 
 Once a finding is validated, send the bounded repair before polishing its narrative. Record the brief and evidence in that dispatch. Optional report generation or a broken audit helper must not block unrelated authorized implementation. Failed or stale verification still blocks its dependent acceptance gate.
 
-At handoff, summarize the accepted result and remaining work using existing evidence. Do not reconstruct the whole conversation or spawn an extra trail reviewer by default. Required independent code, architecture and runtime reviews still apply. An explicit audit request can perform deeper reconstruction afterward.
+At handoff, summarize the accepted result and remaining work using existing evidence. Do not reconstruct the whole conversation or spawn an extra trail reviewer unless the user or invoking workflow requires that audit. Required independent code, architecture and runtime reviews still apply. An explicit audit request can perform deeper reconstruction afterward.
 
 Use [structured run-record tools](codex-run-record-tools.md) only for an explicit benchmark or a project gate that needs these receipts. They are optional for ordinary implementation and do not replace an existing verifier. When selected, generate views from that record rather than writing competing ledgers. This policy does not enable telemetry or change model settings.

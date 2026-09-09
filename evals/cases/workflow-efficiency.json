@@ -108,6 +108,16 @@
           "continue_independent"
         ]
       }
+    },
+    {
+      "id": "required-autonomous-trail",
+      "scenario": "Autonomous run invokes show-me-your-work and explicitly requires a durable per-iteration trail. Orchestrate also requires a final independent trail audit. The user did not separately ask for a TSV. Choose: preserve_required_trail, preserve_required_audit, skip_both_as_automatic_invocation.",
+      "expected": {
+        "actions": [
+          "preserve_required_trail",
+          "preserve_required_audit"
+        ]
+      }
     }
   ]
 }
