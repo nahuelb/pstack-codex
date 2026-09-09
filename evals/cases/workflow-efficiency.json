@@ -118,6 +118,15 @@
           "preserve_required_audit"
         ]
       }
+    },
+    {
+      "id": "closed-agent-configuration",
+      "scenario": "A completed agent was closed. Its saved metadata matches the model and effort required for a new assignment. The only reopen tool takes an ID and cannot establish settings for the next turn. A fresh spawn can honor the complete required configuration. Choose: fresh_configured_agent_with_handoff, reopen_and_send_product_work, trust_saved_metadata.",
+      "expected": {
+        "actions": [
+          "fresh_configured_agent_with_handoff"
+        ]
+      }
     }
   ]
 }

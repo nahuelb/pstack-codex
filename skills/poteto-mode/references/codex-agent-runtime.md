@@ -43,7 +43,7 @@ If none is available, refuse writable fan-out and run serially. Each brief names
 
 ## Manage subagents
 
-Before spawning or managing subagents, follow `subagent-lifecycle`. It owns custom-agent startup and fallback, result delivery, waiting, stop and interruption-recovery rules, verification, and closing agent threads. This contract adds only pstack role resolution, capability fallback, isolation, and task-specific prompting. Send each subagent a bounded prompt with the goal, evidence, ownership, stop condition, and required report. A prompt is the subagent's entire context unless spawning explicitly forks history, so pass evidence as file paths and never reference the main thread without a context fork. Long-running subagents write required artifacts as they complete so the main agent can observe progress.
+Before spawning or managing subagents, follow `subagent-lifecycle`. It owns custom-agent startup and fallback, result delivery, waiting, stop and interruption-recovery rules, verification, and closing agent threads. Before reusing an agent, also read [configuration continuity](codex-agent-continuity.md), including when a personal lifecycle skill takes precedence. This contract adds pstack role resolution, capability fallback, configuration continuity, isolation, and task-specific prompting. Send each subagent a bounded prompt with the goal, evidence, ownership, stop condition, and required report. A prompt is the subagent's entire context unless spawning explicitly forks history, so pass evidence as file paths and never reference the main thread without a context fork. Long-running subagents write required artifacts as they complete so the main agent can observe progress.
 
 ## Use live capability checks
 

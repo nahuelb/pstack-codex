@@ -30,6 +30,10 @@ The optional assignment tools (`scripts/assignment-record.mjs`, `scripts/lib/ass
 
 `skills/poteto-mode/references/codex-verified-execution.md` documents the Codex-owned run tools' reconstructable snapshots, proof milestones, exact-checkout preflight and selective freshness rules. Its loading points are delivery flow and the optional run-record manual. Keep native/provider proof semantics in the project harness; generic milestone checks cannot establish those facts alone.
 
+The offline history tools (`scripts/analyze-history.mjs`, `scripts/lib/history-analysis.mjs`, `tests/history-analysis.test.mjs`) and `skills/conversation-audit/references/history-analysis.md` reconstruct audit facts from supported exports. They never scrape private stores or infer active time from gaps. Preserve the input-binding and overlap tests during refreshes.
+
+The Codex-owned `codex-agent-continuity.md`, `scripts/lib/agent-continuity.mjs` and `tests/agent-continuity.test.mjs` guard configuration when reusing agents. Runtime and bundled lifecycle both load this reference so a personal lifecycle cannot silently bypass the pstack continuation check. No default model or service tier is changed.
+
 ## Local upstream copy
 
 This checkout keeps a full upstream clone at `.upstream/plugins`. Its local branch `locked-0.14.8` points at the locked commit `7314f723a487ec406b6369fe5865ba034cfed166`.

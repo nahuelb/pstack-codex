@@ -26,6 +26,8 @@ Before using telemetry, bind the target conversation to its exact conversation o
 
 If the supported task surface omits an active or unfinished turn, use the visible conversation plus live artifacts and label the gap. Ask for an export only when the missing data blocks a requested conclusion.
 
+For exported supported history, use the [offline history analyzer](references/history-analysis.md) to deduplicate and reconstruct timing before manual analysis. Preserve its unknowns and quarantine; supplemental notes must not turn missing timing into measured activity.
+
 ## Grade every claim
 
 Use these provenance grades throughout the report:

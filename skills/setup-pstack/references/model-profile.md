@@ -63,7 +63,7 @@ Run `scripts/manage-agents.mjs resolve-role --role <exact-role> --project-root <
 4. Spawn one agent per panel lane unless the owning workflow selects from a pool or the user directs a preference or fallback order.
 5. Preserve duplicate lanes because each entry counts toward fanout.
 6. A present but invalid higher-precedence registry stops the affected dispatch. Do not fall through to another registry or bundled defaults.
-7. Record the exact role, registry source, selected lane, user overrides, requested configuration, configuration path, and observed settings in the runtime receipt. Keep unobserved backend model and tier claims unverified.
+7. Preserve the role-resolution result and explicit overrides in the existing dispatch evidence. Add only missing configuration-path facts or conflicts; do not copy observable settings into another ledger. Keep unobserved backend model and tier claims unverified.
 
 The resolver and receipt make policy cheap to follow and easy to audit. They cannot make violations impossible because the spawn tool has no structured pstack role field.
 
