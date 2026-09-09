@@ -3,6 +3,7 @@ import { spawn } from "node:child_process";
 import { createWriteStream } from "node:fs";
 import { appendFile, lstat, mkdir, readFile, readdir, realpath, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { gzipSync, gunzipSync } from "node:zlib";
 
 const digest = (value) => createHash("sha256").update(value).digest("hex");
 const timestamp = () => new Date().toISOString();
@@ -64,6 +65,7 @@ export function validateManifest(manifest) {
     for (const source of [...check.sourcePaths, ...(check.proof?.inputPaths ?? [])]) {
       requireValue(nonempty(source) && !path.isAbsolute(source) && within(path.resolve(manifest.sourceRoot), path.resolve(manifest.sourceRoot, source)), "Check source paths must stay inside sourceRoot");
     }
+    for (const field of ["maxInputBytes", "maxInputFiles"]) if (check[field] !== undefined) requireValue(Number.isSafeInteger(check[field]) && check[field] > 0, `${field} must be a positive safe integer`);
     if (check.command !== undefined) requireValue(Array.isArray(check.command) && check.command.length > 0 && check.command.every(nonempty), "Command must be a nonempty argv array");
   }
   for (const unit of manifest.units) {
@@ -151,8 +153,11 @@ export const appendEvent = (runDir, event) => record(runDir, event);
 async function sourceSnapshot(manifest, check) {
   const root = await realpath(manifest.sourceRoot);
   const entries = new Map();
+  let inputBytes = 0;
+  let inputFiles = 0;
   async function walk(target) {
     const relative = path.relative(root, target) || ".";
+    if (entries.has(relative)) return;
     const info = await lstat(target);
     requireValue(!info.isSymbolicLink(), `Source proof does not follow symlinks: ${relative}`);
     requireValue(within(root, await realpath(target)), `Source path escapes checkout: ${relative}`);
@@ -163,7 +168,12 @@ async function sourceSnapshot(manifest, check) {
       }
     } else {
       requireValue(info.isFile(), `Source path is not a regular file: ${relative}`);
+      inputFiles += 1;
+      requireValue(inputFiles <= (check.maxInputFiles ?? 10000), "Input snapshot exceeds maxInputFiles; narrow declared inputs or set an explicit budget");
+      requireValue(inputBytes + info.size <= (check.maxInputBytes ?? 16 * 1024 * 1024), "Input snapshot exceeds maxInputBytes; narrow declared inputs or set an explicit budget");
       const bytes = await readFile(target);
+      inputBytes += bytes.length;
+      requireValue(inputBytes <= (check.maxInputBytes ?? 16 * 1024 * 1024), "Input snapshot grew beyond maxInputBytes");
       entries.set(relative, { path: relative, type: "file", executable: info.mode & 0o111, sha256: digest(bytes), base64: bytes.toString("base64") });
     }
   }
@@ -199,8 +209,8 @@ async function prepareCheck(runDir, checkId) {
   const inputs = await sourceSnapshot(manifest, check);
   const binding = contract(manifest, check);
   const id = randomUUID();
-  const snapshot = path.resolve(runDir, "proof", `${id}.inputs.json`);
-  const payload = canonical({ schemaVersion: 2, id, cwd, contract: binding, inputs });
+  const snapshot = path.resolve(runDir, "proof", `${id}.inputs.json.gz`);
+  const payload = gzipSync(canonical({ schemaVersion: 2, id, cwd, contract: binding, inputs }));
   await writeFile(snapshot, payload, { flag: "wx", mode: 0o600 });
   return { manifest, check, cwd, id, snapshot, snapshotHash: digest(payload), before: hashObject(inputs), contractHash: hashObject(binding), environment };
 }
@@ -302,7 +312,7 @@ export async function attachProof(runDir, checkId, { artifact, verdict, summary,
 async function snapshotValid(receipt, manifest, check) {
   try {
     const bytes = await readFile(receipt.snapshot);
-    const snapshot = JSON.parse(bytes);
+    const snapshot = JSON.parse(receipt.snapshot.endsWith(".gz") ? gunzipSync(bytes) : bytes);
     return digest(bytes) === receipt.snapshotHash && snapshot.schemaVersion === 2 && snapshot.id === receipt.id
       && hashObject(snapshot.inputs) === receipt.sourceHash
       && hashObject(snapshot.contract) === receipt.contractHash

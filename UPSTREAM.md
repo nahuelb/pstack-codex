@@ -131,3 +131,5 @@ node --test tests/upstream-provenance.test.mjs tests/compatibility-map.test.mjs
 ```
 
 Review the generated diff. A complete report accounts for every locked path and has no unresolved source delta.
+
+`skills/poteto-mode/references/codex-audit-storage.md` is a Codex-owned extension loaded by the runtime adapter before scratch allocation and at closeout. Preserve its evidence retention, inactivity checks, concurrent isolation, and run-record capture budgets during upstream refreshes.

@@ -3,6 +3,7 @@ import { mkdtemp, mkdir, readFile, readdir, rm, symlink, writeFile } from "node:
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { gunzipSync } from "node:zlib";
 import { appendEvent, attachProof, evaluateRun, initializeRun, readRun, runCheck, validateManifest } from "../scripts/lib/run-record.mjs";
 
 async function fixture(t, command = [process.execPath, "-e", "process.exit(0)"]) {
@@ -153,7 +154,7 @@ test("explicit ignored harness bytes reconstruct the source hash and invalidate 
   assert.equal((await evaluateRun(f.runDir)).acceptanceComplete, true);
   await updateCheck(f, (check) => { check.proof = { inputPaths: ["node_modules/proof.cjs"], milestones: ["changed"] }; });
   const receipt = await runCheck(f.runDir, "test");
-  const snapshot = JSON.parse(await readFile(receipt.snapshot, "utf8"));
+  const snapshot = JSON.parse(gunzipSync(await readFile(receipt.snapshot)));
   const input = snapshot.inputs.find((entry) => entry.path === "node_modules/proof.cjs");
   assert.equal(Buffer.from(input.base64, "base64").toString(), "console.log('changed')");
   const { createHash } = await import("node:crypto");
@@ -270,7 +271,7 @@ test("constructor and init CLI default only omitted timestamps", async (t) => {
 test("snapshot replacement during execution cannot return a passing receipt", async (t) => {
   const f = await fixture(t);
   await updateCheck(f, (check) => {
-    check.command = [process.execPath, "-e", "const fs=require('fs');const p=process.argv[1];for(const file of fs.readdirSync(p))if(file.endsWith('.inputs.json'))fs.writeFileSync(require('path').join(p,file),'{}')", path.join(f.runDir, "proof")];
+    check.command = [process.execPath, "-e", "const fs=require('fs');const p=process.argv[1];for(const file of fs.readdirSync(p))if(file.endsWith('.inputs.json.gz'))fs.writeFileSync(require('path').join(p,file),'{}')", path.join(f.runDir, "proof")];
   });
   assert.equal((await runCheck(f.runDir, "test")).status, "stale");
 });
@@ -326,4 +327,44 @@ test("a running check retains diagnostic output before it finishes", async (t) =
     assert.match(captured, /live diagnostic/);
     assert.equal(finished, false);
   } finally { await writeFile(release, "release"); await running; }
+});
+
+test("snapshots compress reconstructable bytes without weakening freshness", async (t) => {
+  const f = await fixture(t);
+  const input = "repeatable source\n".repeat(10000);
+  await writeFile(path.join(f.sourceRoot, "source.txt"), input);
+  const receipt = await runCheck(f.runDir, "test");
+  const bytes = await readFile(receipt.snapshot);
+  assert.ok(bytes.length < Buffer.byteLength(input) / 10);
+  const snapshot = JSON.parse(gunzipSync(bytes));
+  assert.equal(Buffer.from(snapshot.inputs[0].base64, "base64").toString(), input);
+  assert.equal((await evaluateRun(f.runDir)).acceptanceComplete, true);
+});
+
+test("snapshot budgets fail before executing and count overlapping paths once", async (t) => {
+  const f = await fixture(t, [process.execPath, "-e", "require('fs').writeFileSync('ran','yes')"]);
+  await updateCheck(f, (check) => { check.maxInputBytes = 6; });
+  await assert.rejects(runCheck(f.runDir, "test"), /maxInputBytes/);
+  assert.deepEqual(await readdir(path.join(f.runDir, "proof")), []);
+  assert.equal((await readdir(f.sourceRoot)).includes("ran"), false);
+  await updateCheck(f, (check) => { check.maxInputBytes = 7; check.maxInputFiles = 1; check.sourcePaths = ["source.txt", "source.txt"]; });
+  assert.equal((await runCheck(f.runDir, "test")).status, "passed");
+  await writeFile(path.join(f.sourceRoot, "second.txt"), "x");
+  await updateCheck(f, (check) => { check.sourcePaths = ["source.txt", "second.txt"]; });
+  await assert.rejects(runCheck(f.runDir, "test"), /maxInputFiles/);
+});
+
+test("existing uncompressed schema-2 snapshots remain valid", async (t) => {
+  const f = await fixture(t);
+  const receipt = await runCheck(f.runDir, "test");
+  const bytes = gunzipSync(await readFile(receipt.snapshot));
+  const legacyPath = receipt.snapshot.replace(/\.gz$/, "");
+  await writeFile(legacyPath, bytes);
+  const { createHash } = await import("node:crypto");
+  const eventsPath = path.join(f.runDir, "events.jsonl");
+  const event = JSON.parse((await readFile(eventsPath, "utf8")).trim());
+  event.receipt.snapshot = legacyPath;
+  event.receipt.snapshotHash = createHash("sha256").update(bytes).digest("hex");
+  await writeFile(eventsPath, `${JSON.stringify(event)}\n`);
+  assert.equal((await evaluateRun(f.runDir)).acceptanceComplete, true);
 });
