@@ -1,3 +1,10 @@
+# Pull requests and merge history
+
+Use pull requests by default instead of pushing directly to `main`.
+Describe the problem, intended behavior, key tradeoffs, and validation in the PR so future agents can understand the change.
+Merge PRs with a merge commit, preserving the individual commits. Do not squash or rebase when merging.
+Include a concise problem and approach summary plus the PR reference in the merge commit message, reusing the reviewed PR description.
+
 # Local plugin release
 
 Every push must attempt a verified local plugin release. A branch push alone does not release changes into the installed plugin.
