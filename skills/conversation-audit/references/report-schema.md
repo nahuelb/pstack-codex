@@ -43,6 +43,8 @@ Annotate every identity, duration, and token value with its own provenance grade
 
 Provide rollups by model, pstack role, phase, and successful versus discarded work. State how double counting was prevented.
 
+For usage questions, include the [usage analyzer](usage-attribution.md) coverage and rankings by subagent, role, model/provider, and immediate delegating task. Include the combined dimensions and first/last request timestamps. Display input, cached input, cache reads, cache creation, output, reasoning, and native total separately. Rank observed reported subtotals; retain estimates, missing fields, and unattributed rows separately. A partial ranking cannot prove the highest total consumer across missing records. Keep API-equivalent cost estimates separate from actual billing and subscription quota.
+
 ### 5. Performance analysis
 
 Report wall time, role-duration rollups, critical path, peak concurrency, serial bottlenecks, idle or stuck intervals, timeout behavior, commit cadence, tool time, retry rate, rework ratio, token efficiency, compactions, model switches, and context churn. Separate measured duration from inferred delay. Do not call a run inefficient solely because it lacks a comparison baseline.

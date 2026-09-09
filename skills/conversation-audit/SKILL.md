@@ -1,6 +1,6 @@
 ---
 name: conversation-audit
-description: "Deeply audit a supplied Codex conversation for model, token, role, timing, decision, verification, and workflow performance. Use when the user wants shortcomings and concrete pstack improvements, not a simple conversation summary."
+description: "Deeply audit a supplied Codex conversation for subagent and pstack-role token usage, model routing, timing, decisions, verification, and workflow performance. Use for evidence-backed usage rankings or concrete pstack improvements."
 ---
 
 # Conversation audit
@@ -27,6 +27,8 @@ Before using telemetry, bind the target conversation to its exact conversation o
 If the supported task surface omits an active or unfinished turn, use the visible conversation plus live artifacts and label the gap. Ask for an export only when the missing data blocks a requested conclusion.
 
 For exported supported history, use the [offline history analyzer](references/history-analysis.md) to deduplicate and reconstruct timing before manual analysis. Preserve its unknowns and quarantine; supplemental notes must not turn missing timing into measured activity.
+
+For token totals or rankings, read [usage attribution](references/usage-attribution.md) and run its analyzer on supported OpenCodex logs. Reuse the history analyzer's delegation graph and existing role briefs. A conversation grouping ID does not establish which subagent made a request. Keep unattributed usage visible. Use native history receipts as a separate meter when available; never add overlapping meters.
 
 ## Grade every claim
 

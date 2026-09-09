@@ -1,0 +1,23 @@
+[
+  {
+    "threadId": "builder",
+    "parentThreadId": "main",
+    "dispatchItemId": "dispatch-build",
+    "role": "implementer",
+    "source": "tests/fixtures/usage-audit/history.json#dispatch-build:prompt"
+  },
+  {
+    "threadId": "reviewer",
+    "parentThreadId": "main",
+    "dispatchItemId": "dispatch-review",
+    "role": "reviewer",
+    "source": "tests/fixtures/usage-audit/history.json#dispatch-review:prompt"
+  },
+  {
+    "threadId": "tester",
+    "parentThreadId": "builder",
+    "dispatchItemId": "dispatch-test",
+    "role": "test-runner",
+    "source": "tests/fixtures/usage-audit/history.json#dispatch-test:prompt"
+  }
+]

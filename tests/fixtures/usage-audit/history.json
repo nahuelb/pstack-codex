@@ -1,0 +1,81 @@
+[
+  {
+    "thread": {
+      "id": "main",
+      "turns": [
+        {
+          "id": "turn-main",
+          "startedAt": 1788955200,
+          "completedAt": 1788958200,
+          "items": [
+            {
+              "id": "dispatch-build",
+              "type": "collabAgentToolCall",
+              "tool": "spawnAgent",
+              "status": "completed",
+              "senderThreadId": "main",
+              "receiverThreadIds": [
+                "builder"
+              ],
+              "startedAt": 1788955200,
+              "completedAt": 1788955260,
+              "prompt": "Pstack role: implementer. Perform the assigned fixture task."
+            },
+            {
+              "id": "dispatch-review",
+              "type": "collabAgentToolCall",
+              "tool": "spawnAgent",
+              "status": "completed",
+              "senderThreadId": "main",
+              "receiverThreadIds": [
+                "reviewer"
+              ],
+              "startedAt": 1788955200,
+              "completedAt": 1788955260,
+              "prompt": "Pstack role: reviewer. Perform the assigned fixture task."
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "thread": {
+      "id": "builder",
+      "turns": [
+        {
+          "id": "turn-build",
+          "startedAt": 1788955200,
+          "completedAt": 1788957600,
+          "items": [
+            {
+              "id": "dispatch-test",
+              "type": "collabAgentToolCall",
+              "tool": "spawnAgent",
+              "status": "completed",
+              "senderThreadId": "builder",
+              "receiverThreadIds": [
+                "tester"
+              ],
+              "startedAt": 1788955200,
+              "completedAt": 1788955260,
+              "prompt": "Pstack role: test-runner. Perform the assigned fixture task."
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "thread": {
+      "id": "tester",
+      "turns": []
+    }
+  },
+  {
+    "thread": {
+      "id": "reviewer",
+      "turns": []
+    }
+  }
+]
