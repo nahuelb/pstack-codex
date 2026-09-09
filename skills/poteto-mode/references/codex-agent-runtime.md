@@ -6,6 +6,8 @@ For multi-part work, read [Codex parallel execution](codex-parallelism.md) befor
 
 For multi-part implementation, releases, or measured workflows, also read [Codex run evidence](codex-run-evidence.md) before dispatch. It preserves missing decision and blocker context while reusing conversation history and existing proof. Also read [Codex delivery flow](codex-delivery-flow.md) for planning and final PR follow-through.
 
+Before asking the user for a decision, approval or required access, read [User input visibility](codex-user-input.md). It keeps unanswered requests visible while independent work continues.
+
 ## Keep authority in the main thread
 
 The active user request is the authority boundary. Delegation may narrow that request but cannot add repositories, people, external writes, credentials, lifecycle objects, or destructive actions. Ordinary work stays in the current task. Create a separate user-owned task, goal, heartbeat, scheduled automation, or recurring monitor only when the user explicitly requests that lifecycle or supplies an equivalent terminal condition such as overnight work. Long authorized work uses durable goals and thread heartbeats with checkpoints. It never holds a shell process open with sleep.

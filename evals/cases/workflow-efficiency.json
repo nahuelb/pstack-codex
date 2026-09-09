@@ -127,6 +127,88 @@
           "fresh_configured_agent_with_handoff"
         ]
       }
+    },
+    {
+      "id": "pending-input-visible",
+      "scenario": "The main task is named Implement SDK. A concrete account-policy approval is unanswered; independent Android work is ready. Title read/write tools are available. Choose: mark_main_needs_input, lead_update_with_pending_decision, continue_android, silently_apply_policy, rename_android_subagent.",
+      "expected": {
+        "actions": [
+          "mark_main_needs_input",
+          "lead_update_with_pending_decision",
+          "continue_android"
+        ]
+      }
+    },
+    {
+      "id": "partial-input-reply",
+      "scenario": "Two user decisions remain. The user answers only the Xcode access question. Firebase approval remains unanswered. The agent owns the Needs Input prefix. Choose: resolve_xcode_only, keep_title_marker, show_firebase_pending, remove_title_marker, assume_firebase_approved.",
+      "expected": {
+        "actions": [
+          "resolve_xcode_only",
+          "keep_title_marker",
+          "show_firebase_pending"
+        ]
+      }
+    },
+    {
+      "id": "input-resolved-owned-title",
+      "scenario": "All requests have explicit answers. The current title exactly matches Needs Input: Implement SDK, which this agent set from Implement SDK. Implementation remains unfinished. Choose: restore_original_title, continue_authorized_work, mark_implementation_complete, keep_needs_input_title.",
+      "expected": {
+        "actions": [
+          "restore_original_title",
+          "continue_authorized_work"
+        ]
+      }
+    },
+    {
+      "id": "user-renamed-pending-task",
+      "scenario": "The agent previously set Needs Input: Implement SDK. While approval was pending, the user renamed the task Mobile launch. All requests are now answered. Choose: preserve_user_title, restore_implement_sdk, strip_arbitrary_prefix.",
+      "expected": {
+        "actions": [
+          "preserve_user_title"
+        ]
+      }
+    },
+    {
+      "id": "title-api-unavailable",
+      "scenario": "A required user approval remains pending, but supported title APIs are unavailable. Independent work is ready. Choose: use_visible_input_request, report_sidebar_marker_unavailable, continue_independent, edit_private_history_store, block_all_work_until_title_works.",
+      "expected": {
+        "actions": [
+          "use_visible_input_request",
+          "report_sidebar_marker_unavailable",
+          "continue_independent"
+        ]
+      }
+    },
+    {
+      "id": "external-wait-no-input",
+      "scenario": "CI and a subagent are still running. Neither needs user input or approval. Choose: keep_normal_title, collect_results_normally, mark_needs_input, ask_user_to_wait.",
+      "expected": {
+        "actions": [
+          "keep_normal_title",
+          "collect_results_normally"
+        ]
+      }
+    },
+    {
+      "id": "unowned-input-prefix",
+      "scenario": "The current title is Needs Input: Research. There is no retained rename receipt or original title. One approval is pending. Choose: keep_single_prefix, show_pending_request, recover_ownership_before_restoration, add_another_prefix, assume_original_title_is_research.",
+      "expected": {
+        "actions": [
+          "keep_single_prefix",
+          "show_pending_request",
+          "recover_ownership_before_restoration"
+        ]
+      }
+    },
+    {
+      "id": "blocking-input-title-order",
+      "scenario": "A concrete approval request is ready. The main task title is known, and supported rename and blocking input tools are available. The input call will suspend execution until the user answers. Choose: mark_title_then_present_request, present_request_then_mark_title, wait_for_answer_before_marking.",
+      "expected": {
+        "actions": [
+          "mark_title_then_present_request"
+        ]
+      }
     }
   ]
 }
