@@ -36,4 +36,6 @@ Stop an Active subagent only when the user asks, it leaves scope, it makes unsaf
 
 After an interruption, inspect partial files and reconcile retained state before retrying. Retry at most once with a brief that accounts for that state. A second interruption returns a labeled partial result or visible blocker.
 
-Verify each result before using it. Close completed agent threads when the tool supports closing.
+Verify each result before using it. Retain an open agent when a known next assignment benefits from its context and uses the same configuration. Otherwise close completed agent threads when the tool supports closing.
+
+Before reusing an agent, apply [configuration continuity](../poteto-mode/references/codex-agent-continuity.md). A closed agent's saved metadata does not establish the configuration of its next turn.

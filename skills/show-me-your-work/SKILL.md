@@ -9,6 +9,8 @@ Delegation and optional capabilities follow `../poteto-mode/references/codex-age
 
 For work a human reviews after the fact, a decision trail lets them reconstruct what was decided, why, and on what evidence, without rerunning the work or reading the whole task history. Keep one canonical log so the trail is consistent and a future agent can find it.
 
+For automatic invocation by another workflow, follow [Codex run evidence](../poteto-mode/references/codex-run-evidence.md). If the caller requires a durable trail, named format or trail review, preserve that artifact and review through the sections below. Otherwise reuse existing history and artifacts, then return to the caller. An explicit user request for this skill also uses the standalone log and review below.
+
 ## The format
 
 A single TSV file, one row per decision. TSV because GitHub renders it as a sortable table, `column -s$'\t' -t` and spreadsheets read it, and a row appends with one command. Cells stay single-line. Evidence is a pointer, not prose.

@@ -1,76 +1,31 @@
 # Codex run evidence
 
-Use this extension for multi-part implementation, release work, or an explicitly measured workflow. Keep small edits lightweight. It adds evidence collection to the existing workflow; it does not replace its reviews, user acceptance, or release gates.
+Use this policy for multi-part implementation and releases. Its purpose is to preserve facts needed to explain inefficiency later, with little work during implementation. Explicit benchmark, project evidence and invoking-workflow checkpoint or trail-review requirements still apply.
 
-## Turn decisions into proof
+## Reuse the record that already exists
 
-Before dispatching implementation, write the important settled decisions as acceptance criteria and name the checks that will establish them. For example, “expired invitations cannot grant access” needs an expired-invitation assertion, not just a successful build. Reuse existing tests. Add coverage only where the behavior lacks meaningful proof. If a decision is unresolved, leave its dependent unit blocked and advance independent work.
+The conversation, assignment briefs, Git history, CI results and verifier artifacts are the default record. Before writing audit material, check whether those sources already preserve the fact. Link to it instead of copying it. Do not create a parallel decision ledger, progress report, model receipt or checkpoint merely because this policy loaded.
 
-The main agent owns one run record outside the source checkout. Initialize it early, then record events as work happens. Commands below resolve from the plugin root, three directories above this reference; they do not require installing scripts into the product repository.
+Keep important accepted requirements linked to meaningful checks in the existing plan or test descriptions. An audit table does not establish coverage. Preserve actual proof, source identity and limitations required by the verification workflow.
 
-```sh
-node <plugin-root>/scripts/run-record.mjs init <run-dir> <manifest.json>
-node <plugin-root>/scripts/run-record.mjs event <run-dir> <event.json>
-node <plugin-root>/scripts/run-record.mjs verify <run-dir> <check-id>
-node <plugin-root>/scripts/run-record.mjs status <run-dir>
-```
+## Record only missing context
 
-The manifest uses this shape. Replace the example with the actual acceptance contract and repository commands; do not treat a command's name or exit code as proof that it covers a decision.
+Add a short note in the current conversation or existing task artifact when a consequential fact would otherwise be lost:
 
-```json
-{
-  "schemaVersion": 1,
-  "runId": "invitation-expiry",
-  "objective": "Reject expired invitations",
-  "sourceRoot": "/absolute/product-checkout",
-  "createdAt": "2026-01-01T10:00:00.000Z",
-  "decisions": [{ "id": "expiry", "text": "Expired invitations grant no access" }],
-  "units": [{ "id": "implement", "title": "Enforce expiry", "dependsOn": [] }],
-  "criteria": [{
-    "id": "expired-rejected", "description": "An expired invitation is rejected without granting access",
-    "decisionIds": ["expiry"], "checkIds": ["invitation-test"]
-  }],
-  "checks": [{
-    "id": "invitation-test", "description": "Expired invitation regression assertions",
-    "sourcePaths": ["src/invitations", "tests/invitations.test.mjs", "package.json", "package-lock.json"],
-    "command": ["node", "--test", "tests/invitations.test.mjs"]
-  }]
-}
-```
+- A decision or reversal, its reason and the evidence that changed the plan.
+- The specific missing input, capability or ownership conflict that blocks a unit; why independent work cannot proceed, if that is true.
+- A contract becoming usable before full implementation, or a result accepted or rejected for a reason its artifacts do not show.
+- A correction or repeated verification cycle, what caused it and which earlier evidence it invalidated.
+- An external wait's cause and observed start/end, when existing tool records omit them. Distinguish time actually blocked from work continuing alongside a service.
 
-Include the source, shared contracts, relevant configuration and dependency locks that can affect each check. Directory snapshots include new files. `.git` and `node_modules` are excluded; name dependency lockfiles explicitly. Source symlinks are rejected rather than silently following unrecorded inputs. A snapshot cannot cover undeclared dependencies, environment changes or remote state: reverify those when they change. Keep generated build outputs outside a check's declared source inputs when possible.
+Record the fact once at the transition, with the affected assignment or source revision and evidence pointer. Conversation timestamps suffice for contemporaneous notes. Mark delayed observations and unknown times; never backfill a guessed timestamp as exact. If a durable note is needed for pickup, extend the existing task artifact instead of maintaining another status view.
 
-Verification captures the exact manifest, relevant source hashes before and after execution, exit code, timestamps and output hash. Changes during verification, later source changes or missing/altered proof make the receipt stale. Rerun affected checks after integration; reuse current evidence for unaffected checks. The record is an auditable local assertion, not a tamper-proof attestation or a sandbox. Run only commands authorized by the task, and keep secrets out of recorded output.
+Do not manually transcribe agent IDs, model choices, commands, test output or timings already retained by supported tools. Preserve transient proof before cleanup when it cannot be reconstructed from committed source or retained artifacts. Keep credentials and private payloads out of audit notes.
 
-For browser, review or external tool evidence, the main agent reviews the actual result and attaches a proof file:
+## Keep recording off the completion path
 
-```sh
-node <plugin-root>/scripts/run-record.mjs attach <run-dir> <proof.json>
-```
+Once a finding is validated, send the bounded repair before polishing its narrative. Record the brief and evidence in that dispatch. Optional report generation or a broken audit helper must not block unrelated authorized implementation. Failed or stale verification still blocks its dependent acceptance gate.
 
-`proof.json` contains `checkId`, absolute `artifact`, `verdict` (`passed` or `failed`), and a substantive `summary`. Attach only evidence reviewed against the current inputs. The receipt labels this origin `reviewed-artifact`, separately from a command executed by the helper. Attaching an old artifact does not reverify it.
+At handoff, summarize the accepted result and remaining work using existing evidence. Do not reconstruct the whole conversation or spawn an extra trail reviewer unless the user or invoking workflow requires that audit. Required independent code, architecture and runtime reviews still apply. An explicit audit request can perform deeper reconstruction afterward.
 
-## Record progress without repeated polling
-
-Use supported Codex results and the main agent's own operations to append events. Keep one main writer; a conflicting write fails and can be retried after it finishes. Verification runs do not hold the event lock while their command executes. Do not install hooks, scrape private stores, schedule monitors, or infer token counts from output length.
-
-An event has `type`, optional `at` (the actual occurrence timestamp), and optional `actor`: `{ "threadId": "...", "kind": "main" | "subagent", "role": "...", "requestedModel": "...", "servedModel": "..." }`. The helper adds an ID and recording timestamp. Omit unobserved fields. Use these events where observable:
-
-- `run_started`, `run_finished`: actual scope boundaries. A late start measures only the remaining segment; label its objective accordingly.
-- `unit_ready`, `unit_started`, `unit_finished`: include a manifest `unitId`; a finish may include `outcome: "passed"` or `"failed"`. Record subsequent attempts separately.
-- `external_wait_started`, `external_wait_finished`: pair with `waitId`; use for external blockers such as an outstanding owner action or service response.
-- `integration_finished`, `release_finished`: record actual completed milestones with a short `summary`. Acceptance passing does not establish either milestone.
-- `token_usage`: include actor, supported receipt `source`, and `usage.totalTokens` (or `null` when unavailable). Optional input, output, cached-input and reasoning-output counts are cumulative for this run and actor. Only the latest snapshot counts; cached and reasoning counts are subsets, never additional tokens. Do not attribute account-wide usage to a task.
-
-Elapsed unit spans include tool waits and can overlap. They do not establish active model computation or main-agent idle time. Label requested models separately from served models, and mark the latter unverified when the runtime does not expose them. Events support reporting; they do not start agents or unlock dependencies. The main agent still validates scheduling and required results.
-
-## Generate closeout and measure actual runs
-
-```sh
-node <plugin-root>/scripts/render-run-report.mjs <run-dir> --output <report.md> --ticket-output <ticket-draft.md>
-node <plugin-root>/scripts/benchmark-runs.mjs <baseline-run-dir> <candidate-run-dir>
-```
-
-Generate the report after integration and final verification. It must show blocked criteria and stale/missing proof, observed main/subagent work, unavailable usage, and the release milestones actually recorded. A ticket draft is proposed text only. The main agent must validate live issue state, destination, payload and authorization before any external update. Never mark a task complete merely because a report was generated.
-
-For a planned benchmark, add `benchmark: { "caseId": "...", "environment": "...", "models": ["..."] }` to the manifest before starting. Compare real completed runs with the same acceptance contract, environment and model setup. Freeze scope before measurement; repeat against controlled starting inputs when claiming a causal improvement. A historical estimate, a synthetic fixture, or two unrelated features is not a throughput benchmark. Report elapsed time, queue delay, rework and external waits only where their event pairs exist. Keep collecting representative feature runs before changing policy based on a speedup claim.
+Use [structured run-record tools](codex-run-record-tools.md) only for an explicit benchmark or a project gate that needs these receipts. They are optional for ordinary implementation and do not replace an existing verifier. When selected, generate views from that record rather than writing competing ledgers. This policy does not enable telemetry or change model settings.

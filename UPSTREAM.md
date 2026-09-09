@@ -7,7 +7,7 @@ The delivered repository contains only the modified Codex version. Do not push a
 ## Codex-owned execution policy
 
 `skills/poteto-mode/references/codex-agent-runtime.md`, `skills/poteto-mode/references/codex-parallelism.md`, and `skills/poteto-mode/references/codex-run-evidence.md` are local extensions, not upstream source files.
-The runtime contract is the single loading point for scheduling and run evidence. Keep execution preferences there instead of duplicating them across upstream skills.
+The runtime contract is the single loading point for scheduling, lightweight run evidence and `skills/poteto-mode/references/codex-delivery-flow.md`. The optional `codex-run-record-tools.md` reference retains structured receipt instructions without loading them for every implementation. Keep execution preferences there instead of duplicating them across upstream skills.
 Model routing remains in the existing registry, and workflow acceptance and verification requirements remain authoritative.
 
 Preserve these extensions during upstream refreshes. Review their semantics against changed workflows, including dependencies, ownership, and required gates.
@@ -23,6 +23,16 @@ The Codex-owned run tools are `scripts/run-record.mjs`, `scripts/lib/run-record.
 The standalone prompt refresh extension consists of `skills/setup-pstack/scripts/refresh-agent-prompts.mjs`, `skills/setup-pstack/references/agent-prompt-refresh.md`, and `tests/agent-prompt-refresh.test.mjs`. Its small loading reference belongs in the existing Codex model adapter. Preserve it during refreshes and check compatibility with the installer receipt schema; prompt refresh must retain user configuration and expose, rather than silently adopt, model-registry drift.
 
 The existing Codex installer also rejects `preserved-unverified` records before rewriting files. This small guard belongs at the write boundary in `manage-agents.mjs`: a separate refresh helper cannot prevent a later installer from discarding preserved configuration.
+
+The narrow edits to Figure it out, Show me your work and Opening a PR remove conflicting requirements for duplicate per-unit logs, automatic standalone trail review and user-prompt-only feedback collection. A separate extension cannot resolve those direct requirements on its own. Preserve their explicit loading links and standalone user-requested audit behavior during refreshes. Workflow evaluation cases exercise these transitions without reducing verification or permission gates.
+
+The optional assignment tools (`scripts/assignment-record.mjs`, `scripts/lib/assignment-record.mjs`, `tests/assignment-record.test.mjs`) and `skills/poteto-mode/references/codex-assignments.md` are Codex-owned. The parallelism adapter loads their usage only when complex handoffs benefit from a record. They check declared readiness and result revisions without starting agents or granting integration authority.
+
+`skills/poteto-mode/references/codex-verified-execution.md` documents the Codex-owned run tools' reconstructable snapshots, proof milestones, exact-checkout preflight and selective freshness rules. Its loading points are delivery flow and the optional run-record manual. Keep native/provider proof semantics in the project harness; generic milestone checks cannot establish those facts alone.
+
+The offline history tools (`scripts/analyze-history.mjs`, `scripts/lib/history-analysis.mjs`, `tests/history-analysis.test.mjs`) and `skills/conversation-audit/references/history-analysis.md` reconstruct audit facts from supported exports. They never scrape private stores or infer active time from gaps. Preserve the input-binding and overlap tests during refreshes.
+
+The Codex-owned `codex-agent-continuity.md`, `scripts/lib/agent-continuity.mjs` and `tests/agent-continuity.test.mjs` guard configuration when reusing agents. Runtime and bundled lifecycle both load this reference so a personal lifecycle cannot silently bypass the pstack continuation check. No default model or service tier is changed.
 
 ## Local upstream copy
 

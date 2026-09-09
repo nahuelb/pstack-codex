@@ -34,7 +34,7 @@ Decompose into atomic, independently-landable units. Sequence riskiest-unknown-f
 - Decide what fans out. Parallelize only across genuine seams, and give each worker its own worktree or branch (the **separate-before-serializing-shared-state** principle skill). Don't over-fan.
 - Write the designed phase list down. That list is what the human reviews.
 
-Then put the design into motion. Add its steps to the todolist as concrete items, after the Phase C entry and before Phase D. Run each under the Phase C loop discipline, and weave the Phase D log through them, a row as each step lands, rather than saving the whole trail for the end.
+Then put the design into motion. Add its steps to the todolist as concrete items, after the Phase C entry and before Phase D. Run each under the Phase C loop discipline, and preserve missing decision context through Phase D as it occurs. Reuse facts already recorded by the work.
 
 ## Phase C: Run the loop
 
@@ -47,7 +47,7 @@ Apply the **sequence-verifiable-units** principle skill, verifying each unit bef
 
 ## Phase D: Keep the audit trail
 
-Log the run via the **show-me-your-work** skill, one canonical TSV with a row per decision and per unit, evidence as links. figure-it-out's work is usually ambitious enough to commit the trail so the reviewer can read it in the PR; commit it when confidence has to be shown. Prefer evidence produced by committed scripts so a reviewer can re-run it. The trail plus the diff is what lets the human come back and trust the work.
+Follow [Codex run evidence](../poteto-mode/references/codex-run-evidence.md). Preserve consequential reasons, blockers and proof limits that the conversation and existing artifacts do not already explain. Use **show-me-your-work** when a standalone trail is explicitly requested; do not require a second ledger for every unit. Keep evidence reproducible and available to the reviewer.
 
 ## Phase E: Verify and hand back
 
