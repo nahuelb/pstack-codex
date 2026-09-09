@@ -79,6 +79,9 @@ export function analyzeHistory({ rootId, cutoff, snapshots, notes = [] }) {
   }
   function importDocument(document, source, inherited = {}) {
     if (Array.isArray(document)) {
+      if (['thread/turns/list', 'thread/items/list', 'thread/turns/items/list'].includes(inherited.surface)) {
+        return importDocument({ data: document }, source, inherited);
+      }
       document.forEach((value, index) => importDocument(value, `${source}#${index}`, inherited));
       return;
     }

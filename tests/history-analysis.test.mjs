@@ -359,3 +359,14 @@ test('conflicting served response fields cannot support activity classification'
   assert.equal(actor(report).observed.active.durationMs, 0);
   assert.equal(actor(report).actualTokens, null);
 });
+
+test('JSON-RPC page arrays retain their turn and item surface context', () => {
+  const report = analyze([
+    { method: 'thread/turns/list', params: { threadId: 'root' }, result: [turn('r', 0, 10)] },
+    { method: 'thread/items/list', params: { threadId: 'root' }, result: [{ turnId: 'r', item: tool('one', { durationMs: 12 }) }] },
+    { method: 'thread/turns/items/list', params: { threadId: 'root', turnId: 'r' }, result: [tool('two', { durationMs: 13 })] },
+  ]);
+  assert.equal(report.totals.mainTurnUnion.durationMs, 10000);
+  assert.equal(actor(report).tools.cumulativeDurationMs, 25);
+  assert.equal(report.quarantine.length, 0);
+});
