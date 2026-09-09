@@ -4,7 +4,7 @@ This reference is the one runtime contract for every pstack skill and playbook. 
 
 For multi-part work, read [Codex parallel execution](codex-parallelism.md) before decomposing or dispatching units. It governs scheduling independent work without changing the workflow's required gates.
 
-For multi-part implementation, releases, or measured workflows, also read [Codex run evidence](codex-run-evidence.md) before dispatch. It connects settled decisions to acceptance checks, source-bound proof, progress records and generated closeout reports.
+For multi-part implementation, releases, or measured workflows, also read [Codex run evidence](codex-run-evidence.md) before dispatch. It preserves missing decision and blocker context while reusing conversation history and existing proof. Also read [Codex delivery flow](codex-delivery-flow.md) for planning and final PR follow-through.
 
 ## Keep authority in the main thread
 
@@ -59,4 +59,4 @@ Generated project skills live under `.agents/skills/<skill-name>/`. Resolve plug
 
 ## Report the runtime receipt
 
-For orchestrated work, report the roles attempted, registry sources, selected lanes, requested spawn configurations, lanes completed or missing, isolation used, served model as observed or unverified, stopped or interrupted subagents, partial outputs, capability fallbacks, and main-agent verification. Role-policy compliance and served-model identity are separate facts. For ordinary work, no lifecycle receipt should exist because no goal, heartbeat, automation, or separate task should have been created.
+For orchestrated work, summarize missing lanes, configuration conflicts, capability fallbacks, partial outputs and main-agent verification. Reuse role-resolution, dispatch and result receipts for routine actor/configuration facts rather than copying them into another ledger. Role-policy compliance and served-model identity are separate facts; unobserved served settings remain unverified. For ordinary work, no lifecycle receipt should exist because no goal, heartbeat, automation, or separate task should have been created.

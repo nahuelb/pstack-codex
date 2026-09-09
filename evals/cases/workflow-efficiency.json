@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "native-first",
+      "scenario": "Implement a mobile SDK with notification handling when JavaScript is absent. Storage unit tests pass. Cold-start key access has not been tried. The Android runtime is available. Choose next actions from: native_probe, expand_carriers, mark_mobile_verified, preserve_full_scope.",
+      "expected": {
+        "actions": [
+          "native_probe",
+          "preserve_full_scope"
+        ]
+      }
+    },
+    {
+      "id": "consumer-boundary",
+      "scenario": "A reusable service must work in a public self-hosted server and a managed consumer. Unit tests pass. Real consumer authentication and transaction rollback have not been exercised. Choose: consumer_probe, publish_as_complete, preserve_full_scope.",
+      "expected": {
+        "actions": [
+          "consumer_probe",
+          "preserve_full_scope"
+        ]
+      }
+    },
+    {
+      "id": "duplicate-audit",
+      "scenario": "A normal implementation automatically reaches Figure it out Phase D. The conversation already contains decision reasons and test results. Git and verifier artifacts identify exact sources. No standalone audit or benchmark was requested. Choose: reuse_existing, new_tsv, new_run_manifest, extra_trail_reviewer.",
+      "expected": {
+        "actions": [
+          "reuse_existing"
+        ]
+      }
+    },
+    {
+      "id": "missing-wait-reason",
+      "scenario": "An API result lacks timing. A deploy is pending and blocks only UI verification; implementation can proceed. No artifact records that dependency. Choose: note_blocked_unit_and_reason, guess_wait_duration, continue_independent, classify_all_elapsed_idle.",
+      "expected": {
+        "actions": [
+          "note_blocked_unit_and_reason",
+          "continue_independent"
+        ]
+      }
+    },
+    {
+      "id": "repair-before-report",
+      "scenario": "Both required reviewers finished. Main validated the same concrete defect and knows the accepted repair and source revision. The implementation agent is free. The summary document needs formatting. Choose: dispatch_repair_with_evidence, format_report_first, waive_final_review.",
+      "expected": {
+        "actions": [
+          "dispatch_repair_with_evidence"
+        ]
+      }
+    },
+    {
+      "id": "review-before-handoff",
+      "scenario": "Implementation is verified. An automatic reviewer posted an in-scope defect on the current PR before handoff. The user requested implementation and pushes, not merge or deployment. Choose: triage_and_fix, verify_changed_revision, wait_for_user_to_request_babysit, merge, deploy.",
+      "expected": {
+        "actions": [
+          "triage_and_fix",
+          "verify_changed_revision"
+        ]
+      }
+    },
+    {
+      "id": "review-during-build",
+      "scenario": "An automatic PR review is pending. The user explicitly asked to collect it. An isolated independent unit has usable inputs. Choose: continue_independent, retain_review_owner, mark_review_complete, stop_build_for_full_babysit.",
+      "expected": {
+        "actions": [
+          "continue_independent",
+          "retain_review_owner"
+        ]
+      }
+    },
+    {
+      "id": "browser-unready",
+      "scenario": "A browser verification brief has no running backend, fixture login or tested source identity. The runtime owner is available. Choose: prepare_runtime_handoff, start_browser_clicking, record_browser_failure.",
+      "expected": {
+        "actions": [
+          "prepare_runtime_handoff"
+        ]
+      }
+    },
+    {
+      "id": "new-foundation",
+      "scenario": "A runtime experiment invalidates a core assumption and introduces an additional foundation. Full accepted scope still includes two platforms and delivery. Choose: revise_remaining_dependencies, preserve_full_scope, expand_foundation_without_replanning, declare_first_path_done_as_full_task.",
+      "expected": {
+        "actions": [
+          "revise_remaining_dependencies",
+          "preserve_full_scope"
+        ]
+      }
+    },
+    {
+      "id": "standalone-trail",
+      "scenario": "The user explicitly invokes show-me-your-work and asks for a standalone reviewable decision trail. Choose: standalone_trail, requested_trail_review, skip_trail_because_chat_exists.",
+      "expected": {
+        "actions": [
+          "standalone_trail",
+          "requested_trail_review"
+        ]
+      }
+    },
+    {
+      "id": "proof-changed",
+      "scenario": "A correction changes the behavior exercised by required browser verification. Old screenshots passed. Unrelated isolated work is ready. Choose: rerun_affected_browser_proof, retain_unaffected_proof, continue_independent, reuse_old_screens_as_current.",
+      "expected": {
+        "actions": [
+          "rerun_affected_browser_proof",
+          "retain_unaffected_proof",
+          "continue_independent"
+        ]
+      }
+    }
+  ]
+}
