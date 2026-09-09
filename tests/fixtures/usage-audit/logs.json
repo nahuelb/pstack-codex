@@ -1,0 +1,601 @@
+{
+  "generatedAt": 1788958500000,
+  "total": 9,
+  "logs": [
+    {
+      "requestId": "r-main",
+      "timestamp": 1788955320000,
+      "conversationId": "0d6e4079e36703ebd37c00722f5891d2",
+      "provider": "anthropic",
+      "model": "claude-fable-5-1",
+      "requestedModel": "anthropic/claude-fable-5-1",
+      "requestedEffort": "high",
+      "usageStatus": "reported",
+      "usage": {
+        "inputTokens": 100,
+        "outputTokens": 20,
+        "cachedInputTokens": 60,
+        "cacheReadInputTokens": 60,
+        "cacheCreationInputTokens": 10,
+        "reasoningOutputTokens": 5,
+        "totalTokens": 120
+      },
+      "totalTokens": 120,
+      "attribution": {
+        "version": 1,
+        "identityFormat": "sha256-128",
+        "source": "thread-id",
+        "threadId": "0d6e4079e36703ebd37c00722f5891d2",
+        "parentThreadId": null
+      },
+      "attempts": [
+        {
+          "ordinal": 1,
+          "provider": "anthropic",
+          "model": "claude-fable-5-1",
+          "adapter": "anthropic",
+          "sendCount": 1,
+          "usageStatus": "reported",
+          "usage": {
+            "inputTokens": 100,
+            "outputTokens": 20,
+            "cachedInputTokens": 60,
+            "cacheReadInputTokens": 60,
+            "cacheCreationInputTokens": 10,
+            "reasoningOutputTokens": 5,
+            "totalTokens": 120
+          },
+          "displayMetrics": {
+            "cost": {
+              "kind": "value",
+              "estimate": {
+                "cost": {
+                  "total": 0.01
+                }
+              }
+            }
+          }
+        }
+      ],
+      "displayMetrics": {
+        "cost": {
+          "kind": "value",
+          "estimate": {
+            "cost": {
+              "total": 0.01
+            }
+          }
+        }
+      }
+    },
+    {
+      "requestId": "r-build",
+      "timestamp": 1788955380000,
+      "conversationId": "0d6e4079e36703ebd37c00722f5891d2",
+      "provider": "anthropic",
+      "model": "claude-fable-5-1",
+      "requestedModel": "anthropic/claude-fable-5-1",
+      "requestedEffort": "high",
+      "usageStatus": "reported",
+      "usage": {
+        "inputTokens": 200,
+        "outputTokens": 40,
+        "cachedInputTokens": 100,
+        "cacheReadInputTokens": 100,
+        "cacheCreationInputTokens": 20,
+        "reasoningOutputTokens": 5,
+        "totalTokens": 240
+      },
+      "totalTokens": 240,
+      "attribution": {
+        "version": 1,
+        "identityFormat": "sha256-128",
+        "source": "thread-id",
+        "threadId": "df6b07176a9b17cc4c9afc257bd40473",
+        "parentThreadId": "0d6e4079e36703ebd37c00722f5891d2"
+      },
+      "attempts": [
+        {
+          "ordinal": 1,
+          "provider": "anthropic",
+          "model": "claude-fable-5-1",
+          "adapter": "anthropic",
+          "sendCount": 1,
+          "usageStatus": "reported",
+          "usage": {
+            "inputTokens": 200,
+            "outputTokens": 40,
+            "cachedInputTokens": 100,
+            "cacheReadInputTokens": 100,
+            "cacheCreationInputTokens": 20,
+            "reasoningOutputTokens": 5,
+            "totalTokens": 240
+          },
+          "displayMetrics": {
+            "cost": {
+              "kind": "value",
+              "estimate": {
+                "cost": {
+                  "total": 0.01
+                }
+              }
+            }
+          }
+        }
+      ],
+      "displayMetrics": {
+        "cost": {
+          "kind": "value",
+          "estimate": {
+            "cost": {
+              "total": 0.01
+            }
+          }
+        }
+      }
+    },
+    {
+      "requestId": "r-review",
+      "timestamp": 1788955440000,
+      "conversationId": "0d6e4079e36703ebd37c00722f5891d2",
+      "provider": "anthropic",
+      "model": "claude-fable-5-1",
+      "requestedModel": "anthropic/claude-fable-5-1",
+      "requestedEffort": "high",
+      "usageStatus": "reported",
+      "usage": {
+        "inputTokens": 300,
+        "outputTokens": 60,
+        "cachedInputTokens": 200,
+        "cacheReadInputTokens": 200,
+        "cacheCreationInputTokens": 30,
+        "reasoningOutputTokens": 5,
+        "totalTokens": 360
+      },
+      "totalTokens": 360,
+      "attribution": {
+        "version": 1,
+        "identityFormat": "sha256-128",
+        "source": "thread-id",
+        "threadId": "2d70999ae1805e4bcef9b4ab3a4b827f",
+        "parentThreadId": "0d6e4079e36703ebd37c00722f5891d2"
+      },
+      "attempts": [
+        {
+          "ordinal": 1,
+          "provider": "anthropic",
+          "model": "claude-fable-5-1",
+          "adapter": "anthropic",
+          "sendCount": 1,
+          "usageStatus": "reported",
+          "usage": {
+            "inputTokens": 300,
+            "outputTokens": 60,
+            "cachedInputTokens": 200,
+            "cacheReadInputTokens": 200,
+            "cacheCreationInputTokens": 30,
+            "reasoningOutputTokens": 5,
+            "totalTokens": 360
+          },
+          "displayMetrics": {
+            "cost": {
+              "kind": "value",
+              "estimate": {
+                "cost": {
+                  "total": 0.01
+                }
+              }
+            }
+          }
+        }
+      ],
+      "displayMetrics": {
+        "cost": {
+          "kind": "value",
+          "estimate": {
+            "cost": {
+              "total": 0.01
+            }
+          }
+        }
+      }
+    },
+    {
+      "requestId": "r-test",
+      "timestamp": 1788955500000,
+      "conversationId": "df6b07176a9b17cc4c9afc257bd40473",
+      "provider": "anthropic",
+      "model": "claude-opus-5",
+      "requestedModel": "anthropic/claude-opus-5",
+      "requestedEffort": "high",
+      "usageStatus": "reported",
+      "usage": {
+        "inputTokens": 400,
+        "outputTokens": 80,
+        "cachedInputTokens": 300,
+        "cacheReadInputTokens": 300,
+        "cacheCreationInputTokens": 40,
+        "reasoningOutputTokens": 5,
+        "totalTokens": 480
+      },
+      "totalTokens": 480,
+      "attribution": {
+        "version": 1,
+        "identityFormat": "sha256-128",
+        "source": "thread-id",
+        "threadId": "9bba5c53a0545e0c80184b946153c9f5",
+        "parentThreadId": "df6b07176a9b17cc4c9afc257bd40473"
+      },
+      "attempts": [
+        {
+          "ordinal": 1,
+          "provider": "anthropic",
+          "model": "claude-opus-5",
+          "adapter": "anthropic",
+          "sendCount": 1,
+          "usageStatus": "reported",
+          "usage": {
+            "inputTokens": 400,
+            "outputTokens": 80,
+            "cachedInputTokens": 300,
+            "cacheReadInputTokens": 300,
+            "cacheCreationInputTokens": 40,
+            "reasoningOutputTokens": 5,
+            "totalTokens": 480
+          },
+          "displayMetrics": {
+            "cost": {
+              "kind": "value",
+              "estimate": {
+                "cost": {
+                  "total": 0.01
+                }
+              }
+            }
+          }
+        }
+      ],
+      "displayMetrics": {
+        "cost": {
+          "kind": "value",
+          "estimate": {
+            "cost": {
+              "total": 0.01
+            }
+          }
+        }
+      }
+    },
+    {
+      "requestId": "r-retry",
+      "timestamp": 1788955560000,
+      "conversationId": "0d6e4079e36703ebd37c00722f5891d2",
+      "provider": "anthropic",
+      "model": "claude-opus-5",
+      "requestedModel": "anthropic/claude-opus-5",
+      "requestedEffort": "high",
+      "usageStatus": "unreported",
+      "usage": {
+        "inputTokens": 30,
+        "outputTokens": 10,
+        "cachedInputTokens": 0,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "reasoningOutputTokens": 5,
+        "totalTokens": 40
+      },
+      "totalTokens": 40,
+      "attribution": {
+        "version": 1,
+        "identityFormat": "sha256-128",
+        "source": "thread-id",
+        "threadId": "df6b07176a9b17cc4c9afc257bd40473",
+        "parentThreadId": "0d6e4079e36703ebd37c00722f5891d2"
+      },
+      "attempts": [
+        {
+          "ordinal": 1,
+          "provider": "anthropic",
+          "model": "claude-fable-5-1",
+          "adapter": "anthropic",
+          "sendCount": 1,
+          "usageStatus": "unreported"
+        },
+        {
+          "ordinal": 2,
+          "provider": "anthropic",
+          "model": "claude-opus-5",
+          "adapter": "anthropic",
+          "sendCount": 2,
+          "usageStatus": "reported",
+          "usage": {
+            "inputTokens": 30,
+            "outputTokens": 10,
+            "cachedInputTokens": 0,
+            "cacheReadInputTokens": 0,
+            "cacheCreationInputTokens": 0,
+            "reasoningOutputTokens": 5,
+            "totalTokens": 40
+          },
+          "displayMetrics": {
+            "cost": {
+              "kind": "value",
+              "estimate": {
+                "cost": {
+                  "total": 0.01
+                }
+              }
+            }
+          }
+        }
+      ],
+      "displayMetrics": {
+        "cost": {
+          "kind": "value",
+          "estimate": {
+            "cost": {
+              "total": 0.01
+            }
+          }
+        }
+      }
+    },
+    {
+      "requestId": "r-estimate",
+      "timestamp": 1788955620000,
+      "conversationId": "0d6e4079e36703ebd37c00722f5891d2",
+      "provider": "anthropic",
+      "model": "claude-fable-5-1",
+      "requestedModel": "anthropic/claude-fable-5-1",
+      "requestedEffort": "high",
+      "usageStatus": "estimated",
+      "usage": {
+        "inputTokens": 500,
+        "outputTokens": 100,
+        "cachedInputTokens": 0,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "reasoningOutputTokens": 5,
+        "totalTokens": 600
+      },
+      "totalTokens": 600,
+      "attribution": {
+        "version": 1,
+        "identityFormat": "sha256-128",
+        "source": "thread-id",
+        "threadId": "2d70999ae1805e4bcef9b4ab3a4b827f",
+        "parentThreadId": "0d6e4079e36703ebd37c00722f5891d2"
+      },
+      "attempts": [
+        {
+          "ordinal": 1,
+          "provider": "anthropic",
+          "model": "claude-fable-5-1",
+          "adapter": "anthropic",
+          "sendCount": 1,
+          "usageStatus": "estimated",
+          "usage": {
+            "inputTokens": 500,
+            "outputTokens": 100,
+            "cachedInputTokens": 0,
+            "cacheReadInputTokens": 0,
+            "cacheCreationInputTokens": 0,
+            "reasoningOutputTokens": 5,
+            "totalTokens": 600
+          },
+          "displayMetrics": {
+            "cost": {
+              "kind": "value",
+              "estimate": {
+                "cost": {
+                  "total": 0.01
+                }
+              }
+            }
+          }
+        }
+      ],
+      "displayMetrics": {
+        "cost": {
+          "kind": "value",
+          "estimate": {
+            "cost": {
+              "total": 0.01
+            }
+          }
+        }
+      }
+    },
+    {
+      "requestId": "r-historical",
+      "timestamp": 1788955680000,
+      "conversationId": "0d6e4079e36703ebd37c00722f5891d2",
+      "provider": "anthropic",
+      "model": "claude-fable-5-1",
+      "requestedModel": "anthropic/claude-fable-5-1",
+      "requestedEffort": "high",
+      "usageStatus": "reported",
+      "usage": {
+        "inputTokens": 1000,
+        "outputTokens": 100,
+        "cachedInputTokens": 900,
+        "cacheReadInputTokens": 900,
+        "cacheCreationInputTokens": 0,
+        "reasoningOutputTokens": 5,
+        "totalTokens": 1100
+      },
+      "totalTokens": 1100,
+      "attempts": [
+        {
+          "ordinal": 1,
+          "provider": "anthropic",
+          "model": "claude-fable-5-1",
+          "adapter": "anthropic",
+          "sendCount": 1,
+          "usageStatus": "reported",
+          "usage": {
+            "inputTokens": 1000,
+            "outputTokens": 100,
+            "cachedInputTokens": 900,
+            "cacheReadInputTokens": 900,
+            "cacheCreationInputTokens": 0,
+            "reasoningOutputTokens": 5,
+            "totalTokens": 1100
+          },
+          "displayMetrics": {
+            "cost": {
+              "kind": "value",
+              "estimate": {
+                "cost": {
+                  "total": 0.01
+                }
+              }
+            }
+          }
+        }
+      ],
+      "displayMetrics": {
+        "cost": {
+          "kind": "value",
+          "estimate": {
+            "cost": {
+              "total": 0.01
+            }
+          }
+        }
+      }
+    },
+    {
+      "requestId": "r-resumed",
+      "timestamp": 1788955740000,
+      "conversationId": "0d6e4079e36703ebd37c00722f5891d2",
+      "provider": "anthropic",
+      "model": "claude-fable-5-1",
+      "requestedModel": "anthropic/claude-fable-5-1",
+      "requestedEffort": "high",
+      "usageStatus": "reported",
+      "usage": {
+        "inputTokens": 50,
+        "outputTokens": 10,
+        "cachedInputTokens": 0,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 0,
+        "reasoningOutputTokens": 5,
+        "totalTokens": 60
+      },
+      "totalTokens": 60,
+      "attribution": {
+        "version": 1,
+        "identityFormat": "sha256-128",
+        "source": "thread-id",
+        "threadId": "df6b07176a9b17cc4c9afc257bd40473",
+        "parentThreadId": "0d6e4079e36703ebd37c00722f5891d2"
+      },
+      "attempts": [
+        {
+          "ordinal": 1,
+          "provider": "anthropic",
+          "model": "claude-fable-5-1",
+          "adapter": "anthropic",
+          "sendCount": 1,
+          "usageStatus": "reported",
+          "usage": {
+            "inputTokens": 50,
+            "outputTokens": 10,
+            "cachedInputTokens": 0,
+            "cacheReadInputTokens": 0,
+            "cacheCreationInputTokens": 0,
+            "reasoningOutputTokens": 5,
+            "totalTokens": 60
+          },
+          "displayMetrics": {
+            "cost": {
+              "kind": "value",
+              "estimate": {
+                "cost": {
+                  "total": 0.01
+                }
+              }
+            }
+          }
+        }
+      ],
+      "displayMetrics": {
+        "cost": {
+          "kind": "value",
+          "estimate": {
+            "cost": {
+              "total": 0.01
+            }
+          }
+        }
+      }
+    },
+    {
+      "requestId": "r-build",
+      "timestamp": 1788955380000,
+      "conversationId": "0d6e4079e36703ebd37c00722f5891d2",
+      "provider": "anthropic",
+      "model": "claude-fable-5-1",
+      "requestedModel": "anthropic/claude-fable-5-1",
+      "requestedEffort": "high",
+      "usageStatus": "reported",
+      "usage": {
+        "inputTokens": 200,
+        "outputTokens": 40,
+        "cachedInputTokens": 100,
+        "cacheReadInputTokens": 100,
+        "cacheCreationInputTokens": 20,
+        "reasoningOutputTokens": 5,
+        "totalTokens": 240
+      },
+      "totalTokens": 240,
+      "attribution": {
+        "version": 1,
+        "identityFormat": "sha256-128",
+        "source": "thread-id",
+        "threadId": "df6b07176a9b17cc4c9afc257bd40473",
+        "parentThreadId": "0d6e4079e36703ebd37c00722f5891d2"
+      },
+      "attempts": [
+        {
+          "ordinal": 1,
+          "provider": "anthropic",
+          "model": "claude-fable-5-1",
+          "adapter": "anthropic",
+          "sendCount": 1,
+          "usageStatus": "reported",
+          "usage": {
+            "inputTokens": 200,
+            "outputTokens": 40,
+            "cachedInputTokens": 100,
+            "cacheReadInputTokens": 100,
+            "cacheCreationInputTokens": 20,
+            "reasoningOutputTokens": 5,
+            "totalTokens": 240
+          },
+          "displayMetrics": {
+            "cost": {
+              "kind": "value",
+              "estimate": {
+                "cost": {
+                  "total": 0.01
+                }
+              }
+            }
+          }
+        }
+      ],
+      "displayMetrics": {
+        "cost": {
+          "kind": "value",
+          "estimate": {
+            "cost": {
+              "total": 0.01
+            }
+          }
+        }
+      }
+    }
+  ]
+}

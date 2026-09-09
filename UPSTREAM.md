@@ -32,6 +32,8 @@ The optional assignment tools (`scripts/assignment-record.mjs`, `scripts/lib/ass
 
 The offline history tools (`scripts/analyze-history.mjs`, `scripts/lib/history-analysis.mjs`, `tests/history-analysis.test.mjs`) and `skills/conversation-audit/references/history-analysis.md` reconstruct audit facts from supported exports. They never scrape private stores or infer active time from gaps. Preserve the input-binding and overlap tests during refreshes.
 
+The usage audit extension (`scripts/audit-usage.mjs`, `scripts/lib/usage-audit.mjs`, `tests/usage-audit.test.mjs`, and `tests/fixtures/usage-audit/`) is Codex-owned. The conversation-audit skill loads `references/usage-attribution.md` for usage questions; it reuses the history graph and reviewed dispatch projections. Preserve its caching, retry, attribution, privacy, and quarantine tests. Its OpenCodex attribution contract is a proposed upstream boundary, not installed instrumentation. It does not change runtime dispatch policy or model routing.
+
 The Codex-owned `codex-agent-continuity.md`, `scripts/lib/agent-continuity.mjs` and `tests/agent-continuity.test.mjs` guard configuration when reusing agents. Runtime and bundled lifecycle both load this reference so a personal lifecycle cannot silently bypass the pstack continuation check. No default model or service tier is changed.
 
 `skills/poteto-mode/references/codex-user-input.md` is a Codex-owned extension loaded by the runtime adapter before requesting user input. Preserve its pending-decision visibility, owned title restoration and unavailable-tool fallback during refreshes. Its behavioral cases live in `evals/cases/workflow-efficiency.json`.
