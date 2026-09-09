@@ -6,7 +6,7 @@ Keep small, tightly coupled work with one owner when splitting it would add coor
 
 ## Identify real dependencies
 
-Extend the existing throughput checkpoint with each unit's required inputs, owned paths, output contract, and acceptance evidence.
+Use the existing assignment brief to name its stable ID and revision, required input contracts and revisions, owned source/build paths, output and acceptance evidence.
 Name the specific missing input or conflicting owner when a unit is blocked. A broad phase label is not a dependency.
 Include independent verification preparation, documentation, and release readiness when they advance the accepted scope.
 Surface required human access early while continuing work that does not need it.
@@ -48,6 +48,7 @@ Prioritize the smallest complete flow through the relevant real boundary before 
 A failed prerequisite blocks its consumers, while unrelated units may continue.
 Final integration, required independent review, and release gates still cover the exact delivered revision.
 
-Use existing checkpoints and receipts to record output readiness, proof, and unresolved dependencies as work completes.
+Return the assignment ID/revision, source revision, result, proof pointers and limits in the existing result message. The main agent accepts that result explicitly before integration. An acknowledgement, pause or clarification does not replace it; a new assignment revision invalidates affected results and requires updated dependency pins.
+For complex reused assignments, [optional assignment records](codex-assignments.md) generate briefs and status from one record. Use conversation briefs directly when they suffice; do not maintain both.
 The main agent integrates the results and performs authorized external actions under the runtime contract.
 Report missing required work as incomplete; parallel activity is not evidence of completion.

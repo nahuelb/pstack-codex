@@ -26,6 +26,8 @@ The existing Codex installer also rejects `preserved-unverified` records before 
 
 The narrow edits to Figure it out, Show me your work and Opening a PR remove conflicting requirements for duplicate per-unit logs, automatic standalone trail review and user-prompt-only feedback collection. A separate extension cannot resolve those direct requirements on its own. Preserve their explicit loading links and standalone user-requested audit behavior during refreshes. Workflow evaluation cases exercise these transitions without reducing verification or permission gates.
 
+The optional assignment tools (`scripts/assignment-record.mjs`, `scripts/lib/assignment-record.mjs`, `tests/assignment-record.test.mjs`) and `skills/poteto-mode/references/codex-assignments.md` are Codex-owned. The parallelism adapter loads their usage only when complex handoffs benefit from a record. They check declared readiness and result revisions without starting agents or granting integration authority.
+
 ## Local upstream copy
 
 This checkout keeps a full upstream clone at `.upstream/plugins`. Its local branch `locked-0.14.8` points at the locked commit `7314f723a487ec406b6369fe5865ba034cfed166`.
