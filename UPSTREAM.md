@@ -34,6 +34,8 @@ The offline history tools (`scripts/analyze-history.mjs`, `scripts/lib/history-a
 
 The Codex-owned `codex-agent-continuity.md`, `scripts/lib/agent-continuity.mjs` and `tests/agent-continuity.test.mjs` guard configuration when reusing agents. Runtime and bundled lifecycle both load this reference so a personal lifecycle cannot silently bypass the pstack continuation check. No default model or service tier is changed.
 
+`skills/poteto-mode/references/codex-user-input.md` is a Codex-owned extension loaded by the runtime adapter before requesting user input. Preserve its pending-decision visibility, owned title restoration and unavailable-tool fallback during refreshes. Its behavioral cases live in `evals/cases/workflow-efficiency.json`.
+
 ## Local upstream copy
 
 This checkout keeps a full upstream clone at `.upstream/plugins`. Its local branch `locked-0.14.8` points at the locked commit `7314f723a487ec406b6369fe5865ba034cfed166`.

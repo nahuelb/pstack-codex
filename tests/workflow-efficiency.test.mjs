@@ -29,3 +29,13 @@ test("workflow grader rejects each previously observed inefficient or unsafe cho
   }
   assert.equal(gradeWorkflow([...good, good[0]]).passed, false);
 });
+
+
+test("user-input visibility loads through the shared runtime adapter", async () => {
+  const file = "skills/poteto-mode/references/codex-agent-runtime.md";
+  const link = (await read(file)).match(/\[User input visibility\]\(([^)]+)\)/);
+  assert.ok(link);
+  const target = new URL(link[1], new URL(file, root));
+  assert.equal(target.href, new URL("skills/poteto-mode/references/codex-user-input.md", root).href);
+  assert.match(await readFile(target, "utf8"), /^# User input visibility/m);
+});
