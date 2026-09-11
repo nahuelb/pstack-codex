@@ -186,3 +186,11 @@ test("bundled lifecycle owns portable custom-agent fallback", async () => {
   assert.doesNotMatch(noComments, /comment-sicko-prompt\.md/);
   assert.doesNotMatch(poteto, /poteto-agent-prompt\.md/);
 });
+
+test("runtime loads storage policy before allocation and closeout", async () => {
+  const runtime = await fs.readFile(path.join(skillsRoot, "poteto-mode/references/codex-agent-runtime.md"), "utf8");
+  assert.match(runtime, /Before creating audit or verification scratch, and at task closeout, read \[Audit storage\]\(codex-audit-storage.md\)/);
+  const storage = await fs.readFile(path.join(skillsRoot, "poteto-mode/references/codex-audit-storage.md"), "utf8");
+  assert.match(storage, /current task status, process\/open-file checks, and Git inspection/);
+  assert.match(storage, /one owned scratch host per concurrent verification lane/);
+});

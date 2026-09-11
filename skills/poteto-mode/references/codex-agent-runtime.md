@@ -6,6 +6,8 @@ For multi-part work, read [Codex parallel execution](codex-parallelism.md) befor
 
 For multi-part implementation, releases, or measured workflows, also read [Codex run evidence](codex-run-evidence.md) before dispatch. It preserves missing decision and blocker context while reusing conversation history and existing proof. Also read [Codex delivery flow](codex-delivery-flow.md) for planning and final PR follow-through.
 
+Before creating audit or verification scratch, and at task closeout, read [Audit storage](codex-audit-storage.md). It governs bounded capture, scratch reuse and cleanup without weakening proof or concurrent isolation.
+
 Before asking the user for a decision, approval or required access, read [User input visibility](codex-user-input.md). It keeps unanswered requests visible while independent work continues.
 
 ## Keep authority in the main thread
