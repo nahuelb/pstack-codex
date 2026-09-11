@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { spawn } from "node:child_process";
 import { createWriteStream } from "node:fs";
-import { appendFile, lstat, mkdir, readFile, readdir, realpath, rm, writeFile } from "node:fs/promises";
+import { appendFile, lstat, mkdir, readFile, opendir, realpath, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { gzipSync, gunzipSync } from "node:zlib";
 
@@ -65,7 +65,7 @@ export function validateManifest(manifest) {
     for (const source of [...check.sourcePaths, ...(check.proof?.inputPaths ?? [])]) {
       requireValue(nonempty(source) && !path.isAbsolute(source) && within(path.resolve(manifest.sourceRoot), path.resolve(manifest.sourceRoot, source)), "Check source paths must stay inside sourceRoot");
     }
-    for (const field of ["maxInputBytes", "maxInputFiles"]) if (check[field] !== undefined) requireValue(Number.isSafeInteger(check[field]) && check[field] > 0, `${field} must be a positive safe integer`);
+    for (const field of ["maxInputBytes", "maxInputFiles", "maxInputEntries"]) if (check[field] !== undefined) requireValue(Number.isSafeInteger(check[field]) && check[field] > 0, `${field} must be a positive safe integer`);
     if (check.command !== undefined) requireValue(Array.isArray(check.command) && check.command.length > 0 && check.command.every(nonempty), "Command must be a nonempty argv array");
   }
   for (const unit of manifest.units) {
@@ -158,12 +158,13 @@ async function sourceSnapshot(manifest, check) {
   async function walk(target) {
     const relative = path.relative(root, target) || ".";
     if (entries.has(relative)) return;
+    requireValue(entries.size < (check.maxInputEntries ?? 20000), "Input snapshot exceeds maxInputEntries; narrow declared inputs or set an explicit budget");
     const info = await lstat(target);
     requireValue(!info.isSymbolicLink(), `Source proof does not follow symlinks: ${relative}`);
     requireValue(within(root, await realpath(target)), `Source path escapes checkout: ${relative}`);
     if (info.isDirectory()) {
       entries.set(relative, { path: relative, type: "directory" });
-      for (const name of (await readdir(target)).sort()) {
+      for await (const { name } of await opendir(target)) {
         if (name !== ".git" && name !== "node_modules") await walk(path.join(target, name));
       }
     } else {

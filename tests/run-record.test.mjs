@@ -368,3 +368,26 @@ test("existing uncompressed schema-2 snapshots remain valid", async (t) => {
   await writeFile(eventsPath, `${JSON.stringify(event)}\n`);
   assert.equal((await evaluateRun(f.runDir)).acceptanceComplete, true);
 });
+
+test("empty directories consume the entry budget before capture or execution", async (t) => {
+  const f = await fixture(t, [process.execPath, "-e", "require('fs').writeFileSync('ran','yes')"]);
+  await mkdir(path.join(f.sourceRoot, "empty/a"), { recursive: true });
+  await mkdir(path.join(f.sourceRoot, "empty/b"));
+  await updateCheck(f, (check) => {
+    check.sourcePaths = ["empty", "empty/a"];
+    check.maxInputEntries = 2;
+    check.maxInputFiles = 1;
+    check.maxInputBytes = 1;
+  });
+  await assert.rejects(runCheck(f.runDir, "test"), /maxInputEntries/);
+  assert.deepEqual(await readdir(path.join(f.runDir, "proof")), []);
+  assert.equal((await readdir(f.sourceRoot)).includes("ran"), false);
+  await updateCheck(f, (check) => { check.maxInputEntries = 3; });
+  assert.equal((await runCheck(f.runDir, "test")).status, "passed");
+  assert.equal((await evaluateRun(f.runDir)).acceptanceComplete, true);
+  for (const limit of [0, -1, 1.5, "3"]) {
+    const manifest = structuredClone(f.manifest);
+    manifest.checks[0].maxInputEntries = limit;
+    assert.throws(() => validateManifest(manifest), /maxInputEntries must be/);
+  }
+});
