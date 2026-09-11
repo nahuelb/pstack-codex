@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { installAgents, uninstallAgents } from "../skills/setup-pstack/scripts/manage-agents.mjs";
+import { installAgents, uninstallAgents, resolveRuntimeRole, MODEL_ROLE_SPECS } from "../skills/setup-pstack/scripts/manage-agents.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -204,7 +205,7 @@ test("a partial role update preserves every omitted lane", async (t) => {
   assert.deepEqual(updated.roles["perf-issue"], [luna]);
   assert.deepEqual(updated.roles["bug-fix"], [luna]);
   assert.deepEqual(updated.roles["hillclimb"], [{ use_skill_default: true }]);
-  assert.equal(updated.roles["how critics"].length, 4);
+  assert.equal(updated.roles["how critics"].length, 3);
   const receipt = JSON.parse(await fs.readFile(path.join(projectRoot, updated.receiptPath), "utf8"));
   assert.deepEqual(receipt.role_policies["perf-issue"][0].resolved, luna);
 });
@@ -296,7 +297,7 @@ test("a partial update can restore an explicit role to its skill default", async
   });
 
   assert.deepEqual(updated.roles["bug-fix"], [{ use_skill_default: true }]);
-  assert.equal(updated.roles["how critics"].length, 4);
+  assert.equal(updated.roles["how critics"].length, 3);
 });
 
 test("a partial update stops when a preserved model is no longer observable", async (t) => {
@@ -331,4 +332,49 @@ test("a partial update stops when a preserved model is no longer observable", as
   );
   assert.equal(await fs.readFile(receiptPath, "utf8"), receiptBefore);
   assert.equal(await fs.readFile(registryPath, "utf8"), registryBefore);
+});
+
+
+test("older default panels resolve and upgrade without losing explicit lanes or policies", async (t) => {
+  for (const scope of ["project", "user"]) await t.test(scope, async (t) => {
+    const { projectRoot, userHome } = await fixture(t);
+    const installed = await installAgents({ pluginRoot: root, projectRoot, userHome, scope });
+    const scopeRoot = scope === "project" ? projectRoot : path.join(userHome, ".codex");
+    const registryPath = path.join(scopeRoot, installed.registryPath);
+    const receiptPath = path.join(scopeRoot, installed.receiptPath);
+    const registry = JSON.parse(await fs.readFile(registryPath, "utf8"));
+    const receipt = JSON.parse(await fs.readFile(receiptPath, "utf8"));
+    const defaultPolicy = { status: "skill-default", requested: null, resolved: null, toml: {} };
+    for (const spec of MODEL_ROLE_SPECS.filter((spec) => spec.kind === "panel")) {
+      registry.roles[spec.name] = Array.from({ length: 4 }, () => ({ use_skill_default: true }));
+      receipt.role_policies[spec.name] = Array.from({ length: 4 }, () => ({ ...defaultPolicy }));
+    }
+    const explicit = { model: "gpt-6-astra", reasoning_effort: "high", service_tier: "priority" };
+    const explicitPolicy = { status: "verified-explicit", requested: explicit, resolved: explicit, toml: {} };
+    const inheritedPolicy = { status: "inherited", requested: null, resolved: null, toml: {} };
+    registry.roles["arena cross-judge pool"].push(explicit, { inherit_parent: true });
+    receipt.role_policies["arena cross-judge pool"].push(explicitPolicy, inheritedPolicy);
+    const legacyContent = `${JSON.stringify(registry, null, 2)}\n`;
+    receipt.files.find((file) => file.path === installed.registryPath).sha256 = createHash("sha256").update(legacyContent).digest("hex");
+    await fs.writeFile(registryPath, legacyContent);
+    await fs.writeFile(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`);
+
+    const bug = await resolveRuntimeRole({ roleName: "bug-fix", projectRoot, userHome });
+    assert.deepEqual(bug.resolvedLanes, MODEL_ROLE_SPECS.find((spec) => spec.name === "bug-fix").defaults);
+    const critics = await resolveRuntimeRole({ roleName: "how critics", projectRoot, userHome });
+    assert.equal(critics.resolvedLanes.length, 3);
+    const pool = await resolveRuntimeRole({ roleName: "arena cross-judge pool", projectRoot, userHome });
+    assert.deepEqual(pool.resolvedLanes, [
+      ...MODEL_ROLE_SPECS.find((spec) => spec.name === "arena cross-judge pool").defaults,
+      explicit, { inherit_parent: true },
+    ]);
+    assert.equal(await fs.readFile(registryPath, "utf8"), legacyContent);
+
+    const upgraded = await installAgents({ pluginRoot: root, projectRoot, userHome, scope });
+    assert.equal(upgraded.roles["how critics"].length, 3);
+    assert.deepEqual(upgraded.roles["arena cross-judge pool"], pool.lanes);
+    const updatedReceipt = JSON.parse(await fs.readFile(receiptPath, "utf8"));
+    assert.deepEqual(updatedReceipt.role_policies["arena cross-judge pool"], [defaultPolicy, defaultPolicy, explicitPolicy, inheritedPolicy]);
+    assert.equal((await uninstallAgents({ projectRoot, userHome, scope })).status, "uninstalled");
+  });
 });

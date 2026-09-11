@@ -1,17 +1,19 @@
 # pstack for Codex
 
-`pstack-for-codex` is a Codex-native derivative of [pstack](https://github.com/cursor/plugins/tree/main/pstack). It packages deliberate engineering workflows as 47 explicit-only skills and 23 Poteto Mode playbooks.
+`pstack-for-codex` is a Codex-native derivative of [pstack](https://github.com/cursor/plugins/tree/main/pstack). It packages deliberate engineering workflows as 48 explicit-only skills and 23 Poteto Mode playbooks.
 
 Use `$poteto-mode` for a substantial engineering task. It selects a playbook, records the work as verifiable steps, and invokes narrower skills when the steps need them. The main agent keeps authority for integration, external writes, commits, pushes, and the final result.
 
 ## Install
 
-Install the plugin from a local checkout. Replace `/absolute/path/to/pstack-codex` with the checkout's absolute path:
+Install the plugin from GitHub:
 
 ```bash
-codex plugin marketplace add /absolute/path/to/pstack-codex
+codex plugin marketplace add nahuelb/pstack-codex
 codex plugin add pstack-for-codex@pstack-for-codex-local
 ```
+
+For development, pass the absolute checkout path to `codex plugin marketplace add`.
 
 Confirm the installed plugin:
 
@@ -21,7 +23,7 @@ codex plugin list --json
 
 Codex CLI `0.146.0` does not expose an offline runtime skill-index command. The release suite validates the skill catalog from the installed artifact; start a new task to exercise prompt-time skill discovery.
 
-All 47 skills require explicit invocation. Codex stores their full identities under the `pstack-for-codex` namespace. In a prompt, invoke a skill with its registered `$name`:
+All 48 skills require explicit invocation. Codex stores their full identities under the `pstack-for-codex` namespace. In a prompt, invoke a skill with its registered `$name`:
 
 ```text
 $poteto-mode add a --json flag to this command. Keep text output byte-identical. Verify both modes.
@@ -29,18 +31,16 @@ $poteto-mode add a --json flag to this command. Keep text output byte-identical.
 
 Start a new task after installation so Codex reloads the plugin catalog. See [Set up pstack](./docs/guide/01-setup.md) for the complete walkthrough.
 
-## Agent profiles and model roles
+## Custom agents and model roles
 
-The skills keep the original PStack model defaults in their Markdown instructions. Use `$setup-pstack` to override those defaults through a Codex-native role registry and install two optional persona profiles:
+Model defaults live in the [bundled role registry](./skills/setup-pstack/references/model-defaults.json). Use `$setup-pstack` to override them and install two optional custom agents:
 
 - `pstack-poteto-agent` for implementation and orchestration.
 - `pstack-comment-sicko` for read-only comment review.
 
-The current defaults use Fable 5.1 for bug fixes, performance work, hillclimbs, judgment, and prose. Fast mechanical feature work remains on Grok.
+Setup writes custom agents under `.codex/agents/` or `~/.codex/agents/`. It writes the complete role mapping to `.codex/pstack-models.json` or `~/.codex/pstack-models.json`. Fresh mappings refer back to the bundled registry. Project configuration overrides user configuration. Partial updates preserve omitted roles. The receipt records every owned file and refuses to overwrite other files. Setup validates requested settings through supported discovery. Runtime dispatch resolves them through supported arguments, configuration, or verified inheritance. A missing spawn argument or shortened model list does not prove unavailability. Setup receipts and observed runtime settings remain separate evidence.
 
-Setup writes profiles under `.codex/agents/` or `~/.codex/agents/`. It writes the complete role mapping to `.codex/pstack-models.json` or `~/.codex/pstack-models.json`. Fresh mappings refer back to the defaults in the Markdown skills. Project configuration overrides user configuration. Partial updates preserve omitted roles. The receipt records every owned file and refuses to overwrite other files. Setup validates requested settings through supported discovery. Runtime dispatch resolves them through supported arguments, configuration, or verified inheritance. A missing spawn argument or shortened model list does not prove unavailability. Setup receipts and observed runtime settings remain separate evidence.
-
-Read [Agent setup and model evidence](./docs/codex-adaptation.md#agent-setup-and-model-evidence) before changing profiles.
+Read [Agent setup and model evidence](./docs/codex-adaptation.md#agent-setup-and-model-evidence) before changing custom agents.
 
 ## Use the skills
 
@@ -91,22 +91,19 @@ The two stable automation names are `pstack-benny-triage` and `pstack-benny-repr
 
 ## Develop and verify
 
-The metadata and resource validator requires Node.js. The legacy orchestrator and watch-PR scripts require [Bun](https://bun.sh/).
+The metadata and resource validator requires Node.js 20 or later. The legacy orchestrator and watch-PR scripts require [Bun](https://bun.sh/).
 
 ```bash
+bun install --cwd skills/poteto-mode/scripts --frozen-lockfile
 node scripts/validate-plugin.mjs --json
-node --test tests/*.test.mjs
-cd skills/poteto-mode/scripts
-bun install --frozen-lockfile
-bun test orch watch-pr
-bun run typecheck
+npm run verify:offline
 ```
 
 The validator reports Bun as an optional capability. Skills that depend on the Bun scripts must stop or declare their fallback when Bun is unavailable.
 
-## Update the local plugin
+## Maintainer release workflow
 
-Run this once after cloning:
+Maintainers publish from a local checkout registered as the plugin source. Run this once in that checkout:
 
 ```bash
 ./scripts/install-git-hooks.sh
@@ -118,7 +115,7 @@ After that, use the wrapper instead of `git push`:
 ./scripts/push-and-reinstall-local-plugin.sh
 ```
 
-It validates the release, pushes it, and refreshes the installed Codex plugin. Start a new Codex task to load the update.
+Follow [AGENTS.md](./AGENTS.md) for the cachebuster, review, and source checks before pushing. The wrapper validates and pushes the release, then reinstalls from the matching local source. Start a new Codex task to verify the update.
 
 ## Remove the plugin
 

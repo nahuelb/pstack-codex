@@ -4,7 +4,7 @@ This document explains how the upstream pstack workflows map to Codex. It descri
 
 ## Skill registration
 
-The plugin manifest is [`.codex-plugin/plugin.json`](../.codex-plugin/plugin.json). The local marketplace manifest is [`.agents/plugins/marketplace.json`](../.agents/plugins/marketplace.json). Codex discovers 47 skills under `skills/`. Each skill has `agents/openai.yaml` metadata and sets `allow_implicit_invocation: false`.
+The plugin manifest is [`.codex-plugin/plugin.json`](../.codex-plugin/plugin.json). The local marketplace manifest is [`.agents/plugins/marketplace.json`](../.agents/plugins/marketplace.json). Codex discovers 48 skills under `skills/`. Each skill has `agents/openai.yaml` metadata and sets `allow_implicit_invocation: false`.
 
 This follows the current OpenAI documentation for [Codex skills](https://learn.chatgpt.com/docs/build-skills) and [plugin packaging](https://developers.openai.com/plugins/build/plugins). The upstream logo maps to `interface.logo`, while explicit-only invocation stays in each skill's `agents/openai.yaml`.
 
@@ -33,7 +33,7 @@ The upstream personas became portable prompts plus optional Codex TOML profiles:
 
 Custom-agent files follow the current [Codex subagent contract](https://learn.chatgpt.com/docs/agent-configuration/subagents?surface=app).
 
-The upstream `pstack-models.mdc` becomes `.codex/pstack-models.json` at project scope or `~/.codex/pstack-models.json` at user scope. It preserves all eighteen upstream role labels, panel fanout, and parent inheritance. Each explicit lane keeps its model, reasoning effort, and optional service tier in one record. Project configuration overrides user configuration. Each owning skill retains the original PStack defaults in Codex model syntax.
+The upstream `pstack-models.mdc` becomes `.codex/pstack-models.json` at project scope or `~/.codex/pstack-models.json` at user scope. It preserves all eighteen upstream role labels, configurable panel fanout, and agent inheritance. Each explicit lane keeps its model, reasoning effort, and optional service tier in one record. Project configuration overrides user configuration. Owning skills resolve roles through the [bundled role registry](../skills/setup-pstack/references/model-defaults.json), which supplies defaults when no override exists.
 
 A configured model is a request, not runtime evidence. Setup validates settings through supported live discovery and records the mechanisms its helper can establish. An `unverified-inheritance` setup receipt does not prove runtime unavailability. Dispatch follows the [model policy](../skills/setup-pstack/references/model-profile.md) and the lifecycle skill's capability checks without silently weakening explicit requirements.
 

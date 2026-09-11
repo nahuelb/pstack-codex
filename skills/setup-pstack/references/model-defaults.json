@@ -29,11 +29,10 @@
     "how critics": [
       { "model": "anthropic/claude-fable-5-1", "reasoning_effort": "medium" },
       { "model": "gpt-6-astra", "reasoning_effort": "medium" },
-      { "model": "xai/grok-4.6", "reasoning_effort": "high" },
       { "model": "anthropic/claude-opus-5", "reasoning_effort": "high" }
     ],
     "why investigators": [
-      { "model": "cursor/grok-4.6", "reasoning_effort": "high" }
+      { "model": "gpt-6-astra", "reasoning_effort": "medium" }
     ],
     "why synthesizer": [
       { "model": "anthropic/claude-fable-5-1", "reasoning_effort": "high" }
@@ -47,28 +46,23 @@
     "arena runners": [
       { "model": "anthropic/claude-fable-5-1", "reasoning_effort": "medium" },
       { "model": "gpt-6-astra", "reasoning_effort": "medium" },
-      { "model": "xai/grok-4.6", "reasoning_effort": "high" },
       { "model": "anthropic/claude-opus-5", "reasoning_effort": "high" }
     ],
     "arena cross-judge pool": [
       { "model": "anthropic/claude-fable-5-1", "reasoning_effort": "medium" },
-      { "model": "gpt-6-astra", "reasoning_effort": "medium" },
-      { "model": "xai/grok-4.6", "reasoning_effort": "high" },
-      { "model": "anthropic/claude-opus-5", "reasoning_effort": "high" }
+      { "model": "gpt-6-astra", "reasoning_effort": "medium" }
     ],
     "swarm workers": [
-      { "model": "cursor/grok-4.6", "reasoning_effort": "high" }
+      { "model": "gpt-6-astra", "reasoning_effort": "low" }
     ],
     "architect runners": [
       { "model": "anthropic/claude-fable-5-1", "reasoning_effort": "medium" },
       { "model": "gpt-6-astra", "reasoning_effort": "medium" },
-      { "model": "xai/grok-4.6", "reasoning_effort": "high" },
       { "model": "anthropic/claude-opus-5", "reasoning_effort": "high" }
     ],
     "interrogate reviewers": [
       { "model": "anthropic/claude-fable-5-1", "reasoning_effort": "medium" },
       { "model": "gpt-6-astra", "reasoning_effort": "medium" },
-      { "model": "xai/grok-4.6", "reasoning_effort": "high" },
       { "model": "anthropic/claude-opus-5", "reasoning_effort": "high" }
     ]
   }

@@ -352,7 +352,7 @@ function validateRoleRegistry(registry) {
     if (!Array.isArray(lanes) || !lanes.length || (spec.kind === "single" && lanes.length !== 1)) {
       throw new Error(`pstack model registry has invalid lane count for "${spec.name}"`);
     }
-    for (const [index, lane] of lanes.entries()) {
+    for (const lane of lanes) {
       const inherited = lane && lane.inherit_parent === true && Object.keys(lane).length === 1;
       const skillDefault = lane && lane.use_skill_default === true && Object.keys(lane).length === 1;
       const explicit =
@@ -367,12 +367,23 @@ function validateRoleRegistry(registry) {
       if (!inherited && !skillDefault && !explicit) {
         throw new Error(`pstack model registry has an invalid lane for "${spec.name}"`);
       }
-      if (skillDefault && !spec.defaults[index]) {
-        throw new Error(`pstack model role "${spec.name}" has no bundled default for lane ${index + 1}`);
-      }
     }
   }
   return registry;
+}
+
+
+function normalizeDefaultPanels(registry, policies = {}) {
+  const roles = {};
+  const normalizedPolicies = {};
+  for (const spec of MODEL_ROLE_SPECS) {
+    const indexes = registry.roles[spec.name].flatMap((lane, index) =>
+      lane.use_skill_default && index >= spec.defaults.length ? [] : [index],
+    );
+    roles[spec.name] = indexes.map((index) => registry.roles[spec.name][index]);
+    normalizedPolicies[spec.name] = indexes.map((index) => policies[spec.name]?.[index]);
+  }
+  return { registry: { ...registry, roles }, policies: normalizedPolicies };
 }
 
 async function findProjectRoot(start) {
@@ -412,7 +423,7 @@ export async function resolveRuntimeRole({ roleName, projectRoot = process.cwd()
     }
     let registry;
     try {
-      registry = validateRoleRegistry(JSON.parse(content));
+      registry = normalizeDefaultPanels(validateRoleRegistry(JSON.parse(content))).registry;
     } catch (error) {
       throw new Error(`invalid pstack model registry at "${registryPath}": ${error.message}`);
     }
@@ -540,8 +551,14 @@ export async function installAgents({
   }
 
   let currentRegistry = null;
+  let currentRolePolicies = {};
   if (currentReceipt?.schema_version === 2) {
-    currentRegistry = validateRoleRegistry(JSON.parse(await fs.readFile(target.registry, "utf8")));
+    const previous = normalizeDefaultPanels(
+      validateRoleRegistry(JSON.parse(await fs.readFile(target.registry, "utf8"))),
+      currentReceipt.role_policies,
+    );
+    currentRegistry = previous.registry;
+    currentRolePolicies = previous.policies;
   }
 
   const inventory = await scanAgentNames({ projectRoot, userHome });
@@ -583,7 +600,7 @@ export async function installAgents({
   const registryResolution = resolveRoleRegistry({
     roleProfile: roleProfile ?? {},
     existingRoles: currentRegistry?.roles ?? {},
-    existingPolicies: currentReceipt?.role_policies ?? {},
+    existingPolicies: currentRolePolicies,
     observableModels,
     serviceTierOverrideSupported: runtimeCapabilities.spawn_service_tier_override ?? null,
   });
