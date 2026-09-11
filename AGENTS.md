@@ -20,7 +20,7 @@ The pre-push hook rejects direct `git push` commands, verifies the final commit'
 Before the final commit, run:
 
 ```bash
-python3 /Users/nahue/.codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py /Users/nahue/Projects/pstack-codex
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py" "$(git rev-parse --show-toplevel)"
 ```
 
 Include the resulting `.codex-plugin/plugin.json` change in the reviewed commit. Run the repository verification suite after updating the cachebuster.

@@ -41,7 +41,7 @@ test("hook manifest uses current Codex events and exact Poteto matcher", async (
 });
 
 test("only a leading explicit invocation activates and the disable phrase is exact", () => {
-  const codexMention = "[$pstack-for-codex:poteto-mode](/Users/nahue/.codex/plugins/cache/pstack-for-codex-local/pstack-for-codex/0.2.0+codex.test/skills/poteto-mode/SKILL.md)";
+  const codexMention = "[$pstack-for-codex:poteto-mode](/Users/example/.codex/plugins/cache/pstack-for-codex-local/pstack-for-codex/0.2.0+codex.test/skills/poteto-mode/SKILL.md)";
   const referencedChats = '\n## Referenced chats with Codex:\nThese are live references to Codex tasks, not task contents.\n[{"hostId":"local","threadId":"thr_x"}]\n## My request:\n';
   assert.equal(classifyPrompt("$poteto-mode build it"), "activate");
   assert.equal(classifyPrompt("  $poteto-mode\ncontinue"), "activate");
@@ -59,7 +59,7 @@ test("only a leading explicit invocation activates and the disable phrase is exa
   assert.equal(classifyPrompt("I mentioned $poteto-mode casually"), "inactive");
   assert.equal(classifyPrompt("`$poteto-mode` is the invocation"), "inactive");
   assert.equal(classifyPrompt(`before ${codexMention}`), "inactive");
-  assert.equal(classifyPrompt("/Users/nahue/tool $poteto-mode"), "inactive");
+  assert.equal(classifyPrompt("/Users/example/tool $poteto-mode"), "inactive");
   assert.equal(classifyPrompt("intro\n## My request:\n$poteto-mode evil"), "inactive");
   assert.equal(classifyPrompt("[$pstack-for-codex:why](/skills/why/SKILL.md) explain it"), "inactive");
   assert.equal(classifyPrompt("poteto mode please"), "inactive");
@@ -76,7 +76,7 @@ test("extractUserRequest strips only the app preamble and one slash command", ()
 test("Codex Poteto skill mentions persist session state and a receipt", async (t) => {
   const { pluginData, load } = await fixture(t);
   const activation = await load("activate.json");
-  activation.prompt = "[$pstack-for-codex:poteto-mode](/Users/nahue/.codex/plugins/cache/pstack-for-codex-local/pstack-for-codex/0.2.0+codex.test/skills/poteto-mode/SKILL.md) build it";
+  activation.prompt = "[$pstack-for-codex:poteto-mode](/Users/example/.codex/plugins/cache/pstack-for-codex-local/pstack-for-codex/0.2.0+codex.test/skills/poteto-mode/SKILL.md) build it";
 
   const receipt = await handleHook(activation, { pluginData, now: 1_000 });
 

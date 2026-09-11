@@ -1,6 +1,6 @@
 {
   "name": "pstack-for-codex",
-  "version": "0.2.0+codex.20260911152528",
+  "version": "0.2.0+codex.20260911153239",
   "description": "Codex-native engineering workflows derived from pstack. Skills remain explicit-only so users retain workflow and authority control.",
   "author": {
     "name": "pstack-for-codex maintainers"

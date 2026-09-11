@@ -8,7 +8,7 @@ The delivered repository contains only the modified Codex version. Do not push a
 
 `skills/poteto-mode/references/codex-agent-runtime.md`, `skills/poteto-mode/references/codex-parallelism.md`, and `skills/poteto-mode/references/codex-run-evidence.md` are local extensions, not upstream source files.
 The runtime contract is the single loading point for scheduling, lightweight run evidence and `skills/poteto-mode/references/codex-delivery-flow.md`. The optional `codex-run-record-tools.md` reference retains structured receipt instructions without loading them for every implementation. Keep execution preferences there instead of duplicating them across upstream skills.
-Model routing remains in the existing registry, and workflow acceptance and verification requirements remain authoritative.
+Model routing remains in the existing registry, and workflow acceptance and verification requirements remain authoritative. The Codex-owned `skills/setup-pstack/references/model-defaults.json` holds bundled model choices and panel sizes; preserve it during upstream refreshes. The installer and runtime resolver omit obsolete default markers when bundled panels shrink, preserving explicit lanes and their policy records. Keep the upgrade regression in `tests/setup-receipt.test.mjs`; a separate adapter cannot fix validation before registry loading.
 
 Preserve these extensions during upstream refreshes. Review their semantics against changed workflows, including dependencies, ownership, and required gates.
 Keep their loading and behavioral checks in `tests/codex-parallelism.test.mjs` and `evals/cases/codex-parallelism.json`.
@@ -42,12 +42,11 @@ The Codex-owned `codex-agent-continuity.md`, `scripts/lib/agent-continuity.mjs` 
 
 This checkout keeps a full upstream clone at `.upstream/plugins`. Its local branch `locked-0.14.8` points at the locked commit `7314f723a487ec406b6369fe5865ba034cfed166`.
 
-The checkout-local `.git/info/exclude` ignores `.upstream/`. Do not add this entry to the tracked `.gitignore`. That file is hash-locked as preserved in `compatibility/pstack-map.json`, so editing it makes `compatibility:check` fail.
+The tracked `.gitignore` preserves upstream exclusions and adds `.upstream/` and `.audit/` for local source copies and audit artifacts. The compatibility map marks this file as adapted. A separate reference cannot make Git apply these exclusions in fresh clones; preserve them during upstream refreshes.
 
 Recreate the local copy after a fresh checkout of this repository:
 
 ```bash
-printf '%s\n' '.upstream/' >> .git/info/exclude
 git clone https://github.com/cursor/plugins .upstream/plugins
 git -C .upstream/plugins switch --create locked-0.14.8 \
   7314f723a487ec406b6369fe5865ba034cfed166

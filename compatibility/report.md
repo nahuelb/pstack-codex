@@ -12,8 +12,8 @@
 
 | Classification | Files |
 |---|---:|
-| preserved | 9 |
-| adapted | 148 |
+| preserved | 8 |
+| adapted | 149 |
 | replaced | 1 |
 | provenance-only | 0 |
 
@@ -26,7 +26,7 @@ No candidate upstream snapshot was supplied, or it matches the lock.
 | Upstream path | Classification | Codex path | Validation |
 |---|---|---|---|
 | `.cursor-plugin/plugin.json` | replaced | `.codex-plugin/plugin.json` | manifest, installed-plugin |
-| `.gitignore` | preserved | `.gitignore` | upstream-hash |
+| `.gitignore` | adapted | `.gitignore` | compatibility-map |
 | `agents/comment-sicko.md` | adapted | `skills/no-comments/references/comment-sicko-prompt.md` | agent-template, skill-behavior |
 | `agents/poteto-agent.md` | adapted | `skills/poteto-mode/references/poteto-agent-prompt.md` | agent-template, skill-behavior |
 | `assets/logo.png` | preserved | `assets/logo.png` | upstream-hash |

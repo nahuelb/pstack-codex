@@ -36,13 +36,13 @@
     {
       "upstreamPath": ".gitignore",
       "upstreamSha256": "8ffe9de56bd30c1a95cd945262d6e3ac355ada4111551dde41f67851b9f1fc55",
-      "classification": "preserved",
+      "classification": "adapted",
       "derivedPath": ".gitignore",
       "preservedInvariants": [
-        "the upstream artifact remains byte-identical"
+        "upstream exclusions remain in place; local source copies and audit artifacts stay untracked in fresh clones"
       ],
       "validations": [
-        "upstream-hash"
+        "compatibility-map"
       ]
     },
     {
