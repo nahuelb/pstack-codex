@@ -12,7 +12,9 @@ Invoked at the end of every other playbook.
 
 **Titles.** Use Conventional Commits in the form `type(scope): subject`. Use `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, or `perf` as the type. Use the changed area as the scope. Keep the subject short and imperative. Apply the same `$technical-writing` and `$unslop` pass as the body.
 
-**Descriptions.** Use these sections in order. Drop a section when it is empty.
+**Descriptions.** Write a short briefing with the problem, approach, scope, and proof. Link detailed logs and metric tables. Retain material limitations and required evidence. Follow the repository's merge policy.
+
+Use these sections in order. Drop a section when it is empty.
 
 - `## Why`. State the intent and why this approach fits.
 - `## Scope`. State facts from the diff. Name real symbols and paths. Name both sides of a rename or retarget. State what is in and out when the boundary matters.

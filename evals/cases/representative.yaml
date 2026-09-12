@@ -96,7 +96,54 @@
         "evidence": "named blockers and paused descriptors",
         "stop_condition": "all canaries and idempotency evidence are required before activation"
       }
+    },
+    {
+      "id": "premise-even-census",
+      "category": "direct",
+      "input": "$principle-attack-the-premise Two retry fixes failed. The actor census is even. Decide the next diagnostic step.",
+      "expected": {
+        "workflow": "test the shared premise without inferring that an even census disproves it",
+        "role": "diagnostic investigator",
+        "authority": "read-only evidence gathering",
+        "evidence": "retain the census and identify a discriminating probe",
+        "stop_condition": "next hypothesis and probe are stated"
+      }
+    },
+    {
+      "id": "behavior-required-contract",
+      "category": "direct",
+      "input": "$principle-test-behavior-not-implementation Review a provenance SHA pin and a test that only asserts its own fixture.",
+      "expected": {
+        "workflow": "retain the required provenance contract and replace or remove the fixture-only assertion",
+        "role": "test reviewer",
+        "authority": "review only; no permission to remove maintenance gates",
+        "evidence": "identify the defect or required contract each test detects",
+        "stop_condition": "recommendations distinguish required pins from vacuous checks"
+      }
+    },
+    {
+      "id": "reflect-not-automatic",
+      "category": "negative-trigger",
+      "input": "The implementation is complete. Report the result.",
+      "expected": {
+        "workflow": "report without invoking reflect automatically",
+        "role": "main agent",
+        "authority": "no skill edits",
+        "evidence": "task validation results",
+        "stop_condition": "result delivered"
+      }
+    },
+    {
+      "id": "writing-catalog-boundary",
+      "category": "direct",
+      "input": "$technical-writing Tighten this PR body and suggest a new jargon replacement.",
+      "expected": {
+        "workflow": "write a concise briefing with linked detailed evidence",
+        "role": "technical writer",
+        "authority": "edit the requested PR draft; propose catalog changes only",
+        "evidence": "keep material validation and limitations",
+        "stop_condition": "draft and proposal ready for review"
+      }
     }
   ]
 }
-

@@ -1,0 +1,8 @@
+interface:
+  display_name: "Attack the Premise"
+  short_description: "Test shared assumptions after repeated failed fixes"
+  default_prompt: "Use $principle-attack-the-premise for this request."
+policy:
+  products:
+    - CODEX
+  allow_implicit_invocation: false

@@ -288,6 +288,28 @@
       }
     },
     {
+      "id": "skill:principle-attack-the-premise",
+      "kind": "skill",
+      "source": "skills/principle-attack-the-premise/SKILL.md",
+      "case": "skill-positive:principle-attack-the-premise",
+      "positive_outcome": "Explicit $principle-attack-the-premise invocation selects the documented Codex workflow and produces its named artifact or decision.",
+      "boundaries": [
+        "explicit-only",
+        "authority",
+        "capability",
+        "negative-trigger"
+      ],
+      "disposition": "explicit-only",
+      "verdict": "passed-offline-contract",
+      "grades": {
+        "workflow": "required",
+        "role": "required",
+        "authority": "required",
+        "evidence": "required",
+        "stop_condition": "required"
+      }
+    },
+    {
       "id": "skill:principle-boundary-discipline",
       "kind": "skill",
       "source": "skills/principle-boundary-discipline/SKILL.md",
@@ -711,6 +733,28 @@
       "source": "skills/principle-subtract-before-you-add/SKILL.md",
       "case": "skill-positive:principle-subtract-before-you-add",
       "positive_outcome": "Explicit $principle-subtract-before-you-add invocation selects the documented Codex workflow and produces its named artifact or decision.",
+      "boundaries": [
+        "explicit-only",
+        "authority",
+        "capability",
+        "negative-trigger"
+      ],
+      "disposition": "explicit-only",
+      "verdict": "passed-offline-contract",
+      "grades": {
+        "workflow": "required",
+        "role": "required",
+        "authority": "required",
+        "evidence": "required",
+        "stop_condition": "required"
+      }
+    },
+    {
+      "id": "skill:principle-test-behavior-not-implementation",
+      "kind": "skill",
+      "source": "skills/principle-test-behavior-not-implementation/SKILL.md",
+      "case": "skill-positive:principle-test-behavior-not-implementation",
+      "positive_outcome": "Explicit $principle-test-behavior-not-implementation invocation selects the documented Codex workflow and produces its named artifact or decision.",
       "boundaries": [
         "explicit-only",
         "authority",

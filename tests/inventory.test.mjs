@@ -18,8 +18,8 @@ test("fork and upstream identities remain separate", async () => {
   assert.equal(manifest.version.split("+")[0], "0.2.0");
   assert.match(manifest.version, /^0\.2\.0(?:\+codex\.[0-9A-Za-z.-]+)?$/);
   assert.equal(packageJson.version, "0.2.0");
-  assert.equal(lock.source.version, "0.14.8");
-  assert.equal(lock.source.commit, "7314f723a487ec406b6369fe5865ba034cfed166");
+  assert.equal(lock.source.version, "0.15.2");
+  assert.equal(lock.source.commit, "889ec4b68fa5aab0e867dad71ec3fdf386ae48f3");
   assert.equal(lock.inventory.fileCount, 158);
 });
 
@@ -40,7 +40,7 @@ test("inventory accounts for every upstream file, skill, and playbook", async ()
     .map((entry) => entry.path.match(/^skills\/([^/]+)\/SKILL\.md$/)?.[1])
     .filter(Boolean)
     .sort();
-  assert.equal(upstreamSkills.length, 45);
+  assert.equal(upstreamSkills.length, 47);
   assert.equal(records.length, EXPECTED_SKILL_COUNT);
   const codexOnlySkills = new Set(["conversation-audit", "setup-benny", "subagent-lifecycle"]);
   assert.deepEqual(records.map((record) => record.directory).filter((name) => !codexOnlySkills.has(name)).sort(), upstreamSkills);
@@ -54,7 +54,7 @@ test("inventory accounts for every upstream file, skill, and playbook", async ()
   assert.equal(playbooks.length, 23);
 });
 
-test("behavioral coverage maps all 45 upstream skills and all 23 playbooks", async () => {
+test("behavioral coverage maps all 47 upstream skills and all 23 playbooks", async () => {
   const [lock, coverage, representative] = await Promise.all([
     readJson("upstream.lock.json"),
     readJson("evals/cases/coverage.yaml"),

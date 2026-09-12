@@ -1,6 +1,6 @@
 # Upstream maintenance
 
-This repository derives from `pstack` in `https://github.com/cursor/plugins`. The locked source is version `0.14.8` at commit `7314f723a487ec406b6369fe5865ba034cfed166`.
+This repository derives from `pstack` in `https://github.com/cursor/plugins`. The locked source is version `0.15.2` at commit `889ec4b68fa5aab0e867dad71ec3fdf386ae48f3`.
 
 The delivered repository contains only the modified Codex version. Do not push a raw upstream branch or snapshot commit. Do not keep an upstream remote in the delivered checkout.
 
@@ -40,7 +40,7 @@ The Codex-owned `codex-agent-continuity.md`, `scripts/lib/agent-continuity.mjs` 
 
 ## Local upstream copy
 
-This checkout keeps a full upstream clone at `.upstream/plugins`. Its local branch `locked-0.14.8` points at the locked commit `7314f723a487ec406b6369fe5865ba034cfed166`.
+An optional upstream clone may exist at `.upstream/plugins`. Check its commit before using it. Automated refreshes fetch into a temporary directory outside the project.
 
 The tracked `.gitignore` preserves upstream exclusions and adds `.upstream/` and `.audit/` for local source copies and audit artifacts. The compatibility map marks this file as adapted. A separate reference cannot make Git apply these exclusions in fresh clones; preserve them during upstream refreshes.
 
@@ -48,8 +48,8 @@ Recreate the local copy after a fresh checkout of this repository:
 
 ```bash
 git clone https://github.com/cursor/plugins .upstream/plugins
-git -C .upstream/plugins switch --create locked-0.14.8 \
-  7314f723a487ec406b6369fe5865ba034cfed166
+git -C .upstream/plugins switch --create locked-0.15.2 \
+  889ec4b68fa5aab0e867dad71ec3fdf386ae48f3
 ```
 
 ## Provenance files
@@ -82,7 +82,7 @@ When `.upstream/plugins` is absent, use the repository URL as a fallback. The im
 node scripts/import-upstream.mjs \
   --source https://github.com/cursor/plugins \
   --subdirectory pstack \
-  --commit 7314f723a487ec406b6369fe5865ba034cfed166 \
+  --commit 889ec4b68fa5aab0e867dad71ec3fdf386ae48f3 \
   --verify-lock \
   --dry-run
 ```
@@ -96,7 +96,7 @@ Fetch the persistent local clone and list newer commits that changed `pstack`:
 ```bash
 git -C .upstream/plugins fetch origin
 git -C .upstream/plugins log --oneline \
-  locked-0.14.8..origin/main -- pstack
+  locked-0.15.2..origin/main -- pstack
 ```
 
 Then review a candidate:
@@ -132,3 +132,9 @@ node --test tests/upstream-provenance.test.mjs tests/compatibility-map.test.mjs
 Review the generated diff. A complete report accounts for every locked path and has no unresolved source delta.
 
 `skills/poteto-mode/references/codex-audit-storage.md` is a Codex-owned extension loaded by the runtime adapter before scratch allocation and at closeout. Preserve its evidence retention, inactivity checks, concurrent isolation, and run-record capture budgets during upstream refreshes.
+
+## Version 0.15.2 adaptation
+
+See [the path review](compatibility/refresh-0.15.2.md) for all 95 source deltas. The two deleted `how` critique references remain Codex-owned, along with their existing workflow and model role. Preserve them during future refreshes.
+
+The two new principles use Codex invocation metadata. Their narrow corrections prevent an even actor census from disproving unrelated hypotheses and prevent assertion syntax from authorizing removal of required contracts. Separate extensions cannot correct those direct claims. The writing changes remove automatic reflection triggers and forced personality prose, keep detailed evidence linked from PR briefings, and label claims by evidence. The Codex-owned model defaults remain authoritative.
