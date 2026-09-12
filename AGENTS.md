@@ -1,3 +1,7 @@
+# Review before push
+
+Use $review-before-push before any git push, PR creation, or PR update. Read its shared instructions at `~/.agents/skills/review-before-push/SKILL.md`.
+
 # Pull requests and merge history
 
 Use pull requests by default for substantive changes. Small, minor changes may be committed and pushed directly to `main`.
