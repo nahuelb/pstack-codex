@@ -108,7 +108,7 @@ test("model-role guidance loads the shared configuration policy", async () => {
   }
   const policy = await fs.readFile(path.join(root, "skills/setup-pstack/references/model-profile.md"), "utf8");
   assert.match(policy, /model.*reasoning_effort.*service_tier/is);
-  assert.match(policy, /subagent-lifecycle/);
+  assert.match(policy, /codex-subagent-lifecycle\.md/);
 });
 
 test("PR stack workflows use GitHub base branches and regression lanes", async () => {
@@ -152,7 +152,7 @@ test("internal review delegation cannot create a separate task", async () => {
   assert.match(runtime, /Never use `create_thread` or another separate-task API for a subagent/);
   assert.match(runtime, /Custom agent names are never workflow role inputs/);
   assert.match(noComments, /Start the `pstack-comment-sicko` custom agent/);
-  assert.match(noComments, /Follow `subagent-lifecycle`/);
+  assert.match(noComments, /Follow `\.\.\/poteto-mode\/references\/codex-subagent-lifecycle\.md`/);
   assert.doesNotMatch(noComments, /`agent_type: "default"`/);
   assert.match(noComments, /If no subagent can run, report the review capability as blocked/);
 });
@@ -163,7 +163,7 @@ test("Poteto delegates custom-agent fallback to the shared lifecycle", async () 
     "utf8",
   );
 
-  assert.match(runtime, /follow `subagent-lifecycle`/);
+  assert.match(runtime, /follow the \[subagent lifecycle\]\(codex-subagent-lifecycle\.md\)/);
   assert.match(runtime, /It owns custom-agent startup and fallback, result delivery, waiting/);
   assert.doesNotMatch(runtime, /start a `default` agent with the complete portable persona prompt/);
   assert.doesNotMatch(runtime, /pstack completion callback/);
@@ -172,14 +172,14 @@ test("Poteto delegates custom-agent fallback to the shared lifecycle", async () 
 
 test("bundled lifecycle owns portable custom-agent fallback", async () => {
   const [lifecycle, runtime, noComments, poteto] = await Promise.all([
-    fs.readFile(path.join(skillsRoot, "subagent-lifecycle", "SKILL.md"), "utf8"),
+    fs.readFile(path.join(skillsRoot, "poteto-mode", "references", "codex-subagent-lifecycle.md"), "utf8"),
     fs.readFile(path.join(skillsRoot, "poteto-mode", "references", "codex-agent-runtime.md"), "utf8"),
     fs.readFile(path.join(skillsRoot, "no-comments", "SKILL.md"), "utf8"),
     fs.readFile(path.join(skillsRoot, "poteto-mode", "SKILL.md"), "utf8"),
   ]);
 
-  assert.match(lifecycle, /`pstack-poteto-agent`: `\.\.\/poteto-mode\/references\/poteto-agent-prompt\.md`/);
-  assert.match(lifecycle, /`pstack-comment-sicko`: `\.\.\/no-comments\/references\/comment-sicko-prompt\.md`/);
+  assert.match(lifecycle, /`pstack-poteto-agent`: `poteto-agent-prompt\.md`/);
+  assert.match(lifecycle, /`pstack-comment-sicko`: `\.\.\/\.\.\/no-comments\/references\/comment-sicko-prompt\.md`/);
   assert.match(lifecycle, /start a `default` agent with the complete portable persona prompt/);
   assert.match(lifecycle, /must not invoke the owning orchestration skill or start another copy of itself/);
   assert.doesNotMatch(runtime, /poteto-agent-prompt\.md|comment-sicko-prompt\.md/);

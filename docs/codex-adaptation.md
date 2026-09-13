@@ -4,7 +4,7 @@ This document explains how the upstream pstack workflows map to Codex. It descri
 
 ## Skill registration
 
-The plugin manifest is [`.codex-plugin/plugin.json`](../.codex-plugin/plugin.json). The local marketplace manifest is [`.agents/plugins/marketplace.json`](../.agents/plugins/marketplace.json). Codex discovers 50 skills under `skills/`. Each skill has `agents/openai.yaml` metadata and sets `allow_implicit_invocation: false`.
+The plugin manifest is [`.codex-plugin/plugin.json`](../.codex-plugin/plugin.json). The local marketplace manifest is [`.agents/plugins/marketplace.json`](../.agents/plugins/marketplace.json). Codex discovers 49 skills under `skills/`. Each skill has `agents/openai.yaml` metadata and sets `allow_implicit_invocation: false`.
 
 This follows the current OpenAI documentation for [Codex skills](https://learn.chatgpt.com/docs/build-skills) and [plugin packaging](https://developers.openai.com/plugins/build/plugins). The upstream logo maps to `interface.logo`, while explicit-only invocation stays in each skill's `agents/openai.yaml`.
 
@@ -35,7 +35,7 @@ Custom-agent files follow the current [Codex subagent contract](https://learn.ch
 
 The upstream `pstack-models.mdc` becomes `.codex/pstack-models.json` at project scope or `~/.codex/pstack-models.json` at user scope. It preserves all eighteen upstream role labels, configurable panel fanout, and agent inheritance. Each explicit lane keeps its model, reasoning effort, and optional service tier in one record. Project configuration overrides user configuration. Owning skills resolve roles through the [bundled role registry](../skills/setup-pstack/references/model-defaults.json), which supplies defaults when no override exists.
 
-A configured model is a request, not runtime evidence. Setup validates settings through supported live discovery and records the mechanisms its helper can establish. An `unverified-inheritance` setup receipt does not prove runtime unavailability. Dispatch follows the [model policy](../skills/setup-pstack/references/model-profile.md) and the lifecycle skill's capability checks without silently weakening explicit requirements.
+A configured model is a request, not runtime evidence. Setup validates settings through supported live discovery and records the mechanisms its helper can establish. An `unverified-inheritance` setup receipt does not prove runtime unavailability. Dispatch follows the [model policy](../skills/setup-pstack/references/model-profile.md) and the [subagent lifecycle reference](../skills/poteto-mode/references/codex-subagent-lifecycle.md) capability checks without silently weakening explicit requirements.
 
 Codex service-tier controls vary by runtime. Some versions expose per-spawn or custom-agent tier overrides; others use the main task's tier. Check the running version's configuration and live inheritance before declaring a requested tier unavailable. Saved defaults do not establish a task's active setting. Record requested configuration separately from an authoritative served-tier observation, and leave the latter unverified when unavailable. A successful response or a response field that the provider does not define as authoritative cannot establish the served tier.
 

@@ -27,11 +27,10 @@ function qualifiedConfig() {
 
 test("Codex-only support skills are registered and the Benny pack stays dormant", async () => {
   const records = await listSkillRecords(root);
-  assert.equal(EXPECTED_SKILL_COUNT, 50);
-  assert.equal(records.length, 50);
+  assert.equal(EXPECTED_SKILL_COUNT, 49);
+  assert.equal(records.length, 49);
   assert.equal(records.filter((record) => record.name === "conversation-audit").length, 1);
   assert.equal(records.filter((record) => record.name === "setup-benny").length, 1);
-  assert.equal(records.filter((record) => record.name === "subagent-lifecycle").length, 1);
   assert.equal(records.some((record) => record.name === "benny-triage-poll"), false);
   assert.equal(records.some((record) => record.name === "benny-reproduce-poll"), false);
 });

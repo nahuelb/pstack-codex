@@ -1,11 +1,10 @@
----
-name: subagent-lifecycle
-description: Use before spawning or managing subagents. Start exact custom agents, apply portable fallbacks, collect required results, and close completed agent threads.
----
-
 # Subagent lifecycle
 
-Delegation must already be authorized.
+This Codex-only reference is loaded by `codex-agent-runtime.md` and the workflows that delegate. It is not a skill. Delegation must already be authorized.
+
+## Find the tools
+
+Enumerate the live tool inventory before you report subagents as unavailable. In code mode the tools appear as `multi_agent_v1__spawn_agent`, `multi_agent_v1__wait_agent`, `multi_agent_v1__send_input`, `multi_agent_v1__resume_agent`, and `multi_agent_v1__close_agent`. In direct tool mode they appear as `spawn_agent`, `wait_agent`, `send_input`, `resume_agent`, and `close_agent`. A name lookup that misses one form is not evidence that the surface is missing.
 
 ## Start custom agents
 
@@ -19,8 +18,8 @@ If the custom agent is unavailable or has conflicting fixed settings, check whet
 
 Resolve portable prompts from the setup receipt or owning skill. For the bundled personas, use:
 
-- `pstack-poteto-agent`: `../poteto-mode/references/poteto-agent-prompt.md`
-- `pstack-comment-sicko`: `../no-comments/references/comment-sicko-prompt.md`
+- `pstack-poteto-agent`: `poteto-agent-prompt.md`
+- `pstack-comment-sicko`: `../../no-comments/references/comment-sicko-prompt.md`
 
 If no supported path preserves the requirements or the prompt cannot be resolved, report the subagent as blocked.
 
@@ -38,4 +37,4 @@ After an interruption, inspect partial files and reconcile retained state before
 
 Verify each result before using it. Retain an open agent when a known next assignment benefits from its context and uses the same configuration. Otherwise close completed agent threads when the tool supports closing.
 
-Before reusing an agent, apply [configuration continuity](../poteto-mode/references/codex-agent-continuity.md). A closed agent's saved metadata does not establish the configuration of its next turn.
+Before reusing an agent, apply [configuration continuity](codex-agent-continuity.md). A closed agent's saved metadata does not establish the configuration of its next turn.

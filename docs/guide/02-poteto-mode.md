@@ -44,6 +44,6 @@ The main agent integrates the winner and runs the authoritative checks.
 
 ## Expect visible fallbacks
 
-A playbook declares what happens when a custom agent, subagent, connector, control tool, or history API is unavailable. `subagent-lifecycle` owns custom-agent fallback. Poteto Mode does not silently drop a lane.
+A playbook declares what happens when a custom agent, subagent, connector, control tool, or history API is unavailable. The [subagent lifecycle reference](../../skills/poteto-mode/references/codex-subagent-lifecycle.md) owns custom-agent fallback. Poteto Mode does not silently drop a lane.
 
 Next: [Understand the code](./03-understand.md).

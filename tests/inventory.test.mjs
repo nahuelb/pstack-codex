@@ -42,10 +42,9 @@ test("inventory accounts for every upstream file, skill, and playbook", async ()
     .sort();
   assert.equal(upstreamSkills.length, 47);
   assert.equal(records.length, EXPECTED_SKILL_COUNT);
-  const codexOnlySkills = new Set(["conversation-audit", "setup-benny", "subagent-lifecycle"]);
+  const codexOnlySkills = new Set(["conversation-audit", "setup-benny"]);
   assert.deepEqual(records.map((record) => record.directory).filter((name) => !codexOnlySkills.has(name)).sort(), upstreamSkills);
   assert.equal(records.filter((record) => record.directory === "setup-benny").length, 1);
-  assert.equal(records.filter((record) => record.directory === "subagent-lifecycle").length, 1);
 
   const playbooks = lock.files
     .map((entry) => entry.path.match(/^skills\/poteto-mode\/playbooks\/([^/]+)\.md$/)?.[1])

@@ -15,7 +15,7 @@ This directory is the release ledger for `pstack-for-codex` version `0.2.0`, der
 
 ## Release disposition
 
-All 50 registered skills are explicit-only. All 47 upstream skills and 23 playbooks have positive offline-contract outcomes and applicable authority, capability, and negative-trigger boundaries. Connector- and trust-dependent live activation is deferred, with the automation tasks paused. Polling latency, hook trust, connector availability, model diversity, and Bun availability remain declared limitations; none is presented as verified when it was not observable.
+All 49 registered skills are explicit-only. All 47 upstream skills and 23 playbooks have positive offline-contract outcomes and applicable authority, capability, and negative-trigger boundaries. Connector- and trust-dependent live activation is deferred, with the automation tasks paused. Polling latency, hook trust, connector availability, model diversity, and Bun availability remain declared limitations; none is presented as verified when it was not observable.
 
 Run `npm test` (or `npm run verify:release`) for the mandatory release gate. It runs offline verification followed by the installed-profile smoke and fails closed when the `codex` prerequisite is unavailable. A release is blocked by any failed test, missing coverage row, stale compatibility report, residual temporary profile/cache, unpaused Benny descriptor, or an unverified live-activation claim.
 
