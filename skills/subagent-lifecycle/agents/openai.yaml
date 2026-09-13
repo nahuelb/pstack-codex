@@ -1,8 +1,0 @@
-interface:
-  display_name: "Subagent Lifecycle"
-  short_description: "Start custom agents, apply portable fallbacks, and collect every required result."
-  default_prompt: "Use $subagent-lifecycle before spawning or managing subagents."
-policy:
-  products:
-    - CODEX
-  allow_implicit_invocation: false

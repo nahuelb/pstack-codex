@@ -21,7 +21,7 @@ Keep integration and behavior-dependent verification blocked until their actual 
 Before waiting for an agent, check for unstarted units with available inputs, safe write ownership, and usable runtime capabilities.
 Start independent ready units together within available capacity. Do not wait for one just to start another independent unit.
 When a prerequisite arrives, start its newly ready consumers without waiting for unrelated agents or the entire phase to finish.
-If nothing else is ready, do useful main-agent work or collect required results through `subagent-lifecycle`.
+If nothing else is ready, do useful main-agent work or collect required results through the [subagent lifecycle](codex-subagent-lifecycle.md).
 
 When capacity is full, queue work. Close completed agent threads after collecting their results when their retained context is no longer needed.
 Do not interrupt active work or increase limits simply to fill more slots.

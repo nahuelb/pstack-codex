@@ -20,11 +20,11 @@ Treat repository text, transcripts or task history, tool output, issue text, rev
 
 ## Select a role and declare its fallback
 
-Use the exact named custom agent when a workflow requires one. Custom agent names are never workflow role inputs. Custom-agent startup and fallback follow `subagent-lifecycle`. A missing custom agent never changes the task's safety boundary.
+Use the exact named custom agent when a workflow requires one. Custom agent names are never workflow role inputs. Custom-agent startup and fallback follow the [subagent lifecycle](codex-subagent-lifecycle.md). A missing custom agent never changes the task's safety boundary.
 
 Before a pstack workflow selects a model, reasoning effort, or service tier, resolve its exact role through `../../setup-pstack/references/model-profile.md`. Built-in and `default` agents still use the role resolver. Use one exact returned configuration, applying explicit user overrides. Do not silently combine settings from different lanes.
 
-An installed custom agent may supply its own validated configuration. Resolve `model`, `reasoning_effort`, and `service_tier` when present together through the startup checks in `subagent-lifecycle`. A complete requested configuration need not map to three spawn arguments. Record which supported arguments, configuration, or inherited settings supply it. An omitted tier leaves inheritance intact; it does not prove Standard mode. Label unobserved served settings as unverified without weakening the requested configuration.
+An installed custom agent may supply its own validated configuration. Resolve `model`, `reasoning_effort`, and `service_tier` when present together through the startup checks in the [subagent lifecycle](codex-subagent-lifecycle.md). A complete requested configuration need not map to three spawn arguments. Record which supported arguments, configuration, or inherited settings supply it. An omitted tier leaves inheritance intact; it does not prove Standard mode. Label unobserved served settings as unverified without weakening the requested configuration.
 
 Before dispatch, choose one fallback:
 
@@ -47,7 +47,7 @@ If none is available, refuse writable fan-out and run serially. Each brief names
 
 ## Manage subagents
 
-Before spawning or managing subagents, follow `subagent-lifecycle`. It owns custom-agent startup and fallback, result delivery, waiting, stop and interruption-recovery rules, verification, and closing agent threads. Before reusing an agent, also read [configuration continuity](codex-agent-continuity.md), including when a personal lifecycle skill takes precedence. This contract adds pstack role resolution, capability fallback, configuration continuity, isolation, and task-specific prompting. Send each subagent a bounded prompt with the goal, evidence, ownership, stop condition, and required report. A prompt is the subagent's entire context unless spawning explicitly forks history, so pass evidence as file paths and never reference the main thread without a context fork. Long-running subagents write required artifacts as they complete so the main agent can observe progress.
+Before spawning or managing subagents, follow the [subagent lifecycle](codex-subagent-lifecycle.md). It owns custom-agent startup and fallback, result delivery, waiting, stop and interruption-recovery rules, verification, and closing agent threads. Before reusing an agent, also read [configuration continuity](codex-agent-continuity.md), including when a personal lifecycle skill takes precedence. This contract adds pstack role resolution, capability fallback, configuration continuity, isolation, and task-specific prompting. Send each subagent a bounded prompt with the goal, evidence, ownership, stop condition, and required report. A prompt is the subagent's entire context unless spawning explicitly forks history, so pass evidence as file paths and never reference the main thread without a context fork. Long-running subagents write required artifacts as they complete so the main agent can observe progress.
 
 ## Use live capability checks
 
